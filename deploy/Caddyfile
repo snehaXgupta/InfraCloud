@@ -1,0 +1,15 @@
+# DOMAIN=panel.example.com → automatic HTTPS (Let's Encrypt; DNS must point here, ports 80/443 open)
+# DOMAIN=:80               → plain HTTP on any IP (testing only — agent tokens travel unencrypted)
+{$DOMAIN} {
+	encode gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	reverse_proxy app:5000
+}

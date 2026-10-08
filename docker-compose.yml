@@ -1,0 +1,79 @@
+# Production stack for one Linux VPS (e.g. Vultr 2 vCPU / 4 GB):
+#   cp .env.production.example .env && edit it
+#   docker compose up -d --build
+#   docker compose exec app npm run create-admin      (with ADMIN_EMAIL / ADMIN_PASSWORD in .env)
+# Optional demo fleet (no real servers needed):
+#   docker compose --profile demo up -d
+#
+# Only Caddy publishes ports. MongoDB and Prometheus are reachable only on the internal network.
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      MONGO_URI: mongodb://mongo:27017/server_management_platform
+      PROM_URL: http://prometheus:9090
+    depends_on:
+      mongo:
+        condition: service_healthy
+      prometheus:
+        condition: service_started
+
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    restart: unless-stopped
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=30d
+      - --web.enable-remote-write-receiver
+    volumes:
+      - ./telemetry/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN:-:80}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - app
+
+  # Simulated fleet for demos/testing: pushes metrics + heartbeats for every server in the inventory.
+  simulator:
+    profiles: ["demo"]
+    build: .
+    restart: unless-stopped
+    command: ["node", "scripts/simulate-fleet.js"]
+    environment:
+      MONGO_URI: mongodb://mongo:27017/server_management_platform
+      API_URL: http://app:5000
+      PROM_URL: http://prometheus:9090
+    depends_on:
+      - app
+
+volumes:
+  mongo-data:
+  prometheus-data:
+  caddy-data:
+  caddy-config:

@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --bg-main: #f8fafc;
+    --text-main: #0f172a;
+    --card-bg: #ffffff;
+    --card-border: #e2e8f0;
+    --card-subtle: #f1f5f9;
+  }
+
+  html.dark {
+    --bg-main: #0a0c10;
+    --text-main: #f8fafc;
+    --card-bg: #11141c;
+    --card-border: #212636;
+    --card-subtle: #131620;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    min-height: 100vh;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #212636;
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #32394e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.code-box {
+  background: #0d0f15;
+  border: 1px solid #212636;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.light .code-box {
+  background: #0f172a;
+  border: 1px solid #334155;
+  color: #38bdf8;
+}
