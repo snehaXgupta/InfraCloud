@@ -1,0 +1,16 @@
+{
+  "name": "infracontrol-workspace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "InfraControl Full-Stack Monorepo Root",
+  "scripts": {
+    "dev": "npm --prefix backend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "dev:frontend": "npm --prefix frontend run dev",
+    "simulate": "npm --prefix backend run simulate",
+    "seed": "npm --prefix backend run seed",
+    "test:metrics": "npm --prefix backend run test:metrics",
+    "test:rbac": "npm --prefix backend run test:rbac",
+    "test:resize": "npm --prefix backend run test:resize"
+  }
+}
