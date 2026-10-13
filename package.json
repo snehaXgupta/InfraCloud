@@ -11,6 +11,8 @@
     "seed": "npm --prefix backend run seed",
     "test:metrics": "npm --prefix backend run test:metrics",
     "test:rbac": "npm --prefix backend run test:rbac",
-    "test:resize": "npm --prefix backend run test:resize"
+    "test:resize": "npm --prefix backend run test:resize",
+    "build": "npm --prefix backend install && npm --prefix frontend install && npm --prefix frontend run build",
+    "start": "node backend/src/server.js"
   }
 }

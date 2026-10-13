@@ -215,11 +215,11 @@ export const LoginPage = () => {
           </div>
           )}
 
-          {/* Quick Demo Seed Logins — development builds only, never on a deployed site */}
-          {import.meta.env.DEV && (
+          {/* Quick Demo Seed Logins — enabled in dev or when VITE_DEMO_MODE=true is set */}
+          {(import.meta.env.DEV || import.meta.env.VITE_DEMO_MODE === 'true') && (
           <div className="mt-6 pt-5 border-t border-slate-800/80">
             <p className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2.5 text-center">
-              1-Click Dev Seed Logins
+              1-Click Demo Logins
             </p>
             <div className="grid grid-cols-2 gap-2">
               <button
