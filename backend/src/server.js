@@ -57,11 +57,13 @@ app.use(
 app.get('/api/health', async (req, res) => {
   const database = mongoose.connection.readyState === 1 ? 'up' : 'down';
   const prometheus = (await isPrometheusUp()) ? 'up' : 'down';
+  const dbDiagnostics = typeof connectDB.getDbDiagnostics === 'function' ? connectDB.getDbDiagnostics() : null;
   res.status(database === 'up' ? 200 : 503).json({
     status: database === 'up' ? 'healthy' : 'degraded',
     service: 'Server Management Platform Control Plane',
-    version: '1.1.0',
+    version: '1.1.2',
     dependencies: { database, prometheus },
+    dbDiagnostics,
     timestamp: new Date().toISOString(),
   });
 });
