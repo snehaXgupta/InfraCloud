@@ -127,14 +127,14 @@ export const DashboardPage = () => {
   }
 
   return (
-    <div className="space-y-7 max-w-7xl mx-auto pb-12">
-      {/* Welcome Banner matching Screenshot 2 */}
+    <div className="space-y-6 max-w-7xl mx-auto pb-12">
+      {/* Welcome Banner matching Vercel */}
       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white font-sans">
+          <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white font-sans">
             Welcome back, {userDisplayName}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-2 max-w-3xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#888888] mt-1.5 max-w-3xl leading-relaxed">
             Manage users, spaces, and browse read-only DigitalOcean Spaces content across your entire organisation.
           </p>
         </div>
@@ -143,38 +143,38 @@ export const DashboardPage = () => {
           <button
             onClick={() => fetchDashboardData(true)}
             disabled={isRefreshing}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-[#131620] border border-[#262c3e] hover:bg-[#191d2a] text-xs font-medium text-slate-200 transition-colors"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#222222] hover:bg-slate-200 dark:hover:bg-[#141414] hover:border-slate-300 dark:hover:border-[#333333] text-xs font-medium text-slate-700 dark:text-[#ededed] transition-colors cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 text-slate-300 ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 text-slate-500 dark:text-[#888] ${isRefreshing ? 'animate-spin' : ''}`} />
             <span>Sync</span>
           </button>
 
           <button
             onClick={() => setIsAddServerOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-[#0069ff] hover:bg-[#0055d4] text-xs font-semibold text-white shadow-sm transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-[#eaeaea] text-xs font-medium shadow-sm transition-colors cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-3.5 h-3.5" />
             <span>Add Droplet</span>
           </button>
         </div>
       </div>
 
-      {/* Top 4 KPI Metrics Cards matching Screenshot 2 */}
+      {/* Top 4 KPI Metrics Cards matching Vercel */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Users */}
         <div
           onClick={() => navigate('/users')}
-          className="p-5 rounded-xl bg-[#10131b] border border-[#212636] hover:border-slate-500 transition-colors cursor-pointer flex flex-col justify-between"
+          className="p-5 rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] hover:border-slate-300 dark:hover:border-[#333333] transition-colors cursor-pointer flex flex-col justify-between shadow-sm"
         >
-          <div className="flex items-center justify-between text-slate-300 text-xs font-medium">
+          <div className="flex items-center justify-between text-slate-500 dark:text-[#888888] text-xs font-medium">
             <span>Users</span>
-            <Users className="w-4 h-4 text-slate-500" />
+            <Users className="w-4 h-4 text-slate-400 dark:text-[#666]" />
           </div>
-          <div className="mt-4">
-            <div className="text-3xl font-extrabold text-white font-mono">
+          <div className="mt-3">
+            <div className="text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">
               {counts.users || 8}
             </div>
-            <div className="text-xs text-slate-400 mt-1 font-mono">
+            <div className="text-xs text-slate-500 dark:text-[#666666] mt-1 font-mono">
               {counts.activeUsers || counts.users || 8} active
             </div>
           </div>
@@ -183,33 +183,33 @@ export const DashboardPage = () => {
         {/* Card 2: Spaces / Servers / Droplets */}
         <div
           onClick={() => navigate('/servers')}
-          className="p-5 rounded-xl bg-[#10131b] border border-[#212636] hover:border-slate-500 transition-colors cursor-pointer flex flex-col justify-between"
+          className="p-5 rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] hover:border-slate-300 dark:hover:border-[#333333] transition-colors cursor-pointer flex flex-col justify-between shadow-sm"
         >
-          <div className="flex items-center justify-between text-slate-300 text-xs font-medium">
+          <div className="flex items-center justify-between text-slate-500 dark:text-[#888888] text-xs font-medium">
             <span>Spaces</span>
-            <Server className="w-4 h-4 text-blue-400" />
+            <Server className="w-4 h-4 text-slate-400 dark:text-[#666]" />
           </div>
-          <div className="mt-4">
-            <div className="text-3xl font-extrabold text-white font-mono">
+          <div className="mt-3">
+            <div className="text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">
               {servers.length}
             </div>
-            <div className="text-xs text-slate-400 mt-1 font-mono">
+            <div className="text-xs text-slate-500 dark:text-[#666666] mt-1 font-mono">
               {servers.filter((s) => s.status === 'healthy' || s.status === 'active').length} active
             </div>
           </div>
         </div>
 
         {/* Card 3: Storage Used */}
-        <div className="p-5 rounded-xl bg-[#10131b] border border-[#212636] hover:border-slate-500 transition-colors flex flex-col justify-between">
-          <div className="flex items-center justify-between text-slate-300 text-xs font-medium">
+        <div className="p-5 rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] hover:border-slate-300 dark:hover:border-[#333333] transition-colors flex flex-col justify-between shadow-sm">
+          <div className="flex items-center justify-between text-slate-500 dark:text-[#888888] text-xs font-medium">
             <span>Storage Used</span>
-            <HardDrive className="w-4 h-4 text-slate-500" />
+            <HardDrive className="w-4 h-4 text-slate-400 dark:text-[#666]" />
           </div>
-          <div className="mt-4">
-            <div className="text-3xl font-extrabold text-white font-mono">
+          <div className="mt-3">
+            <div className="text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">
               {formattedStorage}
             </div>
-            <div className="text-xs text-slate-400 mt-1 font-mono">
+            <div className="text-xs text-slate-500 dark:text-[#666666] mt-1 font-mono">
               {counts.totalStorageUsedGb ? `${servers.length} volumes` : '0 folders'}
             </div>
           </div>
@@ -218,17 +218,17 @@ export const DashboardPage = () => {
         {/* Card 4: Audit events */}
         <div
           onClick={() => navigate('/audit-logs')}
-          className="p-5 rounded-xl bg-[#10131b] border border-[#212636] hover:border-slate-500 transition-colors cursor-pointer flex flex-col justify-between"
+          className="p-5 rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] hover:border-slate-300 dark:hover:border-[#333333] transition-colors cursor-pointer flex flex-col justify-between shadow-sm"
         >
-          <div className="flex items-center justify-between text-slate-300 text-xs font-medium">
+          <div className="flex items-center justify-between text-slate-500 dark:text-[#888888] text-xs font-medium">
             <span>Audit Events</span>
-            <Copy className="w-4 h-4 text-slate-500" />
+            <Copy className="w-4 h-4 text-slate-400 dark:text-[#666]" />
           </div>
-          <div className="mt-4">
-            <div className="text-3xl font-extrabold text-white font-mono">
+          <div className="mt-3">
+            <div className="text-3xl font-semibold text-slate-900 dark:text-white tracking-tight">
               {counts.totalAuditLogs ?? 0}
             </div>
-            <div className="text-xs text-slate-400 mt-1 font-mono">
+            <div className="text-xs text-slate-500 dark:text-[#666666] mt-1 font-mono">
               {activities.length} recent shown
             </div>
           </div>
@@ -238,13 +238,13 @@ export const DashboardPage = () => {
       {/* Main Two-Column Content: Spaces/Servers Overview (Left) + Activity Stream (Right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left Section (8 cols on large screens): Spaces / Servers */}
-        <div className="lg:col-span-8 rounded-xl bg-[#10131b] border border-[#212636] p-6 flex flex-col justify-between">
+        <div className="lg:col-span-8 rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] p-6 flex flex-col justify-between shadow-sm">
           <div>
-            <div className="flex items-center justify-between pb-4 border-b border-[#1c202c]">
-              <h2 className="text-base font-bold text-white">Spaces</h2>
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-[#1f1f1f]">
+              <h2 className="text-base font-semibold text-slate-900 dark:text-white">Spaces</h2>
               <Link
                 to="/servers"
-                className="text-xs text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1 transition-colors"
+                className="text-xs text-slate-500 dark:text-[#888888] hover:text-slate-900 dark:hover:text-white font-medium flex items-center gap-1 transition-colors"
               >
                 Manage <ArrowRight className="w-3.5 h-3.5" />
               </Link>
@@ -253,11 +253,11 @@ export const DashboardPage = () => {
             {/* Droplets list / Empty State */}
             {servers.length === 0 ? (
               <div className="py-20 flex flex-col items-center justify-center text-center">
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-[#888]">
                   No Spaces configured yet.{' '}
                   <button
                     onClick={() => setIsAddServerOpen(true)}
-                    className="text-blue-400 hover:text-blue-300 font-medium inline-flex items-center gap-1 ml-1 cursor-pointer"
+                    className="text-slate-900 dark:text-white hover:underline font-medium inline-flex items-center gap-1 ml-1 cursor-pointer"
                   >
                     Add your first Space &rarr;
                   </button>
@@ -280,10 +280,10 @@ export const DashboardPage = () => {
           </div>
 
           {servers.length > 4 && (
-            <div className="pt-4 mt-4 border-t border-[#1c202c] flex justify-end">
+            <div className="pt-4 mt-4 border-t border-slate-100 dark:border-[#1f1f1f] flex justify-end">
               <Link
                 to="/servers"
-                className="text-xs text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1"
+                className="text-xs text-slate-500 dark:text-[#888888] hover:text-slate-900 dark:hover:text-white font-medium flex items-center gap-1 transition-colors"
               >
                 View all {servers.length} droplets &rarr;
               </Link>
@@ -291,24 +291,26 @@ export const DashboardPage = () => {
           )}
         </div>
 
-        {/* Right Section (4 cols on large screens): Activity Feed matching Screenshot 2 */}
-        <div className="lg:col-span-4 rounded-xl bg-[#10131b] border border-[#212636] p-6 flex flex-col">
-          <div className="flex items-center gap-2 pb-4 border-b border-[#1c202c]">
-            <Activity className="w-4 h-4 text-slate-300" />
-            <h2 className="text-base font-bold text-white">Activity</h2>
+        {/* Right Section (4 cols on large screens): Activity Feed matching Vercel */}
+        <div className="lg:col-span-4 rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] p-6 flex flex-col shadow-sm">
+          <div className="flex items-center gap-2 pb-4 border-b border-slate-100 dark:border-[#1f1f1f]">
+            <Activity className="w-4 h-4 text-slate-500 dark:text-[#888]" />
+            <h2 className="text-base font-semibold text-slate-900 dark:text-white">Activity</h2>
           </div>
 
-          <div className="mt-5 space-y-6 flex-1 overflow-y-auto max-h-[480px] pr-1">
+          <div className="mt-5 space-y-4 flex-1 overflow-y-auto max-h-[480px] pr-1">
             {activities.map((item) => (
-              <div key={item._id} className="space-y-1 text-xs">
-                <div className="text-blue-400 font-medium font-mono lowercase">
-                  {item.category || 'login'}
+              <div key={item._id} className="p-3 rounded-lg bg-slate-50 dark:bg-[#050505] border border-slate-100 dark:border-[#1a1a1a] space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono uppercase px-1.5 py-0.5 rounded border border-slate-200 dark:border-[#222] bg-slate-100 dark:bg-[#111] text-slate-600 dark:text-[#888]">
+                    {item.category || 'auth'}
+                  </span>
+                  <span className="text-[10px] text-slate-400 dark:text-[#666] font-mono">
+                    {formatActivityTime(item.timestamp)}
+                  </span>
                 </div>
-                <div className="text-slate-200 font-sans leading-snug">
-                  {item.title || `User ${user?.email || 'puneet@simpel.ai'} logged in`}
-                </div>
-                <div className="text-[11px] text-slate-500 font-mono">
-                  {formatActivityTime(item.timestamp)}
+                <div className="text-xs text-slate-700 dark:text-[#ededed] font-sans pt-1">
+                  {item.title || `User ${user?.email || 'admin@simpel.ai'} authenticated`}
                 </div>
               </div>
             ))}

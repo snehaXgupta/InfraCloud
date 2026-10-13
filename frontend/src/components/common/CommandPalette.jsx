@@ -166,13 +166,13 @@ export const CommandPalette = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/75 backdrop-blur-md animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-16 sm:pt-24 px-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
       <div
-        className="w-full max-w-2xl rounded-2xl bg-[#0c1018] border border-[#1e2538] shadow-2xl shadow-black/80 overflow-hidden text-slate-100 flex flex-col max-h-[80vh] transition-all"
+        className="w-full max-w-2xl rounded-xl bg-[#0a0a0a] border border-[#222222] shadow-2xl shadow-black/90 overflow-hidden text-slate-100 flex flex-col max-h-[80vh] transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Input Bar */}
-        <div className="relative flex items-center px-4 py-3.5 border-b border-[#1c2234] bg-[#0e131d]">
+        <div className="relative flex items-center px-4 py-3.5 border-b border-[#1f1f1f] bg-black">
           <Search className="w-5 h-5 text-slate-400 mr-3 shrink-0" />
           <input
             ref={inputRef}
@@ -183,9 +183,9 @@ export const CommandPalette = ({ isOpen, onClose }) => {
               setSelectedIndex(0);
             }}
             placeholder="Search droplets, spaces, telemetry, or dispatch actions..."
-            className="w-full bg-transparent border-0 text-sm font-sans placeholder-slate-500 text-white focus:outline-none"
+            className="w-full bg-transparent border-0 text-sm font-sans placeholder-[#666] text-white focus:outline-none"
           />
-          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-mono text-slate-400 bg-[#161c2b] border border-[#232c44] rounded">
+          <kbd className="hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 text-[10px] font-mono text-slate-400 bg-[#141414] border border-[#262626] rounded">
             ESC
           </kbd>
         </div>
@@ -193,7 +193,7 @@ export const CommandPalette = ({ isOpen, onClose }) => {
         {/* Results List */}
         <div className="flex-1 overflow-y-auto p-2 space-y-1">
           {filteredItems.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 text-xs">
+            <div className="py-12 text-center text-slate-500 text-xs font-mono">
               <Search className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p>No matching droplets, spaces, or actions found for "{query}"</p>
             </div>
@@ -210,16 +210,16 @@ export const CommandPalette = ({ isOpen, onClose }) => {
                     onClose();
                   }}
                   onMouseEnter={() => setSelectedIndex(index)}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl cursor-pointer transition-colors ${
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors ${
                     isSelected
-                      ? 'bg-blue-600/15 border border-blue-500/30 text-white'
-                      : 'hover:bg-[#131826] border border-transparent text-slate-300'
+                      ? 'bg-white/[0.08] border border-white/10 text-white'
+                      : 'hover:bg-white/[0.03] border border-transparent text-[#aaa]'
                   }`}
                 >
                   <div className="flex items-center gap-3 min-w-0">
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                        isSelected ? 'bg-blue-600 text-white' : 'bg-[#151b2a] text-slate-400'
+                      className={`w-8 h-8 rounded-md flex items-center justify-center shrink-0 border ${
+                        isSelected ? 'bg-white text-black border-white' : 'bg-[#141414] text-slate-400 border-[#222]'
                       }`}
                     >
                       <Icon className="w-4 h-4" />

@@ -98,11 +98,11 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
         onClick={onClose}
       />
       <div
-        className="relative w-full max-w-xl h-full bg-[#0c1018] border-l border-[#1e2538] shadow-2xl flex flex-col z-10 overflow-hidden text-slate-100"
+        className="relative w-full max-w-xl h-full bg-[#0a0a0a] border-l border-[#1f1f1f] shadow-2xl flex flex-col z-10 overflow-hidden text-slate-100"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Bar */}
-        <div className="px-6 py-4 border-b border-[#1c2234] bg-[#0e131d] flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-[#1f1f1f] bg-black flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span
               className={`px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider ${
@@ -259,13 +259,13 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
         </div>
 
         {/* Footer Remediation Runbook Buttons */}
-        <div className="p-4 border-t border-[#1c2234] bg-[#0a0d14] flex flex-wrap items-center justify-between gap-2">
+        <div className="p-4 border-t border-[#1f1f1f] bg-black flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             {alert.serverId?._id && (
               <button
                 onClick={handleDispatchProbe}
                 disabled={isDispatchingCheck}
-                className="px-3 py-1.5 rounded-lg bg-[#141b2c] border border-[#232f4c] hover:bg-[#1a233a] text-xs font-semibold text-blue-400 transition-colors flex items-center gap-1.5 cursor-pointer"
+                className="px-3 py-1.5 rounded-md bg-[#141414] border border-[#222] hover:bg-[#1f1f1f] text-xs font-medium text-[#ccc] transition-colors flex items-center gap-1.5 cursor-pointer"
               >
                 <Activity className="w-3.5 h-3.5 text-blue-400" />
                 <span>{isDispatchingCheck ? 'Probing...' : 'Dispatch Health Probe'}</span>
@@ -277,7 +277,7 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
             {alert.status === 'active' && (
               <button
                 onClick={() => onAcknowledge(alert._id)}
-                className="px-3 py-1.5 rounded-lg bg-[#192238] border border-blue-500/40 hover:bg-[#202c48] text-xs font-semibold text-blue-300 transition-colors cursor-pointer"
+                className="px-3 py-1.5 rounded-md bg-white/[0.08] border border-white/10 hover:bg-white/[0.15] text-xs font-medium text-white transition-colors cursor-pointer"
               >
                 Acknowledge
               </button>
@@ -286,7 +286,7 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
             {alert.status !== 'resolved' ? (
               <button
                 onClick={() => onResolve(alert._id)}
-                className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-xs font-semibold text-white transition-colors cursor-pointer flex items-center gap-1"
+                className="px-3.5 py-1.5 rounded-md bg-white text-black hover:bg-[#eaeaea] text-xs font-medium transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />
                 <span>Mark as Resolved</span>

@@ -53,122 +53,153 @@ export const DropletCard = ({
     ? new Intl.NumberFormat([], { style: 'currency', currency: cost.currency || 'USD' }).format(cost.monthlyRate)
     : '—';
 
-  const STATUS_STYLES = {
-    healthy: 'bg-[#0e291e] text-[#22c55e] border-[#166534]',
-    warning: 'bg-amber-950/60 text-amber-400 border-amber-600/40',
-    critical: 'bg-rose-950/60 text-rose-400 border-rose-600/40',
-    offline: 'bg-slate-900 text-slate-400 border-slate-600',
-    maintenance: 'bg-blue-950/60 text-blue-400 border-blue-600/40',
+  const getStatusBadge = (st) => {
+    switch (st) {
+      case 'healthy':
+      case 'active':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
+            Ready
+          </span>
+        );
+      case 'warning':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono border border-amber-500/20 bg-amber-500/10 text-amber-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)]" />
+            Warning
+          </span>
+        );
+      case 'critical':
+      case 'offline':
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono border border-rose-500/20 bg-rose-500/10 text-rose-400">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse shadow-[0_0_6px_rgba(244,63,94,0.8)]" />
+            Error
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono border border-[#333] bg-[#111] text-[#888]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#666]" />
+            {st}
+          </span>
+        );
+    }
   };
+
   const status = server.status || 'healthy';
 
   return (
     <div
       onClick={() => (onOpen ? onOpen(server) : navigate(`/servers/${server._id}`))}
-      className="group rounded-xl bg-[#10131b] border border-[#212636] hover:border-slate-500 p-5 flex flex-col justify-between transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md"
+      className="group rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] hover:border-slate-400 dark:hover:border-[#333] p-5 flex flex-col justify-between transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md"
     >
       <div>
         {/* Top Header: Name, ID and Status Badge */}
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-base font-bold text-white group-hover:text-blue-400 transition-colors">
-              {server.name}
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white group-hover:text-blue-500 dark:group-hover:text-white transition-colors flex items-center gap-2">
+              <span>{server.name}</span>
+              <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400" />
             </h3>
-            <p className="text-xs font-mono text-slate-500 mt-0.5">
+            <p className="text-xs font-mono text-slate-500 dark:text-[#666] mt-0.5">
               ID {displayId}
             </p>
           </div>
 
-          <div>
-            <span
-              className={`inline-block px-2.5 py-0.5 rounded text-[11px] font-mono font-semibold border ${STATUS_STYLES[status] || STATUS_STYLES.healthy}`}
-            >
-              {status}
-            </span>
-          </div>
+          <div>{getStatusBadge(status)}</div>
         </div>
 
         {/* Specs List Details */}
-        <div className="mt-4 space-y-2 text-xs font-mono text-slate-400">
+        <div className="mt-4 space-y-2 text-xs font-mono text-slate-500 dark:text-[#888]">
           {/* Location & IP */}
           <div className="flex items-center gap-2">
-            <ServerIcon className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="text-slate-300">{region}</span>
-            <span className="text-slate-200 font-semibold">{ip}</span>
+            <ServerIcon className="w-3.5 h-3.5 text-slate-400 dark:text-[#666] shrink-0" />
+            <span className="text-slate-600 dark:text-[#888]">{region}</span>
+            <span className="text-slate-800 dark:text-[#ccc] font-semibold">{ip}</span>
           </div>
 
           {/* Compute / Specs */}
           <div className="flex items-center gap-2">
-            <Cpu className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            <span className="text-slate-300">
+            <Cpu className="w-3.5 h-3.5 text-slate-400 dark:text-[#666] shrink-0" />
+            <span className="text-slate-600 dark:text-[#888]">
               {server.instanceType || 'Custom'} · {vcpu} vCPUs · {ramGb} GB RAM · {diskGb} GB Disk
             </span>
           </div>
 
           {/* Pricing */}
-          <div className="flex items-center gap-1.5 text-slate-200 font-semibold">
+          <div className="flex items-center gap-1.5 text-slate-800 dark:text-[#ededed] font-semibold">
             <span>{price}/mo</span>
             {cost && cost.source !== 'plan-catalog' && cost.source !== 'manual-rate' && (
-              <span className="text-[10px] font-normal text-slate-500">({cost.source === 'size-match' ? 'estimate' : 'unpriced'})</span>
+              <span className="text-[10px] font-normal text-slate-400 dark:text-[#666]">({cost.source === 'size-match' ? 'estimate' : 'unpriced'})</span>
             )}
           </div>
         </div>
       </div>
 
       {/* Actions & Footer Section */}
-      <div className="mt-5">
-        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-          {/* Primary Open Button */}
-          <button
-            onClick={() => (onOpen ? onOpen(server) : navigate(`/servers/${server._id}`))}
-            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-md bg-[#0069ff] hover:bg-[#0055d4] text-white text-xs font-medium transition-colors cursor-pointer"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            <span>Open</span>
-          </button>
+      <div className="mt-5 pt-3 border-t border-slate-100 dark:border-[#191919]">
+        <div className="flex items-center justify-between gap-2" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center gap-1.5">
+            {/* Vercel White CTA Open Button */}
+            <button
+              onClick={() => (onOpen ? onOpen(server) : navigate(`/servers/${server._id}`))}
+              className="inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-md bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-[#eaeaea] text-xs font-medium transition-colors cursor-pointer shadow-sm"
+            >
+              <span>Open</span>
+              <ExternalLink className="w-3 h-3" />
+            </button>
 
-          {/* Restart / Telemetry Sync */}
-          <button
-            onClick={() => onRestart && onRestart(server)}
-            title="Restart / Run Operation"
-            disabled={isOperating}
-            className="p-1.5 rounded-md bg-[#131620] border border-[#262c3e] hover:bg-[#191d2a] text-slate-300 hover:text-white transition-colors cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isOperating ? 'animate-spin text-blue-400' : ''}`} />
-          </button>
+            {/* Restart / Telemetry Sync */}
+            <button
+              onClick={() => onRestart && onRestart(server)}
+              title="Restart / Run Operation"
+              disabled={isOperating}
+              className="p-1.5 rounded-md bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#222] hover:bg-slate-200 dark:hover:bg-[#141414] hover:border-slate-300 dark:hover:border-[#444] text-slate-600 dark:text-[#888] hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isOperating ? 'animate-spin text-blue-400' : ''}`} />
+            </button>
 
-          {/* Resize & Capacity */}
-          <button
-            onClick={() => onResize && onResize(server)}
-            title="Resize & Capacity Management"
-            className="p-1.5 rounded-md bg-[#131620] border border-[#262c3e] hover:bg-[#191d2a] text-blue-400 hover:text-blue-300 transition-colors cursor-pointer"
-          >
-            <Sliders className="w-3.5 h-3.5" />
-          </button>
+            {/* Resize & Capacity */}
+            {onResize && (
+              <button
+                onClick={() => onResize(server)}
+                title="Resize & Capacity Management"
+                className="p-1.5 rounded-md bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#222] hover:bg-slate-200 dark:hover:bg-[#141414] hover:border-slate-300 dark:hover:border-[#444] text-slate-600 dark:text-[#888] hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <Sliders className="w-3.5 h-3.5" />
+              </button>
+            )}
 
-          {/* Edit Server */}
-          <button
-            onClick={() => onEdit && onEdit(server)}
-            title="Edit Server Configuration"
-            className="p-1.5 rounded-md bg-[#131620] border border-[#262c3e] hover:bg-[#191d2a] text-slate-300 hover:text-white transition-colors cursor-pointer"
-          >
-            <Edit2 className="w-3.5 h-3.5" />
-          </button>
+            {/* Edit Server Info */}
+            {onEdit && (
+              <button
+                onClick={() => onEdit(server)}
+                title="Edit Settings"
+                className="p-1.5 rounded-md bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#222] hover:bg-slate-200 dark:hover:bg-[#141414] hover:border-slate-300 dark:hover:border-[#444] text-slate-600 dark:text-[#888] hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <Edit2 className="w-3.5 h-3.5" />
+              </button>
+            )}
 
-          {/* Delete Server */}
-          <button
-            onClick={() => onDelete && onDelete(server)}
-            title="Delete Droplet"
-            className="p-1.5 rounded-md bg-[#131620] border border-[#262c3e] hover:bg-rose-950/40 hover:border-rose-700 text-slate-300 hover:text-rose-400 transition-colors cursor-pointer"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
+            {/* Delete Server */}
+            {onDelete && (
+              <button
+                onClick={() => onDelete(server)}
+                title="Delete Droplet"
+                className="p-1.5 rounded-md bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#222] hover:bg-rose-50 dark:hover:bg-[#200808] hover:border-rose-300 dark:hover:border-rose-900/60 text-slate-400 dark:text-[#666] hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Updated Timestamp */}
+          <p className="text-[10px] font-mono text-slate-400 dark:text-[#666]">
+            {formatUpdatedTime(server.updatedAt || server.createdAt)}
+          </p>
         </div>
-
-        {/* Updated Timestamp */}
-        <p className="text-[11px] font-mono text-slate-500 mt-3.5">
-          {formatUpdatedTime(server.updatedAt || server.createdAt)}
-        </p>
       </div>
     </div>
   );

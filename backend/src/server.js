@@ -100,8 +100,19 @@ app.use((req, res, next) => {
 // Serve the built React app (single-origin deployment). SPA routes fall back to index.html.
 const STATIC_DIR = process.env.STATIC_DIR || path.resolve(__dirname, '../../frontend/dist');
 if (fs.existsSync(path.join(STATIC_DIR, 'index.html'))) {
-  app.use(express.static(STATIC_DIR, { index: false, maxAge: '1h' }));
-  app.get(/^\/(?!api|ingest|ws).*/, (req, res) => res.sendFile(path.join(STATIC_DIR, 'index.html')));
+  app.use(
+    express.static(STATIC_DIR, {
+      index: false,
+      maxAge: '1y',
+      immutable: true,
+    })
+  );
+  app.get(/^\/(?!api|ingest|ws).*/, (req, res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.sendFile(path.join(STATIC_DIR, 'index.html'));
+  });
   console.log(`[Server] Serving frontend from ${STATIC_DIR}`);
 }
 

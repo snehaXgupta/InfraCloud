@@ -97,22 +97,23 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#080c14] flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden selection:bg-blue-600/30 selection:text-blue-200">
-      {/* Background ambient lighting */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[300px] bg-blue-600/10 blur-[130px] rounded-full pointer-events-none" />
-
-      {/* Brand Header */}
+    <div className="min-h-screen bg-white dark:bg-black flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden transition-colors">
+      {/* Brand Header with Vercel Mark */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center z-10">
-        <Link to="/" className="inline-flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 font-mono font-bold shadow-lg shadow-blue-600/20">
-            <Server className="w-5 h-5 text-blue-400" />
+        <Link to="/" className="inline-flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-black border border-slate-300 dark:border-[#2e2e2e] flex items-center justify-center text-white shadow-sm">
+            <svg viewBox="0 0 76 65" fill="currentColor" className="w-5 h-5 text-white">
+              <path d="M37.5274 0L75.0548 65H0L37.5274 0Z" />
+            </svg>
           </div>
-          <span className="text-xl font-bold tracking-tight text-white">InfraControl</span>
+          <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white font-sans">
+            SPACES PANEL
+          </span>
         </Link>
-        <h2 className="mt-4 text-2xl font-bold text-white tracking-tight">
+        <h2 className="mt-4 text-2xl font-semibold text-slate-900 dark:text-white tracking-tight">
           {isRegisterMode ? 'Create Platform Account' : 'Sign in to Control Plane'}
         </h2>
-        <p className="mt-1 text-xs text-slate-400">
+        <p className="mt-1 text-xs text-slate-500 dark:text-[#888888]">
           {isRegisterMode
             ? 'Set up credentials for scoped infrastructure access'
             : 'Enter your credentials to access managed server fleets'}
@@ -121,16 +122,16 @@ export const LoginPage = () => {
 
       {/* Main Login Card */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md z-10 px-4 sm:px-0">
-        <div className="bg-[#0d131f] border border-slate-800 py-8 px-6 sm:px-8 shadow-2xl rounded-2xl relative">
+        <div className="bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] py-8 px-6 sm:px-8 shadow-2xl rounded-xl relative">
           {dbStatus && !dbStatus.up && (
-            <div className="mb-5 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+            <div className="mb-5 p-3 rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-500" />
               <span>{dbStatus.message}</span>
             </div>
           )}
 
           {errorMsg && (
-            <div className="mb-5 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+            <div className="mb-5 p-3 rounded-md bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-300 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
             </div>
@@ -139,58 +140,58 @@ export const LoginPage = () => {
           <form className="space-y-4" onSubmit={handleSubmit}>
             {isRegisterMode && (
               <div>
-                <label className="block text-xs font-semibold uppercase font-mono tracking-wider text-slate-400 mb-1">
+                <label className="block text-[11px] font-medium uppercase font-mono tracking-wider text-slate-500 dark:text-[#888888] mb-1">
                   Full Name
                 </label>
                 <div className="relative">
-                  <User className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                  <User className="w-4 h-4 text-slate-400 dark:text-[#666] absolute left-3 top-1/2 -translate-y-1/2" />
                   <input
                     type="text"
                     required
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Sarah Connor"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-md pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#555] focus:outline-none focus:border-slate-500 dark:focus:border-white transition-colors"
                   />
                 </div>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-semibold uppercase font-mono tracking-wider text-slate-400 mb-1">
+              <label className="block text-[11px] font-medium uppercase font-mono tracking-wider text-slate-500 dark:text-[#888888] mb-1">
                 Email Address
               </label>
               <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Mail className="w-4 h-4 text-slate-400 dark:text-[#666] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@company.com"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-md pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#555] focus:outline-none focus:border-slate-500 dark:focus:border-white transition-colors"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold uppercase font-mono tracking-wider text-slate-400 mb-1">
+              <label className="block text-[11px] font-medium uppercase font-mono tracking-wider text-slate-500 dark:text-[#888888] mb-1">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Lock className="w-4 h-4 text-slate-400 dark:text-[#666] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-10 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-md pl-9 pr-10 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#555] focus:outline-none focus:border-slate-500 dark:focus:border-white transition-colors"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-[#666] dark:hover:text-[#aaa]"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -199,13 +200,13 @@ export const LoginPage = () => {
 
             {isRegisterMode && (
               <div>
-                <label className="block text-xs font-semibold uppercase font-mono tracking-wider text-slate-400 mb-1">
+                <label className="block text-[11px] font-medium uppercase font-mono tracking-wider text-slate-500 dark:text-[#888888] mb-1">
                   Initial Role
                 </label>
                 <select
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2.5 text-xs text-slate-100 focus:outline-none focus:border-blue-500"
+                  className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-md px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-500 dark:focus:border-white"
                 >
                   <option value="Platform Admin">Platform Admin</option>
                   <option value="DevOps / Infrastructure">DevOps / Infrastructure</option>
@@ -217,89 +218,95 @@ export const LoginPage = () => {
               </div>
             )}
 
-            <Button
+            <button
               type="submit"
-              className="w-full py-2.5 mt-2"
-              isLoading={isLoading}
-              rightIcon={<ArrowRight className="w-4 h-4" />}
+              disabled={isLoading}
+              className="w-full py-2.5 mt-2 rounded-md bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-[#eaeaea] font-medium text-xs transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm"
             >
-              {isRegisterMode ? 'Register Account' : 'Authenticate & Enter'}
-            </Button>
+              {isLoading ? (
+                <span className="animate-spin">⏳</span>
+              ) : (
+                <>
+                  <span>{isRegisterMode ? 'Register Account' : 'Authenticate & Enter'}</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
           </form>
 
-          {/* Toggle Register/Login — self sign-up is off on real deployments (only admins create users) */}
+          {/* Toggle Register/Login */}
           {import.meta.env.DEV && (
-          <div className="mt-5 text-center text-xs text-slate-400">
-            {isRegisterMode ? (
-              <span>
-                Already have an account?{' '}
-                <button
-                  type="button"
-                  onClick={() => setIsRegisterMode(false)}
-                  className="text-blue-400 font-semibold hover:underline"
-                >
-                  Sign In
-                </button>
-              </span>
-            ) : (
-              <span>
-                Need an account?{' '}
-                <button
-                  type="button"
-                  onClick={() => setIsRegisterMode(true)}
-                  className="text-blue-400 font-semibold hover:underline"
-                >
-                  Create one
-                </button>
-              </span>
-            )}
-          </div>
+            <div className="mt-5 text-center text-xs text-slate-500 dark:text-[#888888]">
+              {isRegisterMode ? (
+                <span>
+                  Already have an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => setIsRegisterMode(false)}
+                    className="text-slate-900 dark:text-white font-medium hover:underline"
+                  >
+                    Sign In
+                  </button>
+                </span>
+              ) : (
+                <span>
+                  Need an account?{' '}
+                  <button
+                    type="button"
+                    onClick={() => setIsRegisterMode(true)}
+                    className="text-slate-900 dark:text-white font-medium hover:underline"
+                  >
+                    Create one
+                  </button>
+                </span>
+              )}
+            </div>
           )}
 
-          {/* Quick Demo Seed Logins — enabled in dev or when VITE_DEMO_MODE=true is set */}
+          {/* Quick Demo Seed Logins */}
           {(import.meta.env.DEV || import.meta.env.VITE_DEMO_MODE === 'true') && (
-          <div className="mt-6 pt-5 border-t border-slate-800/80">
-            <p className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2.5 text-center">
-              1-Click Demo Logins
-            </p>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => fillQuickLogin('admin@example.com', 'Admin@123')}
-                className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 text-left transition-colors"
-              >
-                <div className="text-[11px] font-semibold text-white truncate">Platform Admin</div>
-                <div className="text-[10px] text-slate-500 font-mono truncate">admin@example.com</div>
-              </button>
+            <div className="mt-6 pt-5 border-t border-slate-100 dark:border-[#1f1f1f]">
+              <p className="text-[10px] font-mono text-slate-400 dark:text-[#666] uppercase tracking-wider mb-2.5 text-center">
+                1-Click Demo Logins
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => fillQuickLogin('admin@example.com', 'Admin@123')}
+                  className="p-2 rounded-md bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-[#1a1a1a] hover:border-slate-300 dark:hover:border-[#333] text-left transition-colors cursor-pointer"
+                >
+                  <div className="text-[11px] font-medium text-slate-900 dark:text-white truncate">Platform Admin</div>
+                  <div className="text-[10px] text-slate-400 dark:text-[#666] font-mono truncate">admin@example.com</div>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => fillQuickLogin('devops@example.com', 'DevOps@123')}
-                className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 text-left transition-colors"
-              >
-                <div className="text-[11px] font-semibold text-white truncate">DevOps SRE Lead</div>
-                <div className="text-[10px] text-slate-500 font-mono truncate">devops@example.com</div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => fillQuickLogin('devops@example.com', 'DevOps@123')}
+                  className="p-2 rounded-md bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-[#1a1a1a] hover:border-slate-300 dark:hover:border-[#333] text-left transition-colors cursor-pointer"
+                >
+                  <div className="text-[11px] font-medium text-slate-900 dark:text-white truncate">DevOps SRE Lead</div>
+                  <div className="text-[10px] text-slate-400 dark:text-[#666] font-mono truncate">devops@example.com</div>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => fillQuickLogin('auditor@example.com', 'Auditor@123')}
-                className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 text-left transition-colors"
-              >
-                <div className="text-[11px] font-semibold text-white truncate">Auditor</div>
-                <div className="text-[10px] text-slate-500 font-mono truncate">auditor@example.com</div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => fillQuickLogin('auditor@example.com', 'Auditor@123')}
+                  className="p-2 rounded-md bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-[#1a1a1a] hover:border-slate-300 dark:hover:border-[#333] text-left transition-colors cursor-pointer"
+                >
+                  <div className="text-[11px] font-medium text-slate-900 dark:text-white truncate">Auditor</div>
+                  <div className="text-[10px] text-slate-400 dark:text-[#666] font-mono truncate">auditor@example.com</div>
+                </button>
 
-              <button
-                type="button"
-                onClick={() => fillQuickLogin('client.admin@example.com', 'Client@123')}
-                className="p-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-blue-500/50 hover:bg-slate-800 text-left transition-colors"
-              >
-                <div className="text-[11px] font-semibold text-white truncate">Client Admin</div>
-                <div className="text-[10px] text-slate-500 font-mono truncate">client.admin@...</div>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => fillQuickLogin('client.admin@example.com', 'Client@123')}
+                  className="p-2 rounded-md bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-[#1a1a1a] hover:border-slate-300 dark:hover:border-[#333] text-left transition-colors cursor-pointer"
+                >
+                  <div className="text-[11px] font-medium text-slate-900 dark:text-white truncate">Client Admin</div>
+                  <div className="text-[10px] text-slate-400 dark:text-[#666] font-mono truncate">client.admin@...</div>
+                </button>
+              </div>
             </div>
-          </div>
           )}
         </div>
       </div>

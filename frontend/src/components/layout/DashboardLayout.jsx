@@ -44,7 +44,7 @@ export const DashboardLayout = () => {
   }, []);
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] dark:bg-[#080a0f] text-slate-900 dark:text-slate-100 overflow-hidden transition-colors duration-200">
+    <div className="flex h-screen bg-[#f8fafc] dark:bg-black text-slate-900 dark:text-slate-100 overflow-hidden transition-colors duration-200">
       {/* Desktop Sticky Sidebar */}
       <div className="hidden lg:block h-full shrink-0">
         <Sidebar activeAlertsCount={activeAlerts.length} />
