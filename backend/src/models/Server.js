@@ -76,6 +76,8 @@ const serverSchema = new mongoose.Schema(
       lastHeartbeat: { type: Date, default: Date.now },
       status: { type: String, enum: ['online', 'stale', 'unreachable'], default: 'online' },
       isLiveAgent: { type: Boolean, default: false },
+      capabilities: [{ type: String }], // e.g. 'jobs', 'replication' — reported by the agent
+      bootTime: { type: Date }, // derived from reported uptime; proves a reboot happened
       port: { type: Number, default: 9100 },
     },
     metricsSummary: {
@@ -107,7 +109,10 @@ const serverSchema = new mongoose.Schema(
       type: { type: String },
       by: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
       at: { type: Date },
+      operationId: { type: mongoose.Schema.Types.ObjectId },
     },
+    // Services an operator may restart on this server (Service Restart operation, §8)
+    allowedServices: [{ type: String, trim: true }],
   },
   {
     timestamps: true,

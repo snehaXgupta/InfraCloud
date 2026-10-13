@@ -16,6 +16,7 @@ import {
   DollarSign,
   Sliders,
   Plug,
+  GitBranch,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -32,6 +33,7 @@ export const Sidebar = ({ activeAlertsCount = 0, isMobile = false, onCloseMobile
     { name: 'Projects', to: '/projects', icon: FolderGit2 },
     { name: 'Users', to: '/users', icon: Users, roles: [ADMIN] },
     { name: 'Operations', to: '/operations', icon: Workflow, roles: [ADMIN, DEVOPS, 'Project Admin', 'Client Admin', 'Auditor'] },
+    { name: 'Replication', to: '/replication', icon: GitBranch },
     { name: 'Resize Requests', to: '/resize-requests', icon: Sliders },
     { name: 'Costs', to: '/costs', icon: DollarSign },
     { name: 'Integrations', to: '/integrations', icon: Plug, roles: [ADMIN, DEVOPS] },

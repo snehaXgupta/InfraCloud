@@ -61,7 +61,10 @@ const wsCloseCode = (url) =>
   const acme = clients.find((c) => /Acme/.test(c.name));
   const clientOf = (s) => (s.clientId?._id || s.clientId).toString();
   const acmeServer = all.find((s) => clientOf(s) === acme._id.toString());
-  const nexusServer = all.find((s) => clientOf(s) === nexus._id.toString());
+  // Prefer a simulated server whose agent can run jobs (keeps the real WSL host untouched)
+  const nexusServers = all.filter((s) => clientOf(s) === nexus._id.toString());
+  const nexusServer =
+    nexusServers.find((s) => (s.agent?.capabilities || []).includes('jobs') && /simulator/.test(s.agent?.version || '')) || nexusServers[0];
 
   console.log('— Registration');
   const reg = await call(null, 'POST', '/api/auth/register', { name: 'x', email: `x${Date.now()}@e.com`, password: 'Password123!', role: 'Platform Admin' });
@@ -96,25 +99,43 @@ const wsCloseCode = (url) =>
   check('viewer cannot issue agent tokens', (await call(t.viewer, 'POST', `/api/servers/${nexusServer._id}/agent-token`)).status === 403);
   check('viewer cannot request a resize', (await call(t.viewer, 'POST', `/api/servers/${nexusServer._id}/resize-requests`, { targetPlan: 'x', reason: 'test' })).status === 403);
   check('viewer cannot create alerts', (await call(t.viewer, 'POST', '/api/alerts/simulate', {})).status === 403);
-  check('devops can run a health check', [200, 201].includes((await call(t.devops, 'POST', '/api/operations', { serverId: nexusServer._id, operationType: 'Health Check' })).status));
+  const hcRes = await call(t.devops, 'POST', '/api/operations', { serverId: nexusServer._id, operationType: 'Health Check' });
+  const hasCapableAgent = (nexusServer.agent?.capabilities || []).includes('jobs') && Date.now() - new Date(nexusServer.agent?.lastHeartbeat || 0) < 60000;
+  if (hasCapableAgent) {
+    check('devops can run a health check', [200, 201].includes(hcRes.status), `HTTP ${hcRes.status}`);
+  } else {
+    check('devops is authorized to run operations (not 403 forbidden)', hcRes.status === 409 || [200, 201].includes(hcRes.status), `HTTP ${hcRes.status}`);
+  }
+
 
   console.log('— Operation safety');
-  const parallel = await Promise.all(
-    Array.from({ length: 5 }, () => call(t.devops, 'POST', '/api/operations', { serverId: nexusServer._id, operationType: 'Sync' }))
-  );
-  // Simulated operations finish in milliseconds, so a later request may legitimately take the
-  // released lock. The guarantee is that no two runs on one server ever overlap in time.
-  const runs = parallel
-    .filter((r) => r.status === 201)
-    .map((r) => [new Date(r.data.data.createdAt).getTime(), new Date(r.data.data.completedAt || r.data.data.updatedAt).getTime()])
-    .sort((x, y) => x[0] - y[0]);
-  const overlapping = runs.some((run, i) => i > 0 && run[0] < runs[i - 1][1]);
-  const blocked = parallel.filter((r) => r.status === 409).length;
-  check(
-    'concurrent operations on one server never overlap',
-    runs.length >= 1 && blocked >= 1 && runs.length + blocked === 5 && !overlapping,
-    `${runs.length} ran one after another, ${blocked} blocked`
-  );
+  // Operations are queued and handed to the agent one at a time (per-server lock, §20)
+  if ((nexusServer.agent?.capabilities || []).includes('jobs')) {
+    const parallel = await Promise.all(
+      Array.from({ length: 3 }, () => call(t.devops, 'POST', '/api/operations', { serverId: nexusServer._id, operationType: 'Health Check' }))
+    );
+    const ids = parallel.filter((r) => r.status === 201).map((r) => r.data.data._id);
+    const finals = [];
+    for (const id of ids) {
+      for (let i = 0; i < 60; i++) {
+        const op = (await call(t.admin, 'GET', `/api/operations/${id}`)).data.data;
+        if (['Succeeded', 'Failed'].includes(op.status)) {
+          finals.push(op);
+          break;
+        }
+        await new Promise((r) => setTimeout(r, 2000));
+      }
+    }
+    const spans = finals.map((o) => [new Date(o.dispatchedAt).getTime(), new Date(o.completedAt).getTime()]).sort((x, y) => x[0] - y[0]);
+    const overlapping = spans.some((span, i) => i > 0 && span[0] < spans[i - 1][1]);
+    check(
+      'concurrent operations on one server run one at a time',
+      ids.length === 3 && finals.length === 3 && finals.every((o) => o.status === 'Succeeded') && !overlapping,
+      `${ids.length} queued, ${finals.filter((o) => o.status === 'Succeeded').length} succeeded, overlap: ${overlapping}`
+    );
+  } else {
+    console.log('SKIP  operation lock (no agent that can run jobs on a Nexus server — start the simulator)');
+  }
   check('viewer cannot approve resizes', (await call(t.viewer, 'POST', '/api/resize-requests/000000000000000000000000/approve')).status === 403);
 
   console.log('— Costs');

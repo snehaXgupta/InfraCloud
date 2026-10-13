@@ -13,6 +13,7 @@ const { isPrometheusUp } = require('./services/prometheusService');
 const { startHeartbeatSweeper } = require('./services/thresholdAlerts');
 const { startCostIngestion } = require('./services/costService');
 const { startResizeWorker } = require('./services/resizeWorker');
+const { startOperationSweeper } = require('./services/operationJobs');
 const { loadSyncedPlans } = require('./services/planCatalog');
 const { startPlanSync } = require('./controllers/integrationController');
 
@@ -48,7 +49,7 @@ app.use(morgan(isProduction ? 'combined' : 'dev'));
 // Brute-force protection on credential endpoints
 app.use(
   ['/api/auth/login', '/api/auth/register'],
-  rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: 'draft-7', legacyHeaders: false })
+  rateLimit({ windowMs: 15 * 60 * 1000, limit: Number(process.env.LOGIN_RATE_LIMIT || 20), standardHeaders: 'draft-7', legacyHeaders: false })
 );
 
 // Health check endpoint (used by Docker/uptime monitors)
@@ -80,6 +81,7 @@ app.use('/api/costs', require('./routes/costRoutes'));
 app.use('/api/settings', require('./routes/settingsRoutes'));
 app.use('/api/integrations', require('./routes/integrationRoutes'));
 app.use('/api/resize-requests', require('./routes/resizeRoutes'));
+app.use('/api/replication', require('./routes/replicationRoutes'));
 
 // Global 404 handler for unhandled API routes
 app.use((req, res, next) => {
@@ -124,6 +126,8 @@ startCostIngestion();
 loadSyncedPlans().catch((err) => console.error('[Plan Catalog]', err.message));
 startPlanSync();
 startResizeWorker();
+// Approval expiry, unpicked jobs and timeouts for agent operations (§8)
+startOperationSweeper();
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {

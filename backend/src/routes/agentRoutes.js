@@ -5,6 +5,10 @@ const router = express.Router();
 const Server = require('../models/Server');
 const { requireAgentToken } = require('../services/agentAuth');
 const { evaluateSample } = require('../services/thresholdAlerts');
+const { jobsForAgent, recordProgress, recordResult, verifyFromHeartbeat } = require('../services/operationJobs');
+const { checksForAgent, recordChecks } = require('../services/replicationService');
+
+const KNOWN_CAPABILITIES = ['jobs', 'replication'];
 
 const NODE_EXPORTER_VERSION = '1.8.2';
 const VMAGENT_VERSION = 'v1.102.1';
@@ -160,6 +164,14 @@ router.post('/heartbeat', requireAgentToken, async (req, res) => {
     const disk = clampPercent(req.body?.diskUsage);
 
     if (typeof agentVersion === 'string') server.set('agent.version', agentVersion.slice(0, 40));
+    if (Array.isArray(req.body?.capabilities)) {
+      server.set('agent.capabilities', req.body.capabilities.filter((c) => KNOWN_CAPABILITIES.includes(c)));
+    }
+    if (typeof uptimeSeconds === 'number' && uptimeSeconds >= 0) {
+      const bootTime = new Date(Date.now() - uptimeSeconds * 1000);
+      // Only move it on a real change (uptime is rounded), so a reboot is detectable
+      if (!server.agent?.bootTime || Math.abs(bootTime - server.agent.bootTime) > 30 * 1000) server.set('agent.bootTime', bootTime);
+    }
     server.set('agent.lastHeartbeat', new Date());
     server.set('agent.status', 'online');
     server.set('agent.isLiveAgent', true);
@@ -186,10 +198,52 @@ router.post('/heartbeat', requireAgentToken, async (req, res) => {
 
     await server.save();
 
-    res.json({ success: true, serverStatus: server.status, timestamp: new Date().toISOString() });
+    // Operations (§8) and replication (§9) ride on the heartbeat reply: outbound-only for the server
+    await verifyFromHeartbeat(server);
+    if (req.body?.replication) await recordChecks(server, req.body.replication);
+    const [jobs, replicationChecks] = await Promise.all([jobsForAgent(server, req.agentCredential), checksForAgent(server)]);
+
+    res.json({ success: true, serverStatus: server.status, timestamp: new Date().toISOString(), jobs, replicationChecks });
   } catch (err) {
     console.error('[Agent Heartbeat Error]', err);
     res.status(500).json({ success: false, error: 'Heartbeat processing failed' });
+  }
+});
+
+/**
+ * @desc    Agent reports a job has started / more output
+ * @route   POST /api/agent/jobs/:jobId/progress  { output }
+ * @access  Agent token (the job must belong to the token's server)
+ */
+router.post('/jobs/:jobId/progress', requireAgentToken, async (req, res) => {
+  try {
+    const op = await recordProgress(req.agentServerId, req.agentCredential._id, req.params.jobId, { output: String(req.body?.output || '').slice(0, 64 * 1024) });
+    if (!op) return res.status(404).json({ success: false, error: 'No running job with that id for this server' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Could not record progress' });
+  }
+});
+
+/**
+ * @desc    Agent reports a job's result and post-check
+ * @route   POST /api/agent/jobs/:jobId/result  { exitCode, output, result, postCheck: { ok, detail } }
+ * @access  Agent token
+ */
+router.post('/jobs/:jobId/result', requireAgentToken, async (req, res) => {
+  try {
+    const { exitCode, output, result, postCheck } = req.body || {};
+    const op = await recordResult(req.agentServerId, req.agentCredential._id, req.params.jobId, {
+      exitCode,
+      output: String(output || '').slice(0, 64 * 1024),
+      result,
+      postCheck,
+    });
+    if (!op) return res.status(404).json({ success: false, error: 'No running job with that id for this server' });
+    res.json({ success: true, status: op.status });
+  } catch (err) {
+    console.error('[Agent Job Result Error]', err);
+    res.status(500).json({ success: false, error: 'Could not record result' });
   }
 });
 

@@ -180,4 +180,4 @@ const startHeartbeatSweeper = () => {
   timer.unref();
 };
 
-module.exports = { evaluateSample, sweepMissingHeartbeats, startHeartbeatSweeper, RULES };
+module.exports = { evaluateSample, sweepMissingHeartbeats, startHeartbeatSweeper, RULES, openAlert, resolveAlerts };

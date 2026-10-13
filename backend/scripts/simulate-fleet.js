@@ -13,7 +13,12 @@
  *   npm run simulate -- --scenario disk=Replica --scenario offline=Worker
  *
  * Scenarios: cpu (CPU ~97%), memory (memory leak climbing to ~98%), disk (disk filling to ~93%),
- *            offline (host stops reporting → heartbeat alert after the grace period), ok (reset).
+ *            offline (host stops reporting → heartbeat alert after the grace period),
+ *            lag (replica falls ~10 minutes behind its primary), ok (reset).
+ *
+ * Simulated hosts also run operations (§8) the way a real agent does — health check, service
+ * restart, cleanup (a real cleanup clears the "disk" scenario), agent update, reboot, replica
+ * sync/recovery (clears "lag") — and report replication lag (§9) for replicas.
  * While running, type a scenario on stdin, e.g. `cpu Payment`, `ok Payment`, `list`.
  *
  * Servers that already receive metrics from a real agent are skipped (use --include-real to override).
@@ -34,7 +39,7 @@ const API_URL = (process.env.API_URL || 'http://127.0.0.1:5000').replace(/\/$/, 
 const PROM_URL = (process.env.PROM_URL || 'http://127.0.0.1:9090').replace(/\/$/, '');
 const INTERVAL = Number(process.env.SIM_INTERVAL_SECONDS || 15);
 const SIM_TOKEN_PREFIX = 'simulator';
-const SCENARIOS = ['cpu', 'memory', 'disk', 'offline', 'ok'];
+const SCENARIOS = ['cpu', 'memory', 'disk', 'offline', 'lag', 'ok'];
 const MAX_NET_BYTES_PER_SEC = 50e6; // simulated traffic stays far below this
 
 const args = process.argv.slice(2);
@@ -72,6 +77,10 @@ const createHost = (server, token) => {
       txMbps: seeded(id, 'tx', 5, 90),
     },
     scenario: 'ok',
+    agentVersion: '2.6.0-simulator',
+    replicationLag: seeded(id, 'lag', 0, 4),
+    busy: false,
+    rebootUntil: 0,
     scenarioStartedAt: Date.now(),
     bootTime: Date.now() / 1000 - seeded(id, 'uptime', 2, 60) * 86400,
     // Counters must never go backwards across simulator restarts, or Prometheus sees a counter
@@ -155,21 +164,128 @@ const sendHeartbeat = async (host, s) => {
       loadAvg: [(s.cpu / 100) * host.cores, 0, 0].map((v) => Math.round(v * 100) / 100),
       uptimeSeconds: Math.round(Date.now() / 1000 - host.bootTime),
       osKernel: 'Linux 6.8.0-simulated (x86_64)',
-      agentVersion: 'v2.5.0-simulator',
+      agentVersion: host.agentVersion,
+      capabilities: ['jobs', 'replication'],
+      replication: host.replicationResults,
     }),
   });
   if (!res.ok) throw new Error(`heartbeat HTTP ${res.status}`);
-  return (await res.json()).serverStatus;
+  const body = await res.json();
+  host.replicationResults = (body.replicationChecks || []).map((c) => ({ id: c.id, ok: true, lagSeconds: Math.round(host.replicationLag * 10) / 10 }));
+  if (body.jobs?.length && !host.busy) runSimulatedJobs(host, body.jobs).catch((err) => console.log(`  ${host.name} job error: ${err.message}`));
+  return body.serverStatus;
+};
+
+const agentPost = (host, path, body) =>
+  fetch(`${API_URL}${path}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${host.token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+
+// What a real agent would do for each catalog key, with believable output
+const simulateJob = async (host, job) => {
+  const s = sample(host);
+  switch (job.key) {
+    case 'health-check': {
+      const problems = s.disk >= 90 ? [`disk ${s.disk.toFixed(0)}%`] : [];
+      return {
+        // the check ran fine; findings are reported, not a failure (same as the real agent)
+        exitCode: 0,
+        output: `CPU ${s.cpu.toFixed(1)}% · memory ${s.memory.toFixed(1)}% · disk ${s.disk.toFixed(1)}% · inodes 12%
+failed services: none
+`,
+        result: { cpuUsage: s.cpu, memoryUsage: s.memory, diskUsage: s.disk, inodeUsage: 12, failedServices: [], issues: problems },
+        postCheck: { ok: true, detail: problems.length ? `Issues found: ${problems.join('; ')}` : 'All checks passed' },
+      };
+    }
+    case 'service-restart':
+      return {
+        exitCode: 0,
+        output: `Restarting ${job.params.service}…
+● ${job.params.service}.service - active (running)
+`,
+        result: { service: job.params.service, state: 'active' },
+        postCheck: { ok: true, detail: `${job.params.service} is active` },
+      };
+    case 'cleanup': {
+      const before = s.disk;
+      if (job.params.dryRun === false && host.scenario === 'disk') host.scenario = 'ok';
+      const after = job.params.dryRun === false ? host.base.disk : before;
+      return {
+        exitCode: 0,
+        output:
+          job.params.dryRun === false
+            ? 'Vacuuming done, freed 2.1G of archived journal files\nRemoving temp files older than 7 days: 318\n'
+            : 'DRY RUN — nothing will be deleted\nArchived and active journals take up 2.3G\n',
+        result: { dryRun: job.params.dryRun !== false, diskBefore: before, diskAfter: after },
+        postCheck: { ok: true, detail: job.params.dryRun === false ? `Disk ${before.toFixed(0)}% → ${after.toFixed(0)}%` : 'Dry run only — nothing deleted' },
+      };
+    }
+    case 'agent-update':
+      setTimeout(() => {
+        host.agentVersion = job.params.version;
+      }, 3000);
+      return { exitCode: 0, output: `Installed agent ${job.params.version}. Restarting.
+`, postCheck: { ok: true, detail: 'Installed; waiting for the new version to report' } };
+    case 'reboot':
+      // Goes quiet for ~20 s, then comes back with a new boot time
+      host.rebootUntil = Date.now() + 20000;
+      setTimeout(() => {
+        host.bootTime = Date.now() / 1000;
+      }, 20000);
+      return { exitCode: 0, output: "Shutdown scheduled, use 'shutdown -c' to cancel.\n", postCheck: { ok: true, detail: 'Reboot scheduled in 1 minute' } };
+    case 'replica-sync':
+    case 'replica-recovery':
+      await new Promise((r) => setTimeout(r, 6000));
+      host.replicationLag = 0.4;
+      if (host.scenario === 'lag') host.scenario = 'ok';
+      return {
+        exitCode: 0,
+        output: `Running /etc/infra-agent/scripts/${job.key}.sh (primary ${job.params.primaryName})
+base backup received, replica restarted, streaming
+`,
+        result: { lagSeconds: 0.4 },
+        postCheck: { ok: true, detail: 'Replica lag after sync: 0 s' },
+      };
+    default:
+      return { exitCode: 127, output: '', postCheck: { ok: false, detail: `Unknown job ${job.key}` } };
+  }
+};
+
+const runSimulatedJobs = async (host, jobs) => {
+  host.busy = true;
+  try {
+    for (const job of jobs) {
+      if (host.seenJobs?.has(job.id)) continue;
+      (host.seenJobs ||= new Set()).add(job.id);
+      await agentPost(host, `/api/agent/jobs/${job.id}/progress`, { output: '' });
+      await new Promise((r) => setTimeout(r, 2500));
+      const outcome = await simulateJob(host, job);
+      await agentPost(host, `/api/agent/jobs/${job.id}/result`, outcome);
+      console.log(`  → ${host.name}: ${job.key} ${outcome.postCheck?.ok ? 'ok' : 'failed'}`);
+    }
+  } finally {
+    host.busy = false;
+  }
 };
 
 const realAgentServers = async () => {
+  // A real agent (non-simulator version) that reported in the last 3 minutes owns its server
+  const live = await Server.find({
+    'agent.isLiveAgent': true, // set only by real heartbeats (seed data never sets it)
+    'agent.lastHeartbeat': { $gt: new Date(Date.now() - 3 * 60 * 1000) },
+    'agent.version': { $exists: true, $not: /simulator/ },
+  }).distinct('_id');
+  const ids = new Set(live.map(String));
   try {
     const q = encodeURIComponent('count by (server_id) (node_boot_time_seconds{job!="simulator"})');
     const body = await (await fetch(`${PROM_URL}/api/v1/query?query=${q}`)).json();
-    return new Set(body.data.result.map((r) => r.metric.server_id));
+    body.data.result.forEach((r) => ids.add(r.metric.server_id));
   } catch {
-    return new Set();
+    // Prometheus unavailable: the database check above still applies
   }
+  return ids;
 };
 
 const applyScenario = (hosts, spec) => {
@@ -216,6 +332,9 @@ const applyScenario = (hosts, spec) => {
     const lines = await Promise.all(
       hosts.map(async (h) => {
         if (h.scenario === 'offline') return `${h.name.padEnd(36)} offline (not reporting)`;
+        if (Date.now() < h.rebootUntil) return `${h.name.padEnd(36)} rebooting…`;
+        if (h.scenario === 'lag') h.replicationLag = Math.min(h.replicationLag + 45, 900);
+        else if (h.replicationLag > 5) h.replicationLag = Math.max(1, h.replicationLag * 0.2);
         const s = sample(h);
         try {
           await pushMetrics(h, s, now);

@@ -88,7 +88,7 @@ export const Header = ({ onOpenMobileMenu, activeAlerts = [] }) => {
               {getInitials(user?.name)}
             </span>
             <span className="font-mono text-[11px] text-slate-700 dark:text-slate-300 max-w-[150px] truncate">
-              {user?.email || 'admin@example.com'}
+              {user?.email || ''}
             </span>
             <ChevronDown className="w-3 h-3 text-slate-400" />
           </button>

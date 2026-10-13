@@ -11,7 +11,8 @@
     "create-admin": "node scripts/create-admin.js",
     "simulate": "node scripts/simulate-fleet.js",
     "test:rbac": "node scripts/test-rbac.js",
-    "test:resize": "node scripts/test-resize.js"
+    "test:resize": "node scripts/test-resize.js",
+    "test:operations": "node scripts/test-operations.js"
   },
   "keywords": [
     "server-management",

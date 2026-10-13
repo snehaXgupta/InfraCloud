@@ -19,6 +19,7 @@ export const EditServerModal = ({ isOpen, server, onClose, onServerUpdated }) =>
     diskTotalGb: 80,
     publicIp: '',
     tags: '',
+    allowedServices: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { success, error: showError } = useToast();
@@ -38,6 +39,7 @@ export const EditServerModal = ({ isOpen, server, onClose, onServerUpdated }) =>
         diskTotalGb: server.storage?.diskTotalGb || 80,
         publicIp: server.network?.publicIp || '',
         tags: Array.isArray(server.tags) ? server.tags.join(', ') : '',
+        allowedServices: Array.isArray(server.allowedServices) ? server.allowedServices.join(', ') : '',
       });
     }
   }, [server, isOpen]);
@@ -69,6 +71,7 @@ export const EditServerModal = ({ isOpen, server, onClose, onServerUpdated }) =>
           publicIp: formData.publicIp || server.network?.publicIp,
         },
         tags: formData.tags.split(',').map((t) => t.trim()).filter(Boolean),
+        allowedServices: formData.allowedServices.split(',').map((t) => t.trim()).filter(Boolean),
       };
 
       const res = await api.put(`/servers/${server._id}`, payload);
@@ -208,6 +211,18 @@ export const EditServerModal = ({ isOpen, server, onClose, onServerUpdated }) =>
             placeholder="production, web, api"
             className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
           />
+        </div>
+
+        <div>
+          <label className="block text-xs text-slate-400 mb-1">Allowed services (comma-separated)</label>
+          <input
+            type="text"
+            value={formData.allowedServices}
+            onChange={(e) => setFormData({ ...formData, allowedServices: e.target.value })}
+            placeholder="nginx, app, worker"
+            className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+          />
+          <p className="text-[11px] text-slate-500 mt-1">Only these services can be restarted from the Operations catalog.</p>
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t border-[#1c202c]">

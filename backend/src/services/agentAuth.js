@@ -31,6 +31,7 @@ const requireAgentToken = async (req, res, next) => {
     const credential = await resolveAgentToken(bearerToken(req));
     if (!credential) return res.status(401).json({ success: false, error: 'Invalid or missing agent token' });
     req.agentServerId = credential.serverId.toString();
+    req.agentCredential = credential;
     next();
   } catch (err) {
     res.status(503).json({ success: false, error: 'Credential store unavailable' });

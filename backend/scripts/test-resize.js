@@ -52,11 +52,15 @@ const waitForJob = async (token, id, timeoutMs = 120000) => {
   const viewer = await login('viewer@example.com', 'Viewer@123');
 
   const servers = (await call(admin, 'GET', '/api/servers')).data.data;
-  const byName = (n) => servers.find((s) => s.name.startsWith(n));
-  const prod = byName('Worker Server');
-  const staging = byName('Staging Integration');
-  const third = byName('Production API Server');
-  const acme = byName('Storage Node');
+  // Chosen by properties, not names, so the test works on any seeded database
+  const isRealAgent = (s) => s.agent?.isLiveAgent && s.agent?.version && !/simulator/.test(s.agent.version);
+  const priced = (s) => ['AWS', 'GCP', 'Azure', 'DigitalOcean', 'Vultr', 'Hetzner'].includes(s.provider) && !isRealAgent(s);
+  const envOf = (s) => s.environmentId?.type;
+  const prod = servers.find((s) => priced(s) && envOf(s) === 'Production');
+  const third = servers.find((s) => priced(s) && envOf(s) === 'Production' && s._id !== prod._id);
+  const staging = servers.find((s) => priced(s) && envOf(s) !== 'Production');
+  const acme = servers.find((s) => /Acme/.test(s.clientId?.name || '') && s._id !== prod._id);
+  const nexusVisible = servers.find((s) => /Nexus/.test(s.clientId?.name || ''));
 
   console.log('— Integration');
   check('viewer cannot add integrations', (await call(viewer, 'POST', '/api/integrations', { name: 'x', provider: 'Simulated' })).status === 403);
@@ -69,9 +73,9 @@ const waitForJob = async (token, id, timeoutMs = 120000) => {
 
   const inst = (await call(admin, 'GET', `/api/integrations/${integration._id}/instances`)).data;
   check('instances are matched to servers by IP', inst.data.some((i) => String(i.suggestedServerId) === prod._id), `${inst.data.length} instances`);
-  const links = [prod, staging, third].map((s) => ({ instanceId: inst.data.find((i) => String(i.suggestedServerId) === s._id).id, serverId: s._id }));
+  const links = [prod, staging, third].filter(Boolean).map((s) => ({ instanceId: inst.data.find((i) => String(i.suggestedServerId) === s._id).id, serverId: s._id }));
   const linked = await call(admin, 'POST', `/api/integrations/${integration._id}/link`, { links });
-  check('servers linked', linked.data.data.linked === 3, JSON.stringify(linked.data.data));
+  check('servers linked', linked.data.data.linked === links.length, JSON.stringify(linked.data.data));
 
   console.log('— Plan');
   const plan = (await call(devops, 'GET', `/api/servers/${prod._id}/resize-options`)).data.data;
@@ -91,8 +95,8 @@ const waitForJob = async (token, id, timeoutMs = 120000) => {
 
   console.log('— Request & approval (production)');
   // Outside the viewer's client the server is invisible (404); inside it the role is refused (403)
-  check('viewer cannot request on another client’s server', (await call(viewer, 'POST', `/api/servers/${prod._id}/resize-requests`, { targetPlan: target.type, reason: 'test' })).status === 404);
-  check('viewer cannot request on own client’s server', (await call(viewer, 'POST', `/api/servers/${staging._id}/resize-requests`, { targetPlan: target.type, reason: 'test' })).status === 403);
+  check('viewer cannot request on another client’s server', (await call(viewer, 'POST', `/api/servers/${acme._id}/resize-requests`, { targetPlan: target.type, reason: 'test' })).status === 404);
+  check('viewer cannot request on own client’s server', (await call(viewer, 'POST', `/api/servers/${nexusVisible._id}/resize-requests`, { targetPlan: target.type, reason: 'test' })).status === 403);
   check('reason is required', (await call(devops, 'POST', `/api/servers/${prod._id}/resize-requests`, { targetPlan: target.type })).status === 400);
   const reqRes = await call(devops, 'POST', `/api/servers/${prod._id}/resize-requests`, { targetPlan: target.type, reason: 'p95 memory above 85% for a week' });
   const request = reqRes.data.data;
@@ -116,11 +120,15 @@ const waitForJob = async (token, id, timeoutMs = 120000) => {
   check('resize recorded in Operations', ops.some((o) => o.operationType === 'Resize' && o.status === 'Succeeded'));
 
   console.log('— Non-production & cancel');
-  const stPlan = (await call(devops, 'GET', `/api/servers/${staging._id}/resize-options`)).data.data;
-  const stReq = (await call(devops, 'POST', `/api/servers/${staging._id}/resize-requests`, { targetPlan: stPlan.candidates[0].type, reason: 'right-size staging', takeSnapshot: false })).data.data;
-  check('staging is queued without approval', stReq.status === 'queued' && !stReq.requiresApproval, stReq.status);
-  const stDone = await waitForJob(admin, stReq._id);
-  check('staging resize succeeded (snapshot skipped)', stDone.status === 'succeeded' && stDone.steps.find((s) => s.key === 'snapshot').status === 'skipped', stDone.error || '');
+  if (staging) {
+    const stPlan = (await call(devops, 'GET', `/api/servers/${staging._id}/resize-options`)).data.data;
+    const stReq = (await call(devops, 'POST', `/api/servers/${staging._id}/resize-requests`, { targetPlan: stPlan.candidates[0].type, reason: 'right-size staging', takeSnapshot: false })).data.data;
+    check('non-production is queued without approval', stReq.status === 'queued' && !stReq.requiresApproval, stReq.status);
+    const stDone = await waitForJob(admin, stReq._id);
+    check('non-production resize succeeded (snapshot skipped)', stDone.status === 'succeeded' && stDone.steps.find((s) => s.key === 'snapshot').status === 'skipped', stDone.error || '');
+  } else {
+    console.log('SKIP  non-production resize (no non-production server with a known provider)');
+  }
 
   const thPlan = (await call(devops, 'GET', `/api/servers/${third._id}/resize-options`)).data.data;
   const thReq = (await call(devops, 'POST', `/api/servers/${third._id}/resize-requests`, { targetPlan: thPlan.candidates[0].type, reason: 'will cancel this' })).data.data;

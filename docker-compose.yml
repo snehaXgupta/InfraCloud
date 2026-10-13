@@ -65,6 +65,8 @@ services:
     build: .
     restart: unless-stopped
     command: ["node", "scripts/simulate-fleet.js"]
+    healthcheck:
+      disable: true # the image's health check targets the API, which this container doesn't run
     environment:
       MONGO_URI: mongodb://mongo:27017/server_management_platform
       API_URL: http://app:5000

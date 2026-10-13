@@ -126,7 +126,7 @@ export const LoginPage = () => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@example.com"
+                  placeholder="you@company.com"
                   className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                 />
               </div>
@@ -186,7 +186,8 @@ export const LoginPage = () => {
             </Button>
           </form>
 
-          {/* Toggle Register/Login */}
+          {/* Toggle Register/Login — self sign-up is off on real deployments (only admins create users) */}
+          {import.meta.env.DEV && (
           <div className="mt-5 text-center text-xs text-slate-400">
             {isRegisterMode ? (
               <span>
@@ -212,8 +213,10 @@ export const LoginPage = () => {
               </span>
             )}
           </div>
+          )}
 
-          {/* Quick Demo Seed Logins */}
+          {/* Quick Demo Seed Logins — development builds only, never on a deployed site */}
+          {import.meta.env.DEV && (
           <div className="mt-6 pt-5 border-t border-slate-800/80">
             <p className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mb-2.5 text-center">
               1-Click Dev Seed Logins
@@ -256,6 +259,7 @@ export const LoginPage = () => {
               </button>
             </div>
           </div>
+          )}
         </div>
       </div>
     </div>

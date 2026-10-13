@@ -20,6 +20,7 @@ import { UsersPage } from '../pages/UsersPage';
 import { CostsPage } from '../pages/CostsPage';
 import { ResizeRequestsPage } from '../pages/ResizeRequestsPage';
 import { IntegrationsPage } from '../pages/IntegrationsPage';
+import { ReplicationPage } from '../pages/ReplicationPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { NotFoundPage, UnauthorizedPage } from '../pages/NotFoundPage';
 
@@ -53,6 +54,7 @@ export const AppRoutes = () => {
         <Route path="/costs" element={<CostsPage />} />
         <Route path="/resize-requests" element={<ResizeRequestsPage />} />
         <Route path="/integrations" element={<IntegrationsPage />} />
+        <Route path="/replication" element={<ReplicationPage />} />
         <Route path="/settings" element={<SettingsPage />} />
       </Route>
 

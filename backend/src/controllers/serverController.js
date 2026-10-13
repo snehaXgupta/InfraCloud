@@ -219,8 +219,18 @@ const updateServer = async (req, res, next) => {
     if (req.body.tags && typeof req.body.tags === 'string') {
       req.body.tags = req.body.tags.split(',').map(t => t.trim());
     }
+    if (typeof req.body.allowedServices === 'string') {
+      req.body.allowedServices = req.body.allowedServices.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+    if (Array.isArray(req.body.allowedServices) && !req.body.allowedServices.every((s) => /^[a-zA-Z0-9@._-]{1,64}$/.test(s))) {
+      return res.status(400).json({ success: false, error: 'Allowed services must be plain service names like nginx or app.service' });
+    }
 
-    server = await Server.findByIdAndUpdate(req.params.id, req.body, {
+    // Fields owned by the agent, the operation engine, integrations or billing — never set from this form
+    const update = { ...req.body };
+    ['agent', 'operationLock', 'providerRef', 'cost', 'metricsSummary', '_id', 'createdAt', 'updatedAt'].forEach((f) => delete update[f]);
+
+    server = await Server.findByIdAndUpdate(req.params.id, update, {
       new: true,
       runValidators: true,
     });

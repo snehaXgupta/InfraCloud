@@ -12,6 +12,7 @@ const Server = require('../models/Server');
 const Alert = require('../models/Alert');
 const Operation = require('../models/Operation');
 const AuditLog = require('../models/AuditLog');
+const ServerRelationship = require('../models/ServerRelationship');
 
 const seedData = async () => {
   // The seed wipes every collection and creates accounts with published passwords.
@@ -392,6 +393,24 @@ const seedData = async () => {
         tags: ['development', 'sandbox', 'baremetal'],
       },
     ]);
+
+    // Services that may be restarted from the operation catalog (§8), and one replica pair (§9)
+    await Server.updateMany({}, { allowedServices: ['nginx', 'app'] });
+    await ServerRelationship.deleteMany();
+    // Demo pair: two servers of the same client (names differ between seed versions)
+    const sameClient = servers.filter((s) => String(s.clientId) === String(client2._id));
+    const primaryDb = servers.find((s) => /^Database Primary/.test(s.name)) || sameClient[0];
+    const replicaDb = servers.find((s) => /^Database Replica/.test(s.name)) || sameClient[1];
+    if (primaryDb && replicaDb) {
+      await ServerRelationship.create({
+        clientId: primaryDb.clientId,
+        primaryServerId: primaryDb._id,
+        replicaServerId: replicaDb._id,
+        kind: 'postgres',
+        lagWarnSeconds: 60,
+        lagCritSeconds: 300,
+      });
+    }
 
     console.log('[Seed] Creating Alerts...');
     const alertCritical = await Alert.create({
