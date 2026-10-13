@@ -2,16 +2,30 @@ import React, { useState, useEffect } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
+import { CommandPalette } from '../common/CommandPalette';
 import api from '../../services/api';
 
 export const DashboardLayout = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
   const [activeAlerts, setActiveAlerts] = useState([]);
   const location = useLocation();
 
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location.pathname]);
+
+  // Global Ctrl+K / Cmd+K listener
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     const fetchAlerts = async () => {
@@ -30,7 +44,7 @@ export const DashboardLayout = () => {
   }, []);
 
   return (
-    <div className="flex h-screen bg-[#f8fafc] dark:bg-[#0a0c10] text-slate-900 dark:text-slate-100 overflow-hidden transition-colors duration-200">
+    <div className="flex h-screen bg-[#f8fafc] dark:bg-[#080a0f] text-slate-900 dark:text-slate-100 overflow-hidden transition-colors duration-200">
       {/* Desktop Sticky Sidebar */}
       <div className="hidden lg:block h-full shrink-0">
         <Sidebar activeAlertsCount={activeAlerts.length} />
@@ -57,6 +71,7 @@ export const DashboardLayout = () => {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header
           onOpenMobileMenu={() => setMobileMenuOpen(true)}
+          onOpenCommandPalette={() => setCommandPaletteOpen(true)}
           activeAlerts={activeAlerts}
         />
 
@@ -64,6 +79,12 @@ export const DashboardLayout = () => {
           <Outlet />
         </main>
       </div>
+
+      {/* Global Command Palette (Ctrl+K / Cmd+K) */}
+      <CommandPalette
+        isOpen={commandPaletteOpen}
+        onClose={() => setCommandPaletteOpen(false)}
+      />
     </div>
   );
 };

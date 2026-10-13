@@ -9,12 +9,14 @@ import {
   ShieldCheck,
   ChevronDown,
   Activity,
+  Search,
+  Command,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { Badge } from '../common/Badge';
 
-export const Header = ({ onOpenMobileMenu, activeAlerts = [] }) => {
+export const Header = ({ onOpenMobileMenu, onOpenCommandPalette, activeAlerts = [] }) => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme, isDark } = useTheme();
   const location = useLocation();
@@ -32,7 +34,7 @@ export const Header = ({ onOpenMobileMenu, activeAlerts = [] }) => {
   };
 
   return (
-    <header className="h-14 bg-white dark:bg-[#0a0c10] border-b border-slate-200 dark:border-[#1c202c] px-4 md:px-6 flex items-center justify-between sticky top-0 z-30 select-none transition-colors duration-200">
+    <header className="h-14 bg-white dark:bg-[#080a0f] border-b border-slate-200 dark:border-[#1a202f] px-4 md:px-6 flex items-center justify-between sticky top-0 z-30 select-none transition-colors duration-200">
       {/* Left: Mobile Menu Toggle & Path Breadcrumb */}
       <div className="flex items-center gap-3">
         <button
@@ -66,6 +68,43 @@ export const Header = ({ onOpenMobileMenu, activeAlerts = [] }) => {
             })
           )}
         </nav>
+      </div>
+
+      {/* Middle: Universal Command Palette (Ctrl+K) Trigger & Live Fleet Health */}
+      <div className="flex items-center gap-3">
+        <button
+          onClick={onOpenCommandPalette}
+          className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-[#0f1420] border border-slate-200 dark:border-[#1e2538] hover:border-blue-500/40 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer shadow-sm w-72 justify-between"
+        >
+          <div className="flex items-center gap-2 truncate">
+            <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+            <span className="font-sans truncate text-[11px]">Search fleet, commands, rules...</span>
+          </div>
+          <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-200 dark:bg-[#182030] rounded border border-slate-300 dark:border-[#273248] shrink-0">
+            <Command className="w-2.5 h-2.5" />K
+          </kbd>
+        </button>
+
+        {/* Global Live System Operational Health Pill */}
+        <Link
+          to="/alerts"
+          className={`hidden xl:flex items-center gap-2 px-2.5 py-1 rounded-lg border text-[11px] font-mono font-medium transition-colors ${
+            activeAlerts.length > 0
+              ? 'border-rose-500/30 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20'
+              : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+          }`}
+        >
+          <span
+            className={`w-2 h-2 rounded-full ${
+              activeAlerts.length > 0 ? 'bg-rose-500 animate-pulse' : 'bg-emerald-500'
+            }`}
+          />
+          <span>
+            {activeAlerts.length > 0
+              ? `${activeAlerts.length} ${activeAlerts.length === 1 ? 'Incident' : 'Incidents'}`
+              : 'Fleet Operational'}
+          </span>
+        </Link>
       </div>
 
       {/* Right: Theme Toggle Button + User Initials Badge */}
