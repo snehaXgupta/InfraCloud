@@ -22,7 +22,7 @@ export const ROLES_DEFINITION = [
   {
     role: 'Platform Admin',
     desc: 'Unrestricted control plane governance, security policies, cloud credentials, and user lifecycle.',
-    color: 'border-blue-500/40 text-blue-400 bg-blue-500/10',
+    color: 'border-slate-300 dark:border-white/20 text-slate-900 dark:text-white bg-slate-100 dark:bg-white/10',
     scope: 'Global Platform Scope',
   },
   {
@@ -190,11 +190,11 @@ export const UsersPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Users className="w-6 h-6 text-blue-400" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            <Users className="w-6 h-6 text-slate-700 dark:text-white" />
             Users & Role-Based Access Control
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
             Scoped role definitions, operator privileges, and access governance across control-plane tiers
           </p>
         </div>
@@ -211,22 +211,22 @@ export const UsersPage = () => {
 
       {/* Role Scoping Matrix Showcase */}
       <div className="space-y-3">
-        <h3 className="text-xs font-mono uppercase tracking-wider text-slate-400 font-semibold">
+        <h3 className="text-xs font-mono uppercase tracking-wider text-slate-500 dark:text-[#888888] font-semibold">
           Platform RBAC Hierarchy Matrix
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
           {ROLES_DEFINITION.map((r) => (
             <div
               key={r.role}
-              className="p-3.5 rounded-xl border border-slate-800 bg-[#0d131f] flex flex-col justify-between"
+              className="p-3.5 rounded-xl border border-slate-200 dark:border-[#1f1f1f] bg-slate-50 dark:bg-[#0a0a0a] flex flex-col justify-between"
             >
               <div>
                 <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${r.color}`}>
                   {r.role}
                 </span>
-                <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">{r.desc}</p>
+                <p className="text-[11px] text-slate-600 dark:text-[#888888] mt-2 leading-relaxed">{r.desc}</p>
               </div>
-              <div className="mt-3 pt-2 border-t border-slate-800/80 text-[10px] font-mono text-slate-500">
+              <div className="mt-3 pt-2 border-t border-slate-200 dark:border-[#1f1f1f] text-[10px] font-mono text-slate-400 dark:text-[#666666]">
                 {r.scope}
               </div>
             </div>
@@ -241,13 +241,13 @@ export const UsersPage = () => {
           subtitle={`Active control-plane accounts (${users.length})`}
           action={
             <div className="relative max-w-xs">
-              <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-slate-400 dark:text-[#666666] absolute left-2.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search user or role..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                className="bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg pl-8 pr-3 py-1 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
               />
             </div>
           }
@@ -256,8 +256,8 @@ export const UsersPage = () => {
           {isLoading ? (
             <LoadingSpinner fullPage label="Loading user directory..." />
           ) : (
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="bg-slate-950/70 text-[11px] uppercase font-mono text-slate-400 border-b border-slate-800">
+            <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300">
+              <thead className="bg-slate-50 dark:bg-[#050505] text-[11px] uppercase font-mono text-slate-500 dark:text-[#888888] border-b border-slate-200 dark:border-[#1f1f1f]">
                 <tr>
                   <th className="px-5 py-3.5">User Profile</th>
                   <th className="px-5 py-3.5">Assigned RBAC Role</th>
@@ -268,33 +268,33 @@ export const UsersPage = () => {
                   <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono">
+              <tbody className="divide-y divide-slate-100 dark:divide-[#1f1f1f] font-mono">
                 {filteredUsers.map((u) => (
-                  <tr key={u._id} className="hover:bg-slate-900/50 transition-colors">
+                  <tr key={u._id} className="hover:bg-slate-50 dark:hover:bg-[#111111] transition-colors">
                     <td className="px-5 py-3.5 font-sans">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-xs font-bold text-blue-300">
+                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-200">
                           {u.name.charAt(0)}
                         </div>
                         <div>
-                          <div className="font-semibold text-white text-xs">{u.name}</div>
-                          <div className="text-[11px] text-slate-400 font-mono">{u.email}</div>
+                          <div className="font-semibold text-slate-900 dark:text-white text-xs">{u.name}</div>
+                          <div className="text-[11px] text-slate-500 dark:text-[#888888] font-mono">{u.email}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="text-blue-400 font-semibold text-xs">{u.role}</span>
+                      <span className="text-slate-700 dark:text-slate-300 font-semibold text-xs">{u.role}</span>
                     </td>
-                    <td className="px-5 py-3.5 font-sans text-[11px] text-slate-300">{clientNames(u)}</td>
+                    <td className="px-5 py-3.5 font-sans text-[11px] text-slate-600 dark:text-slate-300">{clientNames(u)}</td>
                     <td className="px-5 py-3.5">
                       <Badge variant={u.status === 'active' ? 'healthy' : 'neutral'} size="sm">
                         {u.status}
                       </Badge>
                     </td>
-                    <td className="px-5 py-3.5 text-slate-400 text-[11px]">
+                    <td className="px-5 py-3.5 text-slate-500 dark:text-[#888888] text-[11px]">
                       {new Date(u.lastLogin || u.createdAt).toLocaleString()}
                     </td>
-                    <td className="px-5 py-3.5 text-slate-400 text-[11px]">
+                    <td className="px-5 py-3.5 text-slate-500 dark:text-[#888888] text-[11px]">
                       {new Date(u.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-5 py-3.5 text-right font-sans">
@@ -319,47 +319,47 @@ export const UsersPage = () => {
       <Modal isOpen={isAddUserOpen} onClose={() => setIsAddUserOpen(false)} title="Provision New Platform User">
         <form onSubmit={handleCreateUser} className="space-y-4">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Full Name *</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Full Name *</label>
             <input
               type="text"
               required
               placeholder="e.g. Jordan Miller"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Email Address *</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Email Address *</label>
             <input
               type="email"
               required
               placeholder="jordan@infrastructure.internal"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Initial Password *</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Initial Password *</label>
             <input
               type="password"
               required
               placeholder="••••••••"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Platform Role Assignment *</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Platform Role Assignment *</label>
             <select
               value={formData.role}
               onChange={(e) => setFormData({ ...formData, role: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             >
               {ROLES_DEFINITION.map((r) => (
                 <option key={r.role} value={r.role}>
@@ -370,7 +370,7 @@ export const UsersPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Client Scope</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Client Scope</label>
             <ClientScopePicker
               role={formData.role}
               clients={clients}
@@ -379,7 +379,7 @@ export const UsersPage = () => {
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">
             <Button variant="outline" onClick={() => setIsAddUserOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>
@@ -399,11 +399,11 @@ export const UsersPage = () => {
       >
         <form onSubmit={handleUpdateRole} className="space-y-4">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Select New Role</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Select New Role</label>
             <select
               value={editingUser?.role || 'DevOps / Infrastructure'}
               onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             >
               {ROLES_DEFINITION.map((r) => (
                 <option key={r.role} value={r.role}>
@@ -414,11 +414,11 @@ export const UsersPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Account Status</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Account Status</label>
             <select
               value={editingUser?.status || 'active'}
               onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             >
               <option value="active">Active (Access Granted)</option>
               <option value="suspended">Suspended (Access Revoked)</option>
@@ -427,7 +427,7 @@ export const UsersPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Client Scope</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Client Scope</label>
             <ClientScopePicker
               role={editingUser?.role}
               clients={clients}
@@ -436,7 +436,7 @@ export const UsersPage = () => {
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">
             <Button variant="outline" onClick={() => setEditingUser(null)} disabled={isSubmitting}>
               Cancel
             </Button>

@@ -100,12 +100,12 @@ export const InstallAgentModal = ({ isOpen, server, onClose, onRefreshServer }) 
   const metricsLive = metricsSource === 'live';
 
   const CommandBox = ({ command, type }) => (
-    <div className="relative bg-[#090b10] border border-[#21283c] rounded-lg p-3 font-mono text-xs text-emerald-400 flex items-start justify-between gap-3">
+    <div className="relative bg-[#050505] border border-[#1f1f1f] rounded-lg p-3 font-mono text-xs text-zinc-200 flex items-start justify-between gap-3">
       <span className="break-all">{command}</span>
       <button
         onClick={() => copyToClipboard(command, type)}
         disabled={!token}
-        className="p-1.5 rounded bg-[#182030] hover:bg-[#222c42] text-slate-300 hover:text-white shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+        className="p-1.5 rounded bg-[#111111] hover:bg-[#222222] text-zinc-300 hover:text-white shrink-0 disabled:opacity-40 disabled:cursor-not-allowed border border-[#222222]"
         title={token ? 'Copy' : 'Generate a token first'}
       >
         {copiedType === type ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
@@ -145,11 +145,11 @@ export const InstallAgentModal = ({ isOpen, server, onClose, onRefreshServer }) 
             <input
               value={panelUrl}
               onChange={(e) => setPanelUrl(e.target.value)}
-              className="mt-1 w-full px-2 py-1.5 rounded bg-[#090b10] border border-[#21283c] font-mono text-xs text-slate-200"
+              className="mt-1 w-full px-2 py-1.5 rounded bg-[#050505] border border-[#1f1f1f] font-mono text-xs text-zinc-200 focus:outline-none focus:border-zinc-500"
             />
           </label>
 
-          <div className="flex items-center gap-2 border-b border-[#21283c] pb-2 font-mono text-xs">
+          <div className="flex items-center gap-2 border-b border-[#1f1f1f] pb-2 font-mono text-xs">
             {[
               ['linux', 'Linux server (systemd, recommended)'],
               ['manual', 'Manual / dev (heartbeat only)'],
@@ -157,8 +157,8 @@ export const InstallAgentModal = ({ isOpen, server, onClose, onRefreshServer }) 
               <button
                 key={key}
                 onClick={() => setActiveTab(key)}
-                className={`px-3 py-1.5 rounded transition-colors ${
-                  activeTab === key ? 'bg-blue-600 text-white font-bold' : 'text-slate-400 hover:text-white'
+                className={`px-3 py-1.5 rounded text-xs transition-colors ${
+                  activeTab === key ? 'bg-white text-black font-semibold' : 'text-zinc-400 hover:text-white'
                 }`}
               >
                 {label}
@@ -185,7 +185,7 @@ export const InstallAgentModal = ({ isOpen, server, onClose, onRefreshServer }) 
         </div>
 
         {/* Step 3: live checklist */}
-        <div className="space-y-2 p-4 rounded-xl border bg-[#111624] border-[#222c42]">
+        <div className="space-y-2 p-4 rounded-xl border bg-[#0a0a0a] border-[#1f1f1f]">
           <div className="font-bold text-white text-sm">3. Waiting for the server…</div>
           <ChecklistItem
             done={heartbeatFresh}
@@ -199,15 +199,15 @@ export const InstallAgentModal = ({ isOpen, server, onClose, onRefreshServer }) 
           />
         </div>
 
-        <div className="border-t border-[#1c2232] pt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="p-2.5 rounded bg-[#0d0f15] border border-[#1c2232]">
-            <div className="flex items-center gap-1.5 text-blue-400 font-bold mb-1">
+        <div className="border-t border-[#1f1f1f] pt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="p-2.5 rounded bg-[#0a0a0a] border border-[#1f1f1f]">
+            <div className="flex items-center gap-1.5 text-zinc-200 font-bold mb-1">
               <Cpu className="w-3.5 h-3.5" />
               <span>Real host metrics</span>
             </div>
             <p className="text-[11px] text-slate-400">node_exporter CPU, memory, disk, network and load every 15 s.</p>
           </div>
-          <div className="p-2.5 rounded bg-[#0d0f15] border border-[#1c2232]">
+          <div className="p-2.5 rounded bg-[#0a0a0a] border border-[#1f1f1f]">
             <div className="flex items-center gap-1.5 text-amber-400 font-bold mb-1">
               <Activity className="w-3.5 h-3.5" />
               <span>Automatic alerts</span>

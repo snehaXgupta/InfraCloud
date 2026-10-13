@@ -18,17 +18,17 @@ const STATE_STYLES = {
   Degraded: 'bg-[#2a1d0b] border-amber-600/40 text-amber-300',
   'Sync Required': 'bg-[#2a0f12] border-red-700/60 text-red-300',
   'Primary Down': 'bg-[#2a0f12] border-red-700/60 text-red-300',
-  'Sync Running': 'bg-[#0f1a2e] border-blue-500/60 text-blue-200',
-  Unknown: 'bg-[#151924] border-[#2a3350] text-slate-400',
+  'Sync Running': 'bg-slate-100 dark:bg-[#1a1a1a] border-slate-300 dark:border-[#333333] text-slate-900 dark:text-slate-200',
+  Unknown: 'bg-slate-100 dark:bg-[#111111] border-slate-200 dark:border-[#222222] text-slate-500 dark:text-[#888888]',
 };
 
-const input = 'mt-1 w-full px-2 py-1.5 rounded bg-[#090b10] border border-[#21283c] text-xs text-slate-200';
+const input = 'mt-1 w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors';
 
 const ServerChip = ({ s, role }) => (
-  <Link to={`/servers/${s?._id}`} className="flex-1 min-w-0 p-3 rounded-lg bg-[#0d0f15] border border-[#1c2232] hover:border-slate-500">
-    <div className="text-[10px] uppercase font-mono text-slate-500">{role}</div>
-    <div className="text-sm font-semibold text-white truncate">{s?.name || 'missing server'}</div>
-    <div className={`text-[11px] ${s?.online ? 'text-emerald-300' : 'text-red-300'}`}>{s?.online ? `online · ${s.status}` : 'offline'}</div>
+  <Link to={`/servers/${s?._id}`} className="flex-1 min-w-0 p-3 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#1f1f1f] hover:border-slate-400 dark:hover:border-slate-600 transition-colors">
+    <div className="text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888]">{role}</div>
+    <div className="text-sm font-semibold text-slate-900 dark:text-white truncate">{s?.name || 'missing server'}</div>
+    <div className={`text-[11px] ${s?.online ? 'text-emerald-400' : 'text-red-400'}`}>{s?.online ? `online · ${s.status}` : 'offline'}</div>
   </Link>
 );
 
@@ -94,10 +94,10 @@ export const ReplicationPage = () => {
     <div className="space-y-6 max-w-5xl mx-auto pb-12">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <GitBranch className="w-5 h-5 text-blue-400" /> Replication
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            <GitBranch className="w-5 h-5 text-slate-700 dark:text-white" /> Replication
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
             Primary → replica pairs. The replica’s agent measures lag locally; Sync and Recovery run on the replica after approval.
           </p>
         </div>
@@ -109,11 +109,11 @@ export const ReplicationPage = () => {
       </div>
 
       {rels.map((rel) => (
-        <div key={rel._id} className="rounded-xl bg-[#11141c] border border-[#212636] p-5 space-y-4">
+        <div key={rel._id} className="rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] p-5 space-y-4">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <div className="flex items-center gap-2">
               <span className={`px-2 py-0.5 rounded border text-[10px] font-mono font-semibold uppercase ${STATE_STYLES[rel.state]}`}>{rel.state}</span>
-              <span className="text-xs text-slate-400">{rel.kind === 'postgres' ? 'PostgreSQL' : 'MySQL'} streaming replication</span>
+              <span className="text-xs text-slate-500 dark:text-[#888888]">{rel.kind === 'postgres' ? 'PostgreSQL' : 'MySQL'} streaming replication</span>
             </div>
             <div className="flex gap-2 flex-wrap">
               {REQUESTERS.includes(user?.role) && (
@@ -136,7 +136,7 @@ export const ReplicationPage = () => {
 
           <div className="flex items-stretch gap-3">
             <ServerChip s={rel.primary} role="Primary" />
-            <div className="flex flex-col items-center justify-center text-[11px] text-slate-400 px-1">
+            <div className="flex flex-col items-center justify-center text-[11px] text-slate-500 dark:text-[#888888] px-1">
               <ArrowRight className="w-4 h-4" />
               <span className="font-mono">{rel.lastLagSeconds != null ? `${Math.round(rel.lastLagSeconds)} s lag` : 'no data'}</span>
             </div>
@@ -151,42 +151,42 @@ export const ReplicationPage = () => {
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
             <div>
-              <div className="text-[10px] uppercase font-mono text-slate-500">Thresholds</div>
-              <div className="text-slate-200">warn {rel.lagWarnSeconds}s · critical {rel.lagCritSeconds}s</div>
+              <div className="text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888]">Thresholds</div>
+              <div className="text-slate-900 dark:text-slate-200">warn {rel.lagWarnSeconds}s · critical {rel.lagCritSeconds}s</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase font-mono text-slate-500">Last check</div>
-              <div className="text-slate-200">{rel.lastCheckAt ? new Date(rel.lastCheckAt).toLocaleTimeString() : 'waiting for agent'}</div>
+              <div className="text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888]">Last check</div>
+              <div className="text-slate-900 dark:text-slate-200">{rel.lastCheckAt ? new Date(rel.lastCheckAt).toLocaleTimeString() : 'waiting for agent'}</div>
             </div>
             <div>
-              <div className="text-[10px] uppercase font-mono text-slate-500">Last sync</div>
-              <div className="text-slate-200">
+              <div className="text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888]">Last sync</div>
+              <div className="text-slate-900 dark:text-slate-200">
                 {rel.lastSync?.at ? `${rel.lastSync.status} · ${new Date(rel.lastSync.at).toLocaleString()}` : 'never'}
               </div>
             </div>
             <div>
-              <div className="text-[10px] uppercase font-mono text-slate-500">Problem</div>
-              <div className="text-slate-200">{rel.lastCheckError || '—'}</div>
+              <div className="text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888]">Problem</div>
+              <div className="text-slate-900 dark:text-slate-200">{rel.lastCheckError || '—'}</div>
             </div>
           </div>
         </div>
       ))}
 
       {!rels.length && (
-        <div className="rounded-xl bg-[#11141c] border border-[#212636] p-8 text-center text-xs text-slate-400">
+        <div className="rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] p-8 text-center text-xs text-slate-500 dark:text-[#888888]">
           No replicas tracked yet.{MANAGERS.includes(user?.role) && ' Click “Add replica” to pair a primary database server with its replica.'}
         </div>
       )}
 
       {addOpen && (
         <Modal isOpen onClose={() => setAddOpen(false)} title="Add replica" maxWidth="max-w-lg">
-          <form onSubmit={create} className="space-y-3 text-xs text-slate-300">
+          <form onSubmit={create} className="space-y-3 text-xs text-slate-700 dark:text-slate-300">
             {[
               ['primaryServerId', 'Primary (source of truth) *'],
               ['replicaServerId', 'Replica (follows the primary) *'],
             ].map(([key, label]) => (
               <label key={key} className="block">
-                <span className="text-slate-400">{label}</span>
+                <span className="text-slate-600 dark:text-[#888888]">{label}</span>
                 <select required value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} className={input}>
                   <option value="">Choose a server…</option>
                   {servers.map((s) => (
@@ -198,7 +198,7 @@ export const ReplicationPage = () => {
               </label>
             ))}
             <label className="block">
-              <span className="text-slate-400">Database *</span>
+              <span className="text-slate-600 dark:text-[#888888]">Database *</span>
               <select value={form.kind} onChange={(e) => setForm({ ...form, kind: e.target.value })} className={input}>
                 <option value="postgres">PostgreSQL</option>
                 <option value="mysql">MySQL / MariaDB</option>
@@ -206,18 +206,18 @@ export const ReplicationPage = () => {
             </label>
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
-                <span className="text-slate-400">Warning lag (s)</span>
+                <span className="text-slate-600 dark:text-[#888888]">Warning lag (s)</span>
                 <input type="number" min="1" value={form.lagWarnSeconds} onChange={(e) => setForm({ ...form, lagWarnSeconds: e.target.value })} className={input} />
               </label>
               <label className="block">
-                <span className="text-slate-400">Critical lag (s)</span>
+                <span className="text-slate-600 dark:text-[#888888]">Critical lag (s)</span>
                 <input type="number" min="2" value={form.lagCritSeconds} onChange={(e) => setForm({ ...form, lagCritSeconds: e.target.value })} className={input} />
               </label>
             </div>
-            <p className="text-[11px] text-slate-500">
+            <p className="text-[11px] text-slate-500 dark:text-[#888888]">
               On the replica server, Sync and Recovery run the owner’s own scripts set in <code>/etc/infra-agent/replication.conf</code> (SYNC_SCRIPT, RECOVERY_SCRIPT). Database credentials stay on the server.
             </p>
-            <div className="flex justify-end gap-2 pt-2 border-t border-[#1c2232]">
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-[#1f1f1f]">
               <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
               <Button type="submit">Add replica</Button>
             </div>

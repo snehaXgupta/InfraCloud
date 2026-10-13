@@ -141,9 +141,9 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
           </div>
 
           {/* Target Host Details */}
-          <div className="p-4 rounded-xl bg-[#0f1422] border border-[#1e2538] space-y-3">
+          <div className="p-4 rounded-xl bg-[#0e0e0e] border border-[#1f1f1f] space-y-3">
             <div className="text-[11px] font-mono uppercase text-slate-400 font-semibold flex items-center gap-2">
-              <Server className="w-3.5 h-3.5 text-blue-400" />
+              <Server className="w-3.5 h-3.5 text-zinc-300" />
               <span>Target Infrastructure Node</span>
             </div>
 
@@ -160,7 +160,7 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
               {alert.serverId?._id && (
                 <Link
                   to={`/servers/${alert.serverId._id}`}
-                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#151c2e] border border-[#232f4c] hover:border-blue-500/50 text-xs font-semibold text-blue-400 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-[#141414] border border-[#222222] hover:border-zinc-500 text-xs font-semibold text-zinc-200 hover:text-white transition-colors"
                 >
                   <span>View Droplet</span>
                   <ExternalLink className="w-3 h-3" />
@@ -170,12 +170,12 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
           </div>
 
           {/* Metric Saturation & Telemetry Bar */}
-          <div className="p-4 rounded-xl bg-[#0f1422] border border-[#1e2538] space-y-2.5">
+          <div className="p-4 rounded-xl bg-[#0e0e0e] border border-[#1f1f1f] space-y-2.5">
             <div className="flex items-center justify-between text-xs font-mono">
               <span className="text-slate-400 uppercase">Violation Severity</span>
               <span className="text-white font-bold">{alert.currentValue} (Threshold: {alert.threshold})</span>
             </div>
-            <div className="w-full h-2 rounded-full bg-[#161c2a] overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-[#161616] overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-500 ${
                   isCritical ? 'bg-gradient-to-r from-amber-500 to-rose-500 w-[95%]' : 'bg-amber-500 w-[85%]'
@@ -185,9 +185,9 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
           </div>
 
           {/* Automated Root-Cause Diagnostic Engine */}
-          <div className="p-4 rounded-xl bg-[#0c121e] border border-[#1c2a44] space-y-3">
-            <div className="flex items-center gap-2 text-[11px] font-mono uppercase font-bold text-blue-400">
-              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+          <div className="p-4 rounded-xl bg-[#0e0e0e] border border-[#1f1f1f] space-y-3">
+            <div className="flex items-center gap-2 text-[11px] font-mono uppercase font-bold text-zinc-200">
+              <Sparkles className="w-3.5 h-3.5 text-zinc-300" />
               <span>Automated Telemetry Diagnostic</span>
             </div>
 
@@ -204,7 +204,7 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
 
               <div>
                 <p className="text-[11px] font-mono text-slate-500 uppercase">Remediation Runbook</p>
-                <p className="text-blue-300 mt-0.5 leading-relaxed font-sans font-medium">{rootCause.recommendedAction}</p>
+                <p className="text-zinc-200 mt-0.5 leading-relaxed font-sans font-medium">{rootCause.recommendedAction}</p>
               </div>
             </div>
           </div>
@@ -217,7 +217,7 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
             </h4>
 
             <div className="space-y-2 text-xs font-mono">
-              <div className="flex items-start gap-3 p-2.5 rounded-lg bg-[#0e131d] border border-[#1b2234]">
+              <div className="flex items-start gap-3 p-2.5 rounded-lg bg-[#0e0e0e] border border-[#1f1f1f]">
                 <div className="w-2 h-2 rounded-full bg-rose-500 mt-1.5 shrink-0" />
                 <div>
                   <p className="text-slate-200 font-semibold">Incident Detected</p>
@@ -225,8 +225,8 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-2.5 rounded-lg bg-[#0e131d] border border-[#1b2234]">
-                <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5 shrink-0" />
+              <div className="flex items-start gap-3 p-2.5 rounded-lg bg-[#0e0e0e] border border-[#1f1f1f]">
+                <div className="w-2 h-2 rounded-full bg-zinc-400 mt-1.5 shrink-0" />
                 <div>
                   <p className="text-slate-200 font-semibold">Automated SMTP Dispatch</p>
                   <p className="text-[11px] text-slate-500">Alert email delivered to ops recipient</p>
@@ -234,7 +234,7 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
               </div>
 
               {alert.acknowledgedAt && (
-                <div className="flex items-start gap-3 p-2.5 rounded-lg bg-[#0e131d] border border-[#1b2234]">
+                <div className="flex items-start gap-3 p-2.5 rounded-lg bg-[#0e0e0e] border border-[#1f1f1f]">
                   <div className="w-2 h-2 rounded-full bg-amber-500 mt-1.5 shrink-0" />
                   <div>
                     <p className="text-slate-200 font-semibold">Acknowledged</p>
@@ -246,7 +246,7 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
               )}
 
               {alert.resolvedAt && (
-                <div className="flex items-start gap-3 p-2.5 rounded-lg bg-[#0e131d] border border-[#1b2234]">
+                <div className="flex items-start gap-3 p-2.5 rounded-lg bg-[#0e0e0e] border border-[#1f1f1f]">
                   <div className="w-2 h-2 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                   <div>
                     <p className="text-slate-200 font-semibold">Resolved</p>
@@ -267,7 +267,7 @@ export const IncidentDrawer = ({ alert, onClose, onAcknowledge, onResolve, onRef
                 disabled={isDispatchingCheck}
                 className="px-3 py-1.5 rounded-md bg-[#141414] border border-[#222] hover:bg-[#1f1f1f] text-xs font-medium text-[#ccc] transition-colors flex items-center gap-1.5 cursor-pointer"
               >
-                <Activity className="w-3.5 h-3.5 text-blue-400" />
+                <Activity className="w-3.5 h-3.5 text-zinc-300" />
                 <span>{isDispatchingCheck ? 'Probing...' : 'Dispatch Health Probe'}</span>
               </button>
             )}

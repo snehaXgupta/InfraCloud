@@ -144,19 +144,19 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Hierarchy Section */}
-        <div className="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
-          <div className="flex items-center gap-2 text-xs font-semibold text-blue-400 uppercase font-mono">
-            <Layers className="w-4 h-4" />
+        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-[#1f1f1f] space-y-3">
+          <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase font-mono">
+            <Layers className="w-4 h-4 text-slate-500 dark:text-slate-400" />
             Infrastructure Hierarchy Scoping
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Client *</label>
+              <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Client *</label>
               <select
                 value={formData.clientId}
                 onChange={(e) => setFormData({ ...formData, clientId: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                 required
               >
                 {clients.map((c) => (
@@ -168,11 +168,11 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
             </div>
 
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Project *</label>
+              <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Project *</label>
               <select
                 value={formData.projectId}
                 onChange={(e) => setFormData({ ...formData, projectId: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                 required
               >
                 {filteredProjects.map((p) => (
@@ -184,11 +184,11 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
             </div>
 
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Environment *</label>
+              <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Environment *</label>
               <select
                 value={formData.environmentId}
                 onChange={(e) => setFormData({ ...formData, environmentId: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                 required
               >
                 {filteredEnvs.map((env) => (
@@ -204,25 +204,25 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
         {/* Server Identification */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Server Name *</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Server Name *</label>
             <input
               type="text"
               placeholder="e.g. Production API Node 03"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Hostname (FQDN)</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Hostname (FQDN)</label>
             <input
               type="text"
               placeholder="api-node-03.us-east.internal"
               value={formData.hostname}
               onChange={(e) => setFormData({ ...formData, hostname: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
         </div>
@@ -230,11 +230,11 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
         {/* Cloud Provider & Role */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Cloud Provider</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Cloud Provider</label>
             <select
               value={formData.provider}
               onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             >
               <option value="AWS">AWS (Amazon Web Services)</option>
               <option value="GCP">GCP (Google Cloud)</option>
@@ -247,21 +247,21 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Region / Zone</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Region / Zone</label>
             <input
               type="text"
               value={formData.region}
               onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Server Role</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Server Role</label>
             <select
               value={formData.serverRole}
               onChange={(e) => setFormData({ ...formData, serverRole: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             >
               <option value="Application Node">Application Node</option>
               <option value="API Gateway">API Gateway</option>
@@ -277,48 +277,48 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
         {/* Compute & Hardware Specs */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Instance Type</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Instance Type</label>
             <input
               type="text"
               value={formData.instanceType}
               onChange={(e) => setFormData({ ...formData, instanceType: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">vCPU Cores</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">vCPU Cores</label>
             <input
               type="number"
               min="1"
               max="128"
               value={formData.vcpu}
               onChange={(e) => setFormData({ ...formData, vcpu: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">RAM (GB)</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">RAM (GB)</label>
             <input
               type="number"
               min="1"
               max="1024"
               value={formData.ramGb}
               onChange={(e) => setFormData({ ...formData, ramGb: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Disk (GB)</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Disk (GB)</label>
             <input
               type="number"
               min="10"
               max="10000"
               value={formData.diskTotalGb}
               onChange={(e) => setFormData({ ...formData, diskTotalGb: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
         </div>
@@ -326,29 +326,29 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
         {/* Operating System & Tags */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Operating System</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Operating System</label>
             <input
               type="text"
               value={formData.os}
               onChange={(e) => setFormData({ ...formData, os: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Tags (comma separated)</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Tags (comma separated)</label>
             <input
               type="text"
               value={formData.tags}
               onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
               placeholder="production, web, docker"
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             />
           </div>
         </div>
 
         {/* Submit */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
+        <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-[#1f1f1f]">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>

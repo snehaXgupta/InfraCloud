@@ -9,9 +9,9 @@ export const Badge = ({ children, variant = 'neutral', size = 'md', className = 
     danger: 'bg-rose-500/10 text-rose-400 border-rose-500/30',
     offline: 'bg-slate-700/30 text-slate-400 border-slate-700',
     maintenance: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
-    info: 'bg-blue-500/10 text-blue-400 border-blue-500/30',
-    primary: 'bg-blue-600/20 text-blue-300 border-blue-500/40',
-    neutral: 'bg-slate-800 text-slate-300 border-slate-700',
+    info: 'bg-zinc-800 text-zinc-300 border-zinc-700',
+    primary: 'bg-white text-black border-transparent font-medium',
+    neutral: 'bg-zinc-900 text-zinc-300 border-zinc-800',
     cyan: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/30',
   };
 

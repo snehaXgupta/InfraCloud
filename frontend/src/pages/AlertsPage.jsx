@@ -187,7 +187,7 @@ export const AlertsPage = () => {
           <button
             onClick={handleTestSMTP}
             disabled={isSendingTest}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/30 hover:bg-blue-500/20 text-xs font-semibold text-blue-400 transition-colors shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#222] hover:bg-slate-200 dark:hover:bg-[#141414] text-xs font-medium text-slate-700 dark:text-[#ededed] transition-colors shadow-sm cursor-pointer"
           >
             <Send className="w-3.5 h-3.5" />
             <span>{isSendingTest ? 'Sending...' : 'Test SMTP Mail'}</span>
@@ -273,7 +273,7 @@ export const AlertsPage = () => {
                           ? 'bg-rose-500/10 text-rose-500 border border-rose-500/20'
                           : rule.severity === 'Warning'
                           ? 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                          : 'bg-blue-500/10 text-blue-400 border border-blue-500/20'
+                          : 'bg-slate-100 dark:bg-[#111111] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-[#222222]'
                       }`}
                     >
                       {rule.severity}
@@ -356,12 +356,12 @@ export const AlertsPage = () => {
                   <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1c202c] font-mono">
+              <tbody className="divide-y divide-slate-100 dark:divide-[#1f1f1f] font-mono">
                 {filteredAlerts.map((alert) => (
                   <tr
                     key={alert._id}
                     onClick={() => setSelectedAlert(alert)}
-                    className="hover:bg-[#141a27] transition-colors cursor-pointer group"
+                    className="hover:bg-slate-50 dark:hover:bg-[#111111] transition-colors cursor-pointer group"
                   >
                     <td className="px-5 py-4">
                       <SeverityBadge severity={alert.severity} />
@@ -370,38 +370,38 @@ export const AlertsPage = () => {
                       <Link
                         to={`/servers/${alert.serverId?._id}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="font-semibold text-white hover:text-blue-400 transition-colors"
+                        className="font-semibold text-slate-900 dark:text-white hover:text-black dark:hover:text-white transition-colors"
                       >
                         {alert.serverId?.name || 'Server Node'}
                       </Link>
-                      <div className="text-[11px] font-mono text-slate-400">{alert.serverId?.hostname}</div>
+                      <div className="text-[11px] font-mono text-slate-500 dark:text-[#888888]">{alert.serverId?.hostname}</div>
                     </td>
                     <td className="px-5 py-4">
-                      <span className="font-semibold text-white">{alert.metric}:</span>{' '}
+                      <span className="font-semibold text-slate-900 dark:text-white">{alert.metric}:</span>{' '}
                       <span className={alert.severity === 'Critical' ? 'text-rose-400 font-bold' : 'text-amber-400'}>
                         {alert.currentValue}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-slate-400">{alert.threshold}</td>
+                    <td className="px-5 py-4 text-slate-500 dark:text-[#888888]">{alert.threshold}</td>
                     <td className="px-5 py-4">
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold ${
                           alert.status === 'resolved'
                             ? 'bg-[#0f291e] text-[#22c55e] border border-[#166534]'
                             : alert.status === 'acknowledged'
-                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            ? 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-[#333333]'
                             : 'bg-[#2d210b] text-amber-400 border border-amber-500/30'
                         }`}
                       >
                         {alert.status}
                       </span>
                       {alert.acknowledgedBy && (
-                        <div className="text-[10px] text-slate-400 font-sans mt-0.5">
+                        <div className="text-[10px] text-slate-500 dark:text-[#888888] font-sans mt-0.5">
                           by {alert.acknowledgedBy.name}
                         </div>
                       )}
                     </td>
-                    <td className="px-5 py-4 text-slate-400 text-[11px]">
+                    <td className="px-5 py-4 text-slate-500 dark:text-[#888888] text-[11px]">
                       {new Date(alert.createdAt).toLocaleString()}
                     </td>
                     <td className="px-5 py-4 text-right">
@@ -411,7 +411,7 @@ export const AlertsPage = () => {
                             e.stopPropagation();
                             setSelectedAlert(alert);
                           }}
-                          className="px-2 py-1 rounded bg-[#151c2e] border border-[#232f4c] hover:border-blue-500/50 text-[11px] font-semibold text-blue-400 transition-colors flex items-center gap-1 cursor-pointer"
+                          className="px-2 py-1 rounded-md bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#222222] hover:border-slate-400 dark:hover:border-white text-[11px] font-medium text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors flex items-center gap-1 cursor-pointer"
                           title="Open Incident War Room & Diagnostics"
                         >
                           <Eye className="w-3 h-3" />

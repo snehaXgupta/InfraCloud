@@ -12,7 +12,7 @@ export const StatCard = ({
   onClick,
 }) => {
   const iconColors = {
-    default: 'text-blue-400 bg-blue-500/10 border-blue-500/20',
+    default: 'text-zinc-200 bg-zinc-900 border-zinc-800',
     healthy: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
     warning: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
     critical: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
@@ -21,7 +21,7 @@ export const StatCard = ({
   };
 
   const borderAccent = {
-    default: 'hover:border-blue-500/40',
+    default: 'hover:border-zinc-700',
     healthy: 'hover:border-emerald-500/40',
     warning: 'hover:border-amber-500/40',
     critical: 'hover:border-rose-500/40',
@@ -64,7 +64,7 @@ export const StatCard = ({
             ? 'bg-amber-500'
             : variant === 'critical'
             ? 'bg-rose-500'
-            : 'bg-blue-500'
+            : 'bg-zinc-400'
         }`}
       />
     </Card>

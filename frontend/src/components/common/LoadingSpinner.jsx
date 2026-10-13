@@ -8,8 +8,8 @@ export const LoadingSpinner = ({ label = 'Loading telemetry data...', fullPage =
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center p-8">
         <div className="relative flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full border-2 border-blue-500/20 border-t-blue-500 animate-spin"></div>
-          <Server className="w-5 h-5 text-blue-400 absolute" />
+          <div className="w-12 h-12 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
+          <Server className="w-5 h-5 text-white absolute" />
         </div>
         <p className="mt-4 text-sm font-medium text-slate-400 tracking-wide animate-pulse">{label}</p>
       </div>
@@ -18,7 +18,7 @@ export const LoadingSpinner = ({ label = 'Loading telemetry data...', fullPage =
 
   return (
     <div className="flex items-center justify-center gap-3 p-6 text-slate-400">
-      <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+      <Loader2 className="w-5 h-5 animate-spin text-zinc-300" />
       <span className="text-sm font-medium">{label}</span>
     </div>
   );

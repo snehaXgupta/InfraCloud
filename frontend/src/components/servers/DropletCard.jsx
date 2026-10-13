@@ -99,7 +99,7 @@ export const DropletCard = ({
         {/* Top Header: Name, ID and Status Badge */}
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h3 className="text-base font-semibold text-slate-900 dark:text-white group-hover:text-blue-500 dark:group-hover:text-white transition-colors flex items-center gap-2">
+            <h3 className="text-base font-semibold text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors flex items-center gap-2">
               <span>{server.name}</span>
               <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400" />
             </h3>
@@ -158,7 +158,7 @@ export const DropletCard = ({
               disabled={isOperating}
               className="p-1.5 rounded-md bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#222] hover:bg-slate-200 dark:hover:bg-[#141414] hover:border-slate-300 dark:hover:border-[#444] text-slate-600 dark:text-[#888] hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isOperating ? 'animate-spin text-blue-400' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isOperating ? 'animate-spin text-slate-700 dark:text-white' : ''}`} />
             </button>
 
             {/* Resize & Capacity */}

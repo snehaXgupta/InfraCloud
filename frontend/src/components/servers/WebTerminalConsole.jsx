@@ -221,7 +221,7 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
           </div>
 
           <div className="flex items-center gap-2 font-mono text-xs text-slate-300">
-            <TerminalIcon className="w-3.5 h-3.5 text-blue-400" />
+            <TerminalIcon className="w-3.5 h-3.5 text-zinc-300" />
             <span className="font-semibold text-white">
               {customUsername}@{server?.name || customHost}
             </span>
@@ -231,7 +231,7 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
           {/* Status Badge */}
           <div>
             {isConnecting ? (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-blue-950/60 text-blue-400 border border-blue-600/40 animate-pulse">
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-[10px] font-mono bg-zinc-800 text-zinc-200 border border-zinc-700 animate-pulse">
                 <RefreshCw className="w-2.5 h-2.5 animate-spin" />
                 CONNECTING...
               </span>
@@ -260,9 +260,9 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
               setShowConfig(true);
             }}
             title="Preset: Connect to Local WSL / Ubuntu (127.0.0.1)"
-            className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded bg-[#161a26] border border-[#262f44] hover:bg-[#1e2436] text-[11px] font-mono text-slate-300 transition-colors cursor-pointer"
+            className="hidden sm:inline-flex items-center gap-1 px-2 py-1 rounded bg-[#111111] border border-[#222222] hover:bg-[#1a1a1a] text-[11px] font-mono text-slate-300 transition-colors cursor-pointer"
           >
-            <Laptop className="w-3 h-3 text-cyan-400" />
+            <Laptop className="w-3 h-3 text-zinc-300" />
             <span>Local WSL Preset</span>
           </button>
 
@@ -270,7 +270,7 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
           <button
             onClick={copySSHCommand}
             title="Copy native SSH command"
-            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[#161a26] border border-[#262f44] hover:bg-[#1e2436] text-[11px] font-mono text-slate-300 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-[#111111] border border-[#222222] hover:bg-[#1a1a1a] text-[11px] font-mono text-slate-300 transition-colors cursor-pointer"
           >
             {isCopied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-slate-400" />}
             <span className="hidden md:inline">Copy SSH</span>
@@ -280,8 +280,8 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
           <button
             onClick={() => setShowConfig(!showConfig)}
             title="Connection & Credential Settings"
-            className={`p-1.5 rounded bg-[#161a26] border border-[#262f44] hover:bg-[#1e2436] text-slate-300 transition-colors cursor-pointer ${
-              showConfig ? 'border-blue-500 text-blue-400' : ''
+            className={`p-1.5 rounded bg-[#111111] border border-[#222222] hover:bg-[#1a1a1a] text-slate-300 transition-colors cursor-pointer ${
+              showConfig ? 'border-zinc-400 text-white' : ''
             }`}
           >
             <Settings className="w-3.5 h-3.5" />
@@ -291,9 +291,9 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
           <button
             onClick={connectTerminal}
             title="Reconnect Terminal Session"
-            className="p-1.5 rounded bg-[#161a26] border border-[#262f44] hover:bg-[#1e2436] text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded bg-[#111111] border border-[#222222] hover:bg-[#1a1a1a] text-slate-300 hover:text-white transition-colors cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isConnecting ? 'animate-spin text-blue-400' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isConnecting ? 'animate-spin text-zinc-300' : ''}`} />
           </button>
 
           {/* Full Screen Toggle */}
@@ -303,7 +303,7 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
               setTimeout(() => fitAddonRef.current?.fit(), 100);
             }}
             title={isFullScreen ? 'Exit Fullscreen' : 'Fullscreen'}
-            className="p-1.5 rounded bg-[#161a26] border border-[#262f44] hover:bg-[#1e2436] text-slate-300 hover:text-white transition-colors cursor-pointer"
+            className="p-1.5 rounded bg-[#111111] border border-[#222222] hover:bg-[#1a1a1a] text-slate-300 hover:text-white transition-colors cursor-pointer"
           >
             {isFullScreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
           </button>
@@ -312,7 +312,7 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
 
       {/* 2. Connection Config Drawer (If Open) */}
       {showConfig && (
-        <div className="bg-[#111522] border-b border-[#21283c] p-3 text-xs font-mono text-slate-300 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
+        <div className="bg-[#0a0a0a] border-b border-[#1f1f1f] p-3 text-xs font-mono text-slate-300 grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
           <div>
             <label className="block text-[10px] uppercase text-slate-400 mb-1">Host / IP</label>
             <input
@@ -320,7 +320,7 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
               value={customHost}
               onChange={(e) => setCustomHost(e.target.value)}
               placeholder="127.0.0.1 or IP"
-              className="w-full bg-[#090b10] border border-[#2a334a] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-[#050505] border border-[#222222] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-zinc-400"
             />
           </div>
 
@@ -331,7 +331,7 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
               value={customPort}
               onChange={(e) => setCustomPort(e.target.value)}
               placeholder="22"
-              className="w-full bg-[#090b10] border border-[#2a334a] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-[#050505] border border-[#222222] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-zinc-400"
             />
           </div>
 
@@ -342,7 +342,7 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
               value={customUsername}
               onChange={(e) => setCustomUsername(e.target.value)}
               placeholder="root or ubuntu"
-              className="w-full bg-[#090b10] border border-[#2a334a] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-[#050505] border border-[#222222] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-zinc-400"
             />
           </div>
 
@@ -353,7 +353,7 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
               value={customPassword}
               onChange={(e) => setCustomPassword(e.target.value)}
               placeholder="Optional password"
-              className="w-full bg-[#090b10] border border-[#2a334a] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-[#050505] border border-[#222222] rounded px-2 py-1 text-slate-200 focus:outline-none focus:border-zinc-400"
             />
           </div>
 
@@ -363,13 +363,13 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
                 setShowConfig(false);
                 connectTerminal();
               }}
-              className="flex-1 px-3 py-1.5 rounded bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-colors cursor-pointer"
+              className="flex-1 px-3 py-1.5 rounded bg-white hover:bg-[#eaeaea] text-black font-semibold text-xs transition-colors cursor-pointer"
             >
               Connect
             </button>
             <button
               onClick={() => setShowConfig(false)}
-              className="px-2 py-1.5 rounded bg-[#1b2030] text-slate-400 hover:text-white"
+              className="px-2 py-1.5 rounded bg-[#141414] border border-[#222222] text-slate-400 hover:text-white"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -378,12 +378,12 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
       )}
 
       {/* 3. Terminal Canvas Body */}
-      <div className="flex-1 bg-[#0c0e14] p-3 overflow-hidden" onClick={() => xtermInstance.current?.focus()}>
+      <div className="flex-1 bg-black p-3 overflow-hidden" onClick={() => xtermInstance.current?.focus()}>
         <div ref={terminalRef} className="h-full w-full" />
       </div>
 
       {/* 4. Quick Command Bar */}
-      <div className="bg-[#0f121a] border-t border-[#1e2433] px-3 py-2 flex items-center gap-2 overflow-x-auto select-none">
+      <div className="bg-[#0a0a0a] border-t border-[#1f1f1f] px-3 py-2 flex items-center gap-2 overflow-x-auto select-none">
         <span className="text-[10px] uppercase tracking-wider font-mono text-slate-500 flex items-center gap-1 shrink-0">
           <Zap className="w-3 h-3 text-amber-400" />
           Quick Cmds:
@@ -393,9 +393,9 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
           <button
             key={qc.cmd}
             onClick={() => sendCommand(qc.cmd)}
-            className="shrink-0 px-2 py-0.5 rounded bg-[#161a26] border border-[#262f44] hover:bg-[#202638] text-[11px] font-mono text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+            className="shrink-0 px-2 py-0.5 rounded bg-[#111111] border border-[#222222] hover:bg-[#1a1a1a] text-[11px] font-mono text-slate-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
           >
-            <Play className="w-2.5 h-2.5 text-blue-400" />
+            <Play className="w-2.5 h-2.5 text-zinc-300" />
             <span>{qc.label}</span>
           </button>
         ))}

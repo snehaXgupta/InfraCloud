@@ -11,10 +11,10 @@ import api from '../../services/api';
 const REQUESTER_ROLES = ['Platform Admin', 'DevOps / Infrastructure', 'Project Admin'];
 
 const Stat = ({ label, value, hint }) => (
-  <div className="p-3 rounded-lg bg-[#0d0f15] border border-[#1c2232]">
-    <div className="text-[10px] uppercase font-mono text-slate-500">{label}</div>
-    <div className="text-sm font-bold text-white font-mono mt-0.5">{value}</div>
-    {hint && <div className="text-[10px] text-slate-500 mt-0.5">{hint}</div>}
+  <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-[#1f1f1f]">
+    <div className="text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888]">{label}</div>
+    <div className="text-sm font-bold text-slate-900 dark:text-white font-mono mt-0.5">{value}</div>
+    {hint && <div className="text-[10px] text-slate-500 dark:text-[#666666] mt-0.5">{hint}</div>}
   </div>
 );
 
@@ -91,14 +91,14 @@ export const ResizeServerModal = ({ isOpen, server, onClose, onResizeCompleted }
       {isLoading || !plan ? (
         <LoadingSpinner label="Loading sizes and usage..." />
       ) : created ? (
-        <div className="space-y-4 text-xs text-slate-300">
-          <div className="p-4 rounded-xl border border-emerald-600/40 bg-[#0e241b] flex items-start gap-3">
+        <div className="space-y-4 text-xs text-slate-700 dark:text-slate-300">
+          <div className="p-4 rounded-xl border border-emerald-600/40 bg-emerald-500/10 flex items-start gap-3">
             <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
             <div>
-              <div className="font-bold text-white text-sm">
+              <div className="font-bold text-slate-900 dark:text-white text-sm">
                 {created.status === 'pending_approval' ? 'Request sent for approval' : 'Resize queued'}
               </div>
-              <p className="text-slate-300 mt-1">
+              <p className="text-slate-600 dark:text-slate-300 mt-1">
                 {created.fromPlan?.type} → {created.toPlan.type} ({created.monthlyCostDelta >= 0 ? '+' : ''}
                 {money(created.monthlyCostDelta)}/month).{' '}
                 {created.status === 'pending_approval'
@@ -117,7 +117,7 @@ export const ResizeServerModal = ({ isOpen, server, onClose, onResizeCompleted }
           </div>
         </div>
       ) : (
-        <form onSubmit={submit} className="space-y-5 text-xs text-slate-300">
+        <form onSubmit={submit} className="space-y-5 text-xs text-slate-700 dark:text-slate-300">
           {/* Current state */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <Stat label="Current plan" value={plan.current.type || '—'} hint={`${plan.current.vcpu ?? '—'} vCPU · ${plan.current.ramGb ?? '—'} GB RAM`} />
@@ -134,36 +134,36 @@ export const ResizeServerModal = ({ isOpen, server, onClose, onResizeCompleted }
             />
           </div>
 
-          <div className="p-3 rounded-lg border border-[#21283c] bg-[#111624]">
-            <span className="font-bold text-white">{plan.recommendation.action}: </span>
+          <div className="p-3 rounded-lg border border-slate-200 dark:border-[#1f1f1f] bg-slate-50 dark:bg-[#050505] text-slate-700 dark:text-slate-300">
+            <span className="font-bold text-slate-900 dark:text-white">{plan.recommendation.action}: </span>
             {plan.recommendation.message}
           </div>
 
           {/* Link / approval / downtime */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="p-3 rounded-lg bg-[#0d0f15] border border-[#1c2232] flex gap-2">
-              <Link2 className="w-4 h-4 text-blue-400 shrink-0" />
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-[#1f1f1f] flex gap-2">
+              <Link2 className="w-4 h-4 text-slate-600 dark:text-slate-300 shrink-0" />
               <div>
-                <div className="font-semibold text-white">Provider</div>
-                <div className="text-slate-400">
+                <div className="font-semibold text-slate-900 dark:text-white">Provider</div>
+                <div className="text-slate-500 dark:text-[#888888]">
                   {plan.link ? `${plan.link.provider} · ${plan.link.integrationName}` : 'Not linked — plan only'}
                 </div>
               </div>
             </div>
-            <div className="p-3 rounded-lg bg-[#0d0f15] border border-[#1c2232] flex gap-2">
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-[#1f1f1f] flex gap-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
               <div>
-                <div className="font-semibold text-white">Approval</div>
-                <div className="text-slate-400">
+                <div className="font-semibold text-slate-900 dark:text-white">Approval</div>
+                <div className="text-slate-500 dark:text-[#888888]">
                   {plan.requiresApproval ? 'Production: a second person must approve' : 'Not required for this environment'}
                 </div>
               </div>
             </div>
-            <div className="p-3 rounded-lg bg-[#0d0f15] border border-[#1c2232] flex gap-2">
+            <div className="p-3 rounded-lg bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-[#1f1f1f] flex gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
               <div>
-                <div className="font-semibold text-white">Downtime</div>
-                <div className="text-slate-400">
+                <div className="font-semibold text-slate-900 dark:text-white">Downtime</div>
+                <div className="text-slate-500 dark:text-[#888888]">
                   {plan.downtime}
                   {plan.link && !plan.supportsDowngrade ? ' · upgrade only, cannot be undone' : ''}
                 </div>
@@ -172,7 +172,7 @@ export const ResizeServerModal = ({ isOpen, server, onClose, onResizeCompleted }
           </div>
 
           {plan.activeRequest && (
-            <div className="p-3 rounded-lg border border-amber-600/40 bg-[#2a1d0b] text-amber-300">
+            <div className="p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 text-amber-400">
               This server already has a resize request ({plan.activeRequest.status.replace('_', ' ')} →{' '}
               {plan.activeRequest.toPlan?.type}).{' '}
               <Link to="/resize-requests" className="underline" onClick={onClose}>
@@ -181,13 +181,13 @@ export const ResizeServerModal = ({ isOpen, server, onClose, onResizeCompleted }
             </div>
           )}
           {!plan.executable && (
-            <div className="p-3 rounded-lg border border-[#2a3350] bg-[#151924] text-slate-300">{plan.notExecutableReason}</div>
+            <div className="p-3 rounded-lg border border-slate-200 dark:border-[#1f1f1f] bg-slate-50 dark:bg-[#050505] text-slate-600 dark:text-slate-300">{plan.notExecutableReason}</div>
           )}
 
           {/* Sizes */}
-          <div className="max-h-64 overflow-y-auto rounded-lg border border-[#1c2232]">
+          <div className="max-h-64 overflow-y-auto rounded-lg border border-slate-200 dark:border-[#1f1f1f]">
             <table className="w-full text-xs">
-              <thead className="sticky top-0 bg-[#0d0f15] text-[10px] uppercase font-mono text-slate-500">
+              <thead className="sticky top-0 bg-slate-50 dark:bg-[#050505] text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888] border-b border-slate-200 dark:border-[#1f1f1f]">
                 <tr>
                   <th className="text-left font-medium p-2 w-8" />
                   <th className="text-left font-medium p-2">Plan</th>
@@ -198,25 +198,25 @@ export const ResizeServerModal = ({ isOpen, server, onClose, onResizeCompleted }
                   <th className="text-right font-medium p-2">Change</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1c2232] font-mono">
+              <tbody className="divide-y divide-slate-100 dark:divide-[#1f1f1f] font-mono">
                 {plan.candidates.map((c) => (
                   <tr
                     key={c.type}
                     onClick={() => setSelected(c.type)}
-                    className={`cursor-pointer ${selected === c.type ? 'bg-[#18243c]' : 'hover:bg-[#131620]'}`}
+                    className={`cursor-pointer transition-colors ${selected === c.type ? 'bg-slate-200 dark:bg-[#1a1a1a]' : 'hover:bg-slate-50 dark:hover:bg-[#111111]'}`}
                   >
                     <td className="p-2">
                       <input type="radio" name="plan" checked={selected === c.type} onChange={() => setSelected(c.type)} aria-label={c.type} />
                     </td>
-                    <td className="p-2 text-white">
+                    <td className="p-2 text-slate-900 dark:text-white">
                       {c.type}
-                      {c.recommended && <span className="ml-2 px-1.5 py-0.5 rounded bg-blue-600/20 text-blue-300 text-[10px] font-sans">recommended</span>}
+                      {c.recommended && <span className="ml-2 px-1.5 py-0.5 rounded bg-slate-200 dark:bg-white/10 text-slate-800 dark:text-white border border-slate-300 dark:border-white/20 text-[10px] font-sans">recommended</span>}
                     </td>
                     <td className="p-2 text-right">{c.vcpu}</td>
                     <td className="p-2 text-right">{c.ramGb} GB</td>
                     <td className="p-2 text-right">{c.diskGb} GB</td>
-                    <td className="p-2 text-right text-white">{money(c.priceMonthly)}/mo</td>
-                    <td className={`p-2 text-right ${c.monthlyCostDelta > 0 ? 'text-amber-300' : 'text-emerald-300'}`}>
+                    <td className="p-2 text-right text-slate-900 dark:text-white">{money(c.priceMonthly)}/mo</td>
+                    <td className={`p-2 text-right ${c.monthlyCostDelta > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
                       {c.monthlyCostDelta > 0 ? '+' : ''}
                       {money(c.monthlyCostDelta)}
                     </td>
@@ -235,7 +235,7 @@ export const ResizeServerModal = ({ isOpen, server, onClose, onResizeCompleted }
           {canRequest && plan.executable && !plan.activeRequest ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <label className="md:col-span-2 block">
-                <span className="text-slate-400">Reason *</span>
+                <span className="text-slate-500 dark:text-[#888888]">Reason *</span>
                 <textarea
                   required
                   minLength={5}
@@ -243,20 +243,20 @@ export const ResizeServerModal = ({ isOpen, server, onClose, onResizeCompleted }
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   placeholder="e.g. Memory p95 above 85% all week; checkout slowing down"
-                  className="mt-1 w-full px-2 py-1.5 rounded bg-[#090b10] border border-[#21283c] text-slate-200"
+                  className="mt-1 w-full px-2 py-1.5 rounded bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                 />
               </label>
               <div className="space-y-2">
                 <label className="block">
-                  <span className="text-slate-400">Run at (optional)</span>
+                  <span className="text-slate-500 dark:text-[#888888]">Run at (optional)</span>
                   <input
                     type="datetime-local"
                     value={scheduledFor}
                     onChange={(e) => setScheduledFor(e.target.value)}
-                    className="mt-1 w-full px-2 py-1.5 rounded bg-[#090b10] border border-[#21283c] text-slate-200"
+                    className="mt-1 w-full px-2 py-1.5 rounded bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer">
+                <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
                   <input type="checkbox" checked={takeSnapshot} onChange={(e) => setTakeSnapshot(e.target.checked)} />
                   Take a snapshot first
                 </label>
@@ -266,12 +266,12 @@ export const ResizeServerModal = ({ isOpen, server, onClose, onResizeCompleted }
             !canRequest && <p className="text-slate-500">Your role can view resize plans but not request a resize.</p>
           )}
 
-          <div className="flex items-center justify-between gap-3 pt-3 border-t border-[#1c2232]">
-            <div className="text-slate-400">
+          <div className="flex items-center justify-between gap-3 pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">
+            <div className="text-slate-500 dark:text-[#888888]">
               {target && (
                 <>
-                  {plan.current.type} → <span className="text-white font-mono">{target.type}</span> ·{' '}
-                  <span className={target.monthlyCostDelta > 0 ? 'text-amber-300' : 'text-emerald-300'}>
+                  {plan.current.type} → <span className="text-slate-900 dark:text-white font-mono">{target.type}</span> ·{' '}
+                  <span className={target.monthlyCostDelta > 0 ? 'text-amber-400' : 'text-emerald-400'}>
                     {target.monthlyCostDelta > 0 ? '+' : ''}
                     {money(target.monthlyCostDelta)}/month
                   </span>

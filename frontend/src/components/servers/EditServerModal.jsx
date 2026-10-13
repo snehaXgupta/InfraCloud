@@ -98,44 +98,44 @@ export const EditServerModal = ({ isOpen, server, onClose, onServerUpdated }) =>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Droplet Name *</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Droplet Name *</label>
             <input
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
               required
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Public IP</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Public IP</label>
             <input
               type="text"
               value={formData.publicIp}
               onChange={(e) => setFormData({ ...formData, publicIp: e.target.value })}
-              className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Region / Datacenter</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Region / Datacenter</label>
             <input
               type="text"
               value={formData.region}
               onChange={(e) => setFormData({ ...formData, region: e.target.value })}
-              className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Provider</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Provider</label>
             <select
               value={formData.provider}
               onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
-              className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             >
               <option value="DigitalOcean">DigitalOcean</option>
               <option value="Vultr">Vultr</option>
@@ -148,11 +148,11 @@ export const EditServerModal = ({ isOpen, server, onClose, onServerUpdated }) =>
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Status</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Status</label>
             <select
               value={formData.status}
               onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-              className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             >
               <option value="healthy">Active / Healthy</option>
               <option value="warning">Warning</option>
@@ -166,66 +166,66 @@ export const EditServerModal = ({ isOpen, server, onClose, onServerUpdated }) =>
         {/* Compute Specs */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">vCPUs</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">vCPUs</label>
             <input
               type="number"
               min="1"
               max="128"
               value={formData.vcpu}
               onChange={(e) => setFormData({ ...formData, vcpu: e.target.value })}
-              className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">RAM (GB)</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">RAM (GB)</label>
             <input
               type="number"
               min="1"
               max="1024"
               value={formData.ramGb}
               onChange={(e) => setFormData({ ...formData, ramGb: e.target.value })}
-              className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">SSD Disk (GB)</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">SSD Disk (GB)</label>
             <input
               type="number"
               min="10"
               max="10000"
               value={formData.diskTotalGb}
               onChange={(e) => setFormData({ ...formData, diskTotalGb: e.target.value })}
-              className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-mono"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs text-slate-400 mb-1">Tags (comma-separated)</label>
+          <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Tags (comma-separated)</label>
           <input
             type="text"
             value={formData.tags}
             onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
             placeholder="production, web, api"
-            className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+            className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
           />
         </div>
 
         <div>
-          <label className="block text-xs text-slate-400 mb-1">Allowed services (comma-separated)</label>
+          <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Allowed services (comma-separated)</label>
           <input
             type="text"
             value={formData.allowedServices}
             onChange={(e) => setFormData({ ...formData, allowedServices: e.target.value })}
             placeholder="nginx, app, worker"
-            className="w-full bg-[#0d0f15] border border-[#262c3e] rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+            className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
           />
-          <p className="text-[11px] text-slate-500 mt-1">Only these services can be restarted from the Operations catalog.</p>
+          <p className="text-[11px] text-slate-500 dark:text-[#666] mt-1">Only these services can be restarted from the Operations catalog.</p>
         </div>
 
-        <div className="flex justify-end gap-3 pt-4 border-t border-[#1c202c]">
+        <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-[#1f1f1f]">
           <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
             Cancel
           </Button>

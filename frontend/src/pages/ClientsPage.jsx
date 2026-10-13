@@ -85,11 +85,11 @@ export const ClientsPage = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <Building2 className="w-6 h-6 text-blue-400" />
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            <Building2 className="w-6 h-6 text-slate-700 dark:text-white" />
             Client Management
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
             Top-level organizational tenant control with scoped projects, environments, and SLA definitions
           </p>
         </div>
@@ -102,13 +102,13 @@ export const ClientsPage = () => {
       {/* Search and Filters */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 dark:text-[#666666] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search clients by name, email or description..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg pl-9 pr-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
           />
         </div>
       </div>
@@ -136,39 +136,39 @@ export const ClientsPage = () => {
               <div>
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <span className="text-[10px] font-mono uppercase tracking-wider text-blue-400">{client.tier}</span>
-                    <h3 className="text-lg font-bold text-white mt-0.5">{client.name}</h3>
+                    <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-[#888888]">{client.tier}</span>
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">{client.name}</h3>
                   </div>
                   <Badge variant={client.status === 'active' ? 'healthy' : 'neutral'}>
                     {client.status}
                   </Badge>
                 </div>
 
-                <p className="text-xs text-slate-300 mt-2.5 line-clamp-2 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-[#888888] mt-2.5 line-clamp-2 leading-relaxed">
                   {client.description || 'No description provided.'}
                 </p>
 
                 {client.contactEmail && (
-                  <div className="flex items-center gap-2 mt-3 text-xs text-slate-400 font-mono">
-                    <Mail className="w-3.5 h-3.5 text-slate-500" />
+                  <div className="flex items-center gap-2 mt-3 text-xs text-slate-500 dark:text-[#888888] font-mono">
+                    <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-[#666666]" />
                     <span>{client.contactEmail}</span>
                   </div>
                 )}
               </div>
 
-              <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between">
+              <div className="mt-6 pt-4 border-t border-slate-200 dark:border-[#1f1f1f] flex items-center justify-between">
                 <div className="flex items-center gap-4 text-xs font-mono">
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <FolderGit2 className="w-3.5 h-3.5 text-purple-400" />
+                  <div className="flex items-center gap-1.5 text-slate-600 dark:text-[#888888]">
+                    <FolderGit2 className="w-3.5 h-3.5 text-slate-400 dark:text-[#666666]" />
                     <span>{client.projectCount || 0} Projects</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-300">
-                    <Server className="w-3.5 h-3.5 text-cyan-400" />
+                  <div className="flex items-center gap-1.5 text-slate-600 dark:text-[#888888]">
+                    <Server className="w-3.5 h-3.5 text-slate-400 dark:text-[#666666]" />
                     <span>{client.serverCount || 0} Servers</span>
                   </div>
                 </div>
 
-                <span className="text-xs text-blue-400 font-semibold flex items-center gap-1">
+                <span className="text-xs text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white font-medium flex items-center gap-1 transition-colors">
                   View Scoped Tree <ExternalLink className="w-3 h-3" />
                 </span>
               </div>
@@ -181,44 +181,44 @@ export const ClientsPage = () => {
       <Modal isOpen={isCreateOpen} onClose={() => setIsCreateOpen(false)} title="Create New Client Account">
         <form onSubmit={handleCreateClient} className="space-y-4">
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Client Organization Name *</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Client Organization Name *</label>
             <input
               type="text"
               required
               placeholder="e.g. Apex Global Systems"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             />
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Technical Contact Email</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Technical Contact Email</label>
             <input
               type="email"
               placeholder="ops@clientdomain.com"
               value={formData.contactEmail}
               onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-slate-400 mb-1">SLA Level</label>
+              <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">SLA Level</label>
               <input
                 type="text"
                 value={formData.sla}
                 onChange={(e) => setFormData({ ...formData, sla: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
               />
             </div>
             <div>
-              <label className="block text-xs text-slate-400 mb-1">Subscription Tier</label>
+              <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Subscription Tier</label>
               <select
                 value={formData.tier}
                 onChange={(e) => setFormData({ ...formData, tier: e.target.value })}
-                className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+                className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
               >
                 <option value="Enterprise">Enterprise</option>
                 <option value="Business">Business</option>
@@ -229,17 +229,17 @@ export const ClientsPage = () => {
           </div>
 
           <div>
-            <label className="block text-xs text-slate-400 mb-1">Description & Purpose</label>
+            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Description & Purpose</label>
             <textarea
               rows={3}
               placeholder="Brief description of the client's business domain..."
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500"
+              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
+          <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">
             <Button variant="outline" onClick={() => setIsCreateOpen(false)} disabled={isSubmitting}>
               Cancel
             </Button>

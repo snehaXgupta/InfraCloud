@@ -19,17 +19,17 @@ export const Button = ({
 
   const variants = {
     primary:
-      'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 border border-blue-500/50 focus:ring-blue-500',
+      'bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-[#eaeaea] border border-transparent shadow-sm font-medium focus:ring-slate-400 dark:focus:ring-white',
     secondary:
-      'bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 hover:border-slate-600 focus:ring-slate-500',
+      'bg-slate-100 dark:bg-[#141414] hover:bg-slate-200 dark:hover:bg-[#1f1f1f] text-slate-800 dark:text-[#ededed] border border-slate-200 dark:border-[#262626] hover:border-slate-300 dark:hover:border-[#333333]',
     outline:
-      'bg-transparent hover:bg-slate-800/60 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 focus:ring-slate-600',
+      'bg-transparent hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-700 dark:text-[#ededed] border border-slate-200 dark:border-[#222222] hover:border-slate-300 dark:hover:border-[#333333]',
     danger:
-      'bg-rose-600 hover:bg-rose-500 text-white shadow-lg shadow-rose-600/20 border border-rose-500/50 focus:ring-rose-500',
+      'bg-rose-600 hover:bg-rose-500 text-white border border-rose-500/50 shadow-sm font-medium focus:ring-rose-500',
     ghost:
-      'bg-transparent hover:bg-slate-800/60 text-slate-400 hover:text-slate-100 focus:ring-slate-700',
+      'bg-transparent hover:bg-slate-100 dark:hover:bg-white/[0.05] text-slate-500 dark:text-[#888888] hover:text-slate-900 dark:hover:text-white',
     success:
-      'bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/20 border border-emerald-500/50 focus:ring-emerald-500',
+      'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/50 shadow-sm font-medium focus:ring-emerald-500',
   };
 
   const sizes = {

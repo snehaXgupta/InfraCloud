@@ -10,13 +10,13 @@ import { useToast } from '../context/ToastContext';
 import api from '../services/api';
 
 const COST_MANAGERS = ['Platform Admin', 'Billing / Finance'];
-const BAR_COLOR = '#3b82f6'; // validated against the dark card surface (#11141c)
+const BAR_COLOR = '#ffffff';
 
 const LABEL_STYLES = {
-  Actual: 'bg-[#0e241b] border-emerald-600/40 text-emerald-300',
-  Estimated: 'bg-[#151924] border-[#2a3350] text-slate-300',
-  Mixed: 'bg-[#0d2129] border-cyan-600/40 text-cyan-300',
-  Forecast: 'bg-[#1c1530] border-purple-600/40 text-purple-300',
+  Actual: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 dark:text-emerald-400',
+  Estimated: 'bg-slate-100 dark:bg-[#111111] border-slate-200 dark:border-[#222222] text-slate-700 dark:text-slate-300',
+  Mixed: 'bg-slate-100 dark:bg-[#111111] border-slate-200 dark:border-[#222222] text-slate-900 dark:text-white',
+  Forecast: 'bg-slate-100 dark:bg-[#111111] border-slate-200 dark:border-[#222222] text-slate-700 dark:text-slate-300',
 };
 
 const RATE_SOURCES = {
@@ -33,7 +33,7 @@ const LabelBadge = ({ label }) =>
       {label}
     </span>
   ) : (
-    <span className="text-[10px] text-slate-600">no data</span>
+    <span className="text-[10px] text-slate-500 dark:text-[#888888]">no data</span>
   );
 
 const recentMonths = (count) => {
@@ -47,13 +47,13 @@ const recentMonths = (count) => {
 const monthName = (month) =>
   new Date(`${month}-01T00:00:00Z`).toLocaleDateString([], { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
-const card = 'rounded-xl bg-[#11141c] border border-[#212636]';
+const card = 'rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f]';
 
 const BreakdownTable = ({ title, rows, money, linkTo }) => (
   <div className={`${card} p-4 space-y-3`}>
-    <div className="text-sm font-bold text-white">{title}</div>
+    <div className="text-sm font-bold text-slate-900 dark:text-white">{title}</div>
     <table className="w-full text-xs">
-      <thead className="text-[10px] uppercase font-mono text-slate-500">
+      <thead className="text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888]">
         <tr>
           <th className="text-left font-medium pb-2">Name</th>
           <th className="text-right font-medium pb-2">Amount</th>
@@ -61,21 +61,21 @@ const BreakdownTable = ({ title, rows, money, linkTo }) => (
           <th className="text-right font-medium pb-2 pl-2">Forecast</th>
         </tr>
       </thead>
-      <tbody className="divide-y divide-[#1c2232]">
+      <tbody className="divide-y divide-slate-200 dark:divide-[#1f1f1f]">
         {rows.map((r) => (
           <tr key={r.id}>
-            <td className="py-2 pr-2 text-slate-200">
-              {linkTo && r.id !== 'none' ? <Link className="hover:text-blue-400" to={linkTo(r.id)}>{r.name}</Link> : r.name}
-              <div className="text-[10px] text-slate-500">{r.servers} server{r.servers === 1 ? '' : 's'}</div>
+            <td className="py-2 pr-2 text-slate-900 dark:text-slate-200">
+              {linkTo && r.id !== 'none' ? <Link className="hover:text-black dark:hover:text-white transition-colors" to={linkTo(r.id)}>{r.name}</Link> : r.name}
+              <div className="text-[10px] text-slate-500 dark:text-[#888888]">{r.servers} server{r.servers === 1 ? '' : 's'}</div>
             </td>
-            <td className="py-2 text-right font-mono text-white">{money(r.amount)}</td>
+            <td className="py-2 text-right font-mono text-slate-900 dark:text-white font-medium">{money(r.amount)}</td>
             <td className="py-2 pl-2 text-right"><LabelBadge label={r.label} /></td>
-            <td className="py-2 pl-2 text-right font-mono text-slate-300">{money(r.forecast)}</td>
+            <td className="py-2 pl-2 text-right font-mono text-slate-600 dark:text-slate-300">{money(r.forecast)}</td>
           </tr>
         ))}
         {!rows.length && (
           <tr>
-            <td colSpan={4} className="py-3 text-slate-500">No cost data for this month.</td>
+            <td colSpan={4} className="py-3 text-slate-500 dark:text-[#888888]">No cost data for this month.</td>
           </tr>
         )}
       </tbody>
@@ -187,10 +187,10 @@ export const CostsPage = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <DollarSign className="w-5 h-5 text-blue-400" /> Costs
+          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
+            <DollarSign className="w-5 h-5 text-slate-700 dark:text-white" /> Costs
           </h1>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
             Estimated from each server's plan price, replaced by Actuals when a provider invoice is imported.
           </p>
         </div>
@@ -199,7 +199,7 @@ export const CostsPage = () => {
             value={month}
             onChange={(e) => setMonth(e.target.value)}
             aria-label="Billing month"
-            className="px-2 py-1.5 rounded-lg bg-[#151924] border border-[#242c3f] text-xs text-slate-200 cursor-pointer"
+            className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-xs text-slate-900 dark:text-white cursor-pointer focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
           >
             {months.map((m) => (
               <option key={m} value={m}>{monthName(m)}</option>
@@ -221,31 +221,31 @@ export const CostsPage = () => {
       {/* Headline numbers */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className={`${card} p-4 space-y-2`}>
-          <div className="flex items-center justify-between text-xs text-slate-400">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-[#888888]">
             <span>{data.isCurrentMonth ? 'Month to date' : 'Month total'}</span>
             <LabelBadge label={totals.label} />
           </div>
-          <div className="text-2xl font-bold text-white font-mono">{money(totals.amount)}</div>
-          <div className="text-[11px] text-slate-500">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{money(totals.amount)}</div>
+          <div className="text-[11px] text-slate-500 dark:text-[#888888]">
             Day {data.daysElapsed} of {data.daysInMonth} · {data.servers.length} servers
           </div>
         </div>
         <div className={`${card} p-4 space-y-2`}>
-          <div className="flex items-center justify-between text-xs text-slate-400">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-[#888888]">
             <span>{data.isCurrentMonth ? 'Forecast, end of month' : 'Final'}</span>
             <LabelBadge label={data.isCurrentMonth ? 'Forecast' : totals.label} />
           </div>
-          <div className="text-2xl font-bold text-white font-mono">{money(totals.forecast)}</div>
-          <div className="text-[11px] text-slate-500">
+          <div className="text-2xl font-bold text-slate-900 dark:text-white font-mono">{money(totals.forecast)}</div>
+          <div className="text-[11px] text-slate-500 dark:text-[#888888]">
             {data.isCurrentMonth ? 'Month to date + current daily rate × remaining days' : 'Closed month'}
           </div>
         </div>
         <div className={`${card} p-4 space-y-2`}>
-          <div className="text-xs text-slate-400">Last synced</div>
-          <div className="text-sm font-bold text-white">
+          <div className="text-xs text-slate-500 dark:text-[#888888]">Last synced</div>
+          <div className="text-sm font-bold text-slate-900 dark:text-white">
             {data.lastSyncedAt ? new Date(data.lastSyncedAt).toLocaleString() : 'Not synced yet'}
           </div>
-          <div className="text-[11px] text-slate-500">
+          <div className="text-[11px] text-slate-500 dark:text-[#888888]">
             Currency {data.currency} · billing timezone {data.timezone} · estimates accrue hourly
           </div>
         </div>
@@ -254,10 +254,10 @@ export const CostsPage = () => {
       {/* Daily accrual */}
       <div className={`${card} p-5 space-y-4`}>
         <div className="flex items-center justify-between">
-          <div className="text-sm font-bold text-white">Daily estimated cost · {monthName(month)}</div>
+          <div className="text-sm font-bold text-slate-900 dark:text-white">Daily estimated cost · {monthName(month)}</div>
           <button
             onClick={() => setShowDailyTable((v) => !v)}
-            className="inline-flex items-center gap-1.5 text-[11px] text-slate-400 hover:text-white"
+            className="inline-flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-[#888888] hover:text-black dark:hover:text-white transition-colors cursor-pointer"
           >
             {showDailyTable ? <BarChart3 className="w-3.5 h-3.5" /> : <Table2 className="w-3.5 h-3.5" />}
             {showDailyTable ? 'Show chart' : 'Show as table'}
@@ -266,11 +266,11 @@ export const CostsPage = () => {
         {showDailyTable ? (
           <div className="max-h-64 overflow-y-auto">
             <table className="w-full text-xs">
-              <tbody className="divide-y divide-[#1c2232]">
+              <tbody className="divide-y divide-slate-200 dark:divide-[#1f1f1f]">
                 {recordedDays.map((d) => (
                   <tr key={d.date}>
-                    <td className="py-1.5 text-slate-300 font-mono">{d.date}</td>
-                    <td className="py-1.5 text-right text-white font-mono">{money(d.amount)}</td>
+                    <td className="py-1.5 text-slate-700 dark:text-slate-300 font-mono">{d.date}</td>
+                    <td className="py-1.5 text-right text-slate-900 dark:text-white font-mono font-medium">{money(d.amount)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -280,10 +280,10 @@ export const CostsPage = () => {
           <div className="w-full h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyRows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="25%">
-                <CartesianGrid strokeDasharray="3 3" stroke="#1c202c" vertical={false} />
-                <XAxis dataKey="day" stroke="#64748b" fontSize={10} tickLine={false} axisLine={{ stroke: '#1c202c' }} interval={1} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#222222" vertical={false} />
+                <XAxis dataKey="day" stroke="#666666" fontSize={10} tickLine={false} axisLine={{ stroke: '#222222' }} interval={1} />
                 <YAxis
-                  stroke="#64748b"
+                  stroke="#666666"
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
@@ -291,12 +291,12 @@ export const CostsPage = () => {
                   tickFormatter={(v) => money(v).replace(/\.00$/, '')}
                 />
                 <Tooltip
-                  cursor={{ fill: 'rgba(148,163,184,0.08)' }}
+                  cursor={{ fill: 'rgba(255,255,255,0.04)' }}
                   content={({ active, payload }) =>
                     active && payload?.length && payload[0].value != null ? (
-                      <div className="bg-[#0b0d13] border border-[#262c3e] px-3 py-2 rounded text-[11px] font-mono">
-                        <div className="text-slate-400">{payload[0].payload.date}</div>
-                        <div className="text-white font-bold">{money(payload[0].value)} <span className="text-slate-500 font-normal">estimated</span></div>
+                      <div className="bg-white dark:bg-black border border-slate-200 dark:border-[#222222] px-3 py-2 rounded-lg shadow-sm text-[11px] font-mono">
+                        <div className="text-slate-500 dark:text-[#888888]">{payload[0].payload.date}</div>
+                        <div className="text-slate-900 dark:text-white font-bold">{money(payload[0].value)} <span className="text-slate-500 font-normal">estimated</span></div>
                       </div>
                     ) : null
                   }
@@ -306,7 +306,7 @@ export const CostsPage = () => {
             </ResponsiveContainer>
           </div>
         ) : (
-          <p className="text-xs text-slate-500">No estimated cost recorded for this month.</p>
+          <p className="text-xs text-slate-500 dark:text-[#888888]">No estimated cost recorded for this month.</p>
         )}
       </div>
 
@@ -319,10 +319,10 @@ export const CostsPage = () => {
 
       {/* Servers */}
       <div className={`${card} p-5 space-y-3`}>
-        <div className="text-sm font-bold text-white">Servers</div>
+        <div className="text-sm font-bold text-slate-900 dark:text-white">Servers</div>
         <div className="overflow-x-auto">
           <table className="w-full text-xs min-w-[760px]">
-            <thead className="text-[10px] uppercase font-mono text-slate-500 border-b border-[#1c2232]">
+            <thead className="text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888] border-b border-slate-200 dark:border-[#1f1f1f]">
               <tr>
                 <th className="text-left font-medium py-2">Server</th>
                 <th className="text-left font-medium py-2">Provider · plan</th>
@@ -331,14 +331,14 @@ export const CostsPage = () => {
                 <th className="text-right font-medium py-2">Forecast</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1c2232]">
+            <tbody className="divide-y divide-slate-200 dark:divide-[#1f1f1f]">
               {data.servers.map((s) => (
                 <tr key={s.id}>
                   <td className="py-2.5 pr-2">
-                    <Link to={`/servers/${s.id}`} className="text-slate-200 hover:text-blue-400">{s.name}</Link>
+                    <Link to={`/servers/${s.id}`} className="text-slate-900 dark:text-slate-200 hover:text-black dark:hover:text-white font-medium transition-colors">{s.name}</Link>
                   </td>
-                  <td className="py-2.5 text-slate-400">
-                    {s.provider} · <span className="font-mono">{s.instanceType}</span>
+                  <td className="py-2.5 text-slate-500 dark:text-[#888888]">
+                    {s.provider} · <span className="font-mono text-slate-700 dark:text-slate-300">{s.instanceType}</span>
                   </td>
                   <td className="py-2.5 text-right">
                     {editing?.id === s.id ? (
@@ -350,19 +350,19 @@ export const CostsPage = () => {
                           onKeyDown={(e) => e.key === 'Enter' && saveRate(s.id, editing.value)}
                           placeholder="estimate"
                           aria-label={`Monthly rate for ${s.name}`}
-                          className="w-24 px-2 py-1 rounded bg-[#090b10] border border-[#21283c] font-mono text-right text-white"
+                          className="w-24 px-2 py-1 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] font-mono text-right text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                         />
-                        <button onClick={() => saveRate(s.id, editing.value)} className="p-1 text-emerald-400" title="Save"><Check className="w-3.5 h-3.5" /></button>
-                        <button onClick={() => setEditing(null)} className="p-1 text-slate-400" title="Cancel"><X className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => saveRate(s.id, editing.value)} className="p-1 text-emerald-500 dark:text-emerald-400 cursor-pointer" title="Save"><Check className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => setEditing(null)} className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white cursor-pointer" title="Cancel"><X className="w-3.5 h-3.5" /></button>
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-2 justify-end">
-                        <span className="font-mono text-white">{s.monthlyRate == null ? '—' : money(s.monthlyRate)}</span>
-                        <span className="text-[10px] text-slate-500">{RATE_SOURCES[s.rateSource] || s.rateSource}</span>
+                        <span className="font-mono text-slate-900 dark:text-white font-medium">{s.monthlyRate == null ? '—' : money(s.monthlyRate)}</span>
+                        <span className="text-[10px] text-slate-500 dark:text-[#888888]">{RATE_SOURCES[s.rateSource] || s.rateSource}</span>
                         {canManage && data.isCurrentMonth && (
                           <button
                             onClick={() => setEditing({ id: s.id, value: s.rateSource === 'manual-rate' ? String(s.monthlyRate) : '' })}
-                            className="p-1 text-slate-500 hover:text-white"
+                            className="p-1 text-slate-400 hover:text-black dark:hover:text-white cursor-pointer transition-colors"
                             title="Set monthly rate"
                           >
                             <Pencil className="w-3 h-3" />
@@ -371,21 +371,21 @@ export const CostsPage = () => {
                       </span>
                     )}
                   </td>
-                  <td className="py-2.5 text-right font-mono text-white">
+                  <td className="py-2.5 text-right font-mono text-slate-900 dark:text-white font-medium">
                     {money(s.amount)} <span className="ml-1"><LabelBadge label={s.label} /></span>
                   </td>
-                  <td className="py-2.5 text-right font-mono text-slate-300">{money(s.forecast)}</td>
+                  <td className="py-2.5 text-right font-mono text-slate-600 dark:text-slate-300">{money(s.forecast)}</td>
                 </tr>
               ))}
               {!data.servers.length && (
                 <tr>
-                  <td colSpan={5} className="py-3 text-slate-500">No servers with cost data for this month.</td>
+                  <td colSpan={5} className="py-3 text-slate-500 dark:text-[#888888]">No servers with cost data for this month.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-        <p className="text-[11px] text-slate-500">
+        <p className="text-[11px] text-slate-500 dark:text-[#888888]">
           Rate sources: <b>Plan price</b> from the provider price list · <b>Size match</b> nearest plan by vCPU/RAM (rough) ·{' '}
           <b>Manual rate</b> set by Billing · <b>Unpriced</b> no price known.
         </p>
@@ -393,13 +393,13 @@ export const CostsPage = () => {
 
       {/* Six-month history */}
       <div className={`${card} p-5 space-y-3`}>
-        <div className="text-sm font-bold text-white">Last 6 months</div>
+        <div className="text-sm font-bold text-slate-900 dark:text-white">Last 6 months</div>
         <table className="w-full text-xs">
-          <tbody className="divide-y divide-[#1c2232]">
+          <tbody className="divide-y divide-slate-200 dark:divide-[#1f1f1f]">
             {[...data.history].reverse().map((h) => (
               <tr key={h.month}>
-                <td className="py-2 text-slate-300">{monthName(h.month)}</td>
-                <td className="py-2 text-right font-mono text-white">{h.label ? money(h.amount) : '—'}</td>
+                <td className="py-2 text-slate-700 dark:text-slate-300">{monthName(h.month)}</td>
+                <td className="py-2 text-right font-mono text-slate-900 dark:text-white font-medium">{h.label ? money(h.amount) : '—'}</td>
                 <td className="py-2 pl-3 w-24 text-right"><LabelBadge label={h.label} /></td>
               </tr>
             ))}
@@ -409,17 +409,17 @@ export const CostsPage = () => {
 
       {/* Invoice import */}
       <Modal isOpen={importOpen} onClose={() => setImportOpen(false)} title="Import invoice actuals" maxWidth="max-w-lg">
-        <form onSubmit={submitImport} className="space-y-4 text-xs text-slate-300">
-          <p className="text-slate-400">
-            One line per server: <code className="text-blue-300">server,amount</code>. Server can be its name, hostname or id.
+        <form onSubmit={submitImport} className="space-y-4 text-xs text-slate-700 dark:text-slate-300">
+          <p className="text-slate-500 dark:text-[#888888]">
+            One line per server: <code className="text-slate-900 dark:text-white bg-slate-100 dark:bg-[#1a1a1a] px-1 py-0.5 rounded">server,amount</code>. Server can be its name, hostname or id.
             Actuals replace the estimate for that server and month.
           </p>
           <label className="block">
-            <span className="text-slate-400">Invoice month</span>
+            <span className="text-slate-600 dark:text-[#888888]">Invoice month</span>
             <select
               value={importMonth}
               onChange={(e) => setImportMonth(e.target.value)}
-              className="mt-1 w-full px-2 py-1.5 rounded bg-[#090b10] border border-[#21283c] text-slate-200"
+              className="mt-1 w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             >
               {months.map((m) => (
                 <option key={m} value={m}>{monthName(m)}</option>
@@ -427,24 +427,24 @@ export const CostsPage = () => {
             </select>
           </label>
           <label className="block">
-            <span className="text-slate-400">Lines</span>
+            <span className="text-slate-600 dark:text-[#888888]">Lines</span>
             <textarea
               rows={8}
               value={importText}
               onChange={(e) => setImportText(e.target.value)}
               placeholder={'server,amount\nweb-01.example.com,24.00\nDatabase Primary (PostgreSQL 16),310.50'}
-              className="mt-1 w-full px-2 py-1.5 rounded bg-[#090b10] border border-[#21283c] font-mono text-slate-200"
+              className="mt-1 w-full px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] font-mono text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             />
           </label>
           {importResult && (
-            <div className="p-3 rounded border border-[#21283c] bg-[#0d0f15] space-y-1">
-              <div className="text-emerald-300">{importResult.imported} line(s) imported.</div>
+            <div className="p-3 rounded-lg border border-slate-200 dark:border-[#222222] bg-slate-50 dark:bg-[#0a0a0a] space-y-1">
+              <div className="text-emerald-500 dark:text-emerald-400">{importResult.imported} line(s) imported.</div>
               {importResult.unmatched.length > 0 && (
-                <div className="text-amber-400">Not matched to a server: {importResult.unmatched.join(', ')}</div>
+                <div className="text-amber-500 dark:text-amber-400">Not matched to a server: {importResult.unmatched.join(', ')}</div>
               )}
             </div>
           )}
-          <div className="flex justify-end gap-2 pt-2 border-t border-[#1c2232]">
+          <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-[#1f1f1f]">
             <Button variant="outline" onClick={() => setImportOpen(false)}>Close</Button>
             <Button type="submit" leftIcon={<Upload className="w-3.5 h-3.5" />}>Import</Button>
           </div>

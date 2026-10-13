@@ -12,15 +12,15 @@ const FINAL = ['Succeeded', 'Failed', 'Rejected', 'Cancelled', 'Expired'];
 
 export const STATUS_STYLES = {
   'Awaiting Approval': 'bg-[#2a1d0b] border-amber-600/40 text-amber-300',
-  Queued: 'bg-[#0f1a2e] border-blue-600/40 text-blue-300',
-  Dispatched: 'bg-[#0f1a2e] border-blue-600/40 text-blue-300',
-  Running: 'bg-[#0f1a2e] border-blue-500/60 text-blue-200',
-  Verifying: 'bg-[#0f1a2e] border-blue-500/60 text-blue-200',
+  Queued: 'bg-[#141414] border-[#2a2a2a] text-zinc-300',
+  Dispatched: 'bg-[#141414] border-[#2a2a2a] text-zinc-300',
+  Running: 'bg-[#181818] border-zinc-600 text-white',
+  Verifying: 'bg-[#181818] border-zinc-600 text-white',
   Succeeded: 'bg-[#0e241b] border-emerald-600/40 text-emerald-300',
   Failed: 'bg-[#2a0f12] border-red-700/60 text-red-300',
   Rejected: 'bg-[#2a0f12] border-red-700/40 text-red-300',
-  Cancelled: 'bg-[#151924] border-[#2a3350] text-slate-400',
-  Expired: 'bg-[#151924] border-[#2a3350] text-slate-400',
+  Cancelled: 'bg-[#141414] border-[#222222] text-zinc-400',
+  Expired: 'bg-[#141414] border-[#222222] text-zinc-400',
 };
 
 const RISK_STYLES = {
@@ -39,7 +39,8 @@ export const StatusBadge = ({ status }) => (
   </span>
 );
 
-const input = 'mt-1 w-full px-2 py-1.5 rounded bg-[#090b10] border border-[#21283c] text-xs text-slate-200';
+const input =
+  'mt-1 w-full px-2.5 py-1.5 rounded-md bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors';
 
 /**
  * Run a catalog operation on a server (discovery doc §8). The panel never sends commands: the
@@ -138,7 +139,7 @@ export const OperationModal = ({ isOpen, onClose, server: fixedServer, onOperati
             ) : ['Failed', 'Rejected', 'Expired'].includes(op.status) ? (
               <XCircle className="w-5 h-5 text-red-400" />
             ) : (
-              <Loader2 className="w-5 h-5 text-blue-400 animate-spin" />
+              <Loader2 className="w-5 h-5 text-zinc-300 animate-spin" />
             )}
             <span className="font-bold text-white text-sm">{op.operationType}</span>
             <StatusBadge status={op.status} />
@@ -196,22 +197,24 @@ export const OperationModal = ({ isOpen, onClose, server: fixedServer, onOperati
                 type="button"
                 key={c.type}
                 onClick={() => setType(c.type)}
-                className={`text-left p-3 rounded-lg border transition-colors ${
-                  type === c.type ? 'border-blue-500 bg-[#18243c]' : 'border-[#21283c] bg-[#0d0f15] hover:border-slate-500'
+                className={`text-left p-3 rounded-lg border transition-colors cursor-pointer ${
+                  type === c.type
+                    ? 'border-slate-900 dark:border-white bg-slate-100 dark:bg-[#1a1a1a]'
+                    : 'border-slate-200 dark:border-[#1f1f1f] bg-slate-50 dark:bg-[#0a0a0a] hover:border-slate-300 dark:hover:border-[#333]'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-semibold text-white">{c.type}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white">{c.type}</span>
                   <span className={`text-[10px] uppercase font-mono ${RISK_STYLES[c.risk]}`}>{c.risk} risk</span>
                 </div>
-                <div className="text-[11px] text-slate-400 mt-1">{c.description}</div>
+                <div className="text-[11px] text-slate-500 dark:text-[#888888] mt-1">{c.description}</div>
               </button>
             ))}
           </div>
 
           {type === 'Service Restart' && (
             <label className="block">
-              <span className="text-slate-400">Service *</span>
+              <span className="text-slate-500 dark:text-[#888888]">Service *</span>
               {server?.allowedServices?.length ? (
                 <select value={service} onChange={(e) => setService(e.target.value)} className={input}>
                   {server.allowedServices.map((s) => (
@@ -219,13 +222,13 @@ export const OperationModal = ({ isOpen, onClose, server: fixedServer, onOperati
                   ))}
                 </select>
               ) : (
-                <p className="mt-1 text-amber-300">No services are allowed on this server yet. Edit the server and add them under “Allowed services”.</p>
+                <p className="mt-1 text-amber-400">No services are allowed on this server yet. Edit the server and add them under “Allowed services”.</p>
               )}
             </label>
           )}
 
           {type === 'Cleanup' && (
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label className="flex items-center gap-2 cursor-pointer text-slate-700 dark:text-slate-300">
               <input type="checkbox" checked={dryRun} onChange={(e) => setDryRun(e.target.checked)} />
               Dry run (only report what would be freed)
             </label>
@@ -233,7 +236,7 @@ export const OperationModal = ({ isOpen, onClose, server: fixedServer, onOperati
 
           {entry?.replication && (
             <label className="block">
-              <span className="text-slate-400">Replication *</span>
+              <span className="text-slate-500 dark:text-[#888888]">Replication *</span>
               {replicaRels.length ? (
                 <select value={relationshipId} onChange={(e) => setRelationshipId(e.target.value)} className={input}>
                   {replicaRels.map((r) => (
@@ -243,14 +246,14 @@ export const OperationModal = ({ isOpen, onClose, server: fixedServer, onOperati
                   ))}
                 </select>
               ) : (
-                <p className="mt-1 text-amber-300">This server is not a replica. Sync always runs on the replica — set it up on the Replication page.</p>
+                <p className="mt-1 text-amber-400">This server is not a replica. Sync always runs on the replica — set it up on the Replication page.</p>
               )}
             </label>
           )}
 
           {entry && (
-            <div className="flex items-start gap-2 p-3 rounded-lg bg-[#0d0f15] border border-[#1c2232]">
-              {needsApproval ? <ShieldCheck className="w-4 h-4 text-amber-300 shrink-0" /> : <Play className="w-4 h-4 text-emerald-300 shrink-0" />}
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-slate-50 dark:bg-[#050505] border border-slate-200 dark:border-[#1f1f1f] text-slate-600 dark:text-[#888888]">
+              {needsApproval ? <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" /> : <Play className="w-4 h-4 text-emerald-400 shrink-0" />}
               <div>
                 {needsApproval ? 'Needs approval from a second person before it runs.' : 'Runs as soon as the agent picks it up.'} Time limit {Math.round(entry.timeoutSec / 60) || 1} min.
               </div>
@@ -259,21 +262,21 @@ export const OperationModal = ({ isOpen, onClose, server: fixedServer, onOperati
 
           {(needsApproval || entry?.risk !== 'low') && (
             <label className="block">
-              <span className="text-slate-400">Reason {needsApproval ? '*' : '(optional)'}</span>
+              <span className="text-slate-500 dark:text-[#888888]">Reason {needsApproval ? '*' : '(optional)'}</span>
               <input required={needsApproval} minLength={needsApproval ? 5 : 0} value={reason} onChange={(e) => setReason(e.target.value)} className={input} />
             </label>
           )}
 
           {entry?.confirmName && server && (
-            <label className="block">
-              <span className="text-slate-400 flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5 text-red-300" /> Type <b className="text-white">{server.name}</b> to confirm
+            <label className="block p-3 rounded-md border border-rose-500/30 bg-rose-500/10 text-rose-300">
+              <span className="flex items-center gap-1.5 font-semibold">
+                <AlertTriangle className="w-3.5 h-3.5 text-rose-400" /> Type <b className="text-slate-900 dark:text-white font-mono">{server.name}</b> to confirm
               </span>
               <input required value={confirmName} onChange={(e) => setConfirmName(e.target.value)} className={input} autoComplete="off" />
             </label>
           )}
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-[#1c2232]">
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">
             <Button variant="outline" onClick={onClose}>Cancel</Button>
             {canRequest && (
               <Button

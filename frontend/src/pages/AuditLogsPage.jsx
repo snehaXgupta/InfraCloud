@@ -67,7 +67,7 @@ export const AuditLogsPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2">
-            <FileSpreadsheet className="w-6 h-6 text-blue-400" />
+            <FileSpreadsheet className="w-6 h-6 text-zinc-300" />
             Compliance & Security Audit Trail
           </h1>
           <p className="text-xs text-slate-400 mt-1">
@@ -87,15 +87,15 @@ export const AuditLogsPage = () => {
       </div>
 
       {/* Filter Toolbar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-slate-900/60 p-3 rounded-xl border border-slate-800">
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white dark:bg-[#0a0a0a] p-3 rounded-xl border border-slate-200 dark:border-[#1f1f1f] shadow-sm">
         <div className="relative flex-1 max-w-sm">
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-slate-400 dark:text-[#666666] absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             placeholder="Search action, user, IP address..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500"
+            className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg pl-9 pr-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
           />
         </div>
 
@@ -103,7 +103,7 @@ export const AuditLogsPage = () => {
           <select
             value={resourceTypeFilter}
             onChange={(e) => setResourceTypeFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
+            className="bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
           >
             <option value="all">All Resource Types</option>
             <option value="Server">Server</option>
@@ -118,7 +118,7 @@ export const AuditLogsPage = () => {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-blue-500"
+            className="bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-xs text-slate-700 dark:text-slate-200 focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
           >
             <option value="all">All Outcomes</option>
             <option value="Success">Success</option>
@@ -140,8 +140,8 @@ export const AuditLogsPage = () => {
               description="Audit trails will automatically record as actions are performed on the control plane."
             />
           ) : (
-            <table className="w-full text-left text-xs text-slate-300 font-mono">
-              <thead className="bg-slate-950/70 text-[11px] uppercase text-slate-400 border-b border-slate-800">
+            <table className="w-full text-left text-xs text-slate-700 dark:text-slate-300 font-mono">
+              <thead className="bg-slate-50 dark:bg-[#050505] text-[11px] uppercase text-slate-500 dark:text-[#888888] border-b border-slate-200 dark:border-[#1f1f1f]">
                 <tr>
                   <th className="px-5 py-3.5">Timestamp</th>
                   <th className="px-5 py-3.5">Action Event</th>
@@ -152,26 +152,26 @@ export const AuditLogsPage = () => {
                   <th className="px-5 py-3.5 text-right">Details</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-slate-100 dark:divide-[#1f1f1f]">
                 {filteredLogs.map((log) => (
-                  <tr key={log._id} className="hover:bg-slate-900/50 transition-colors">
-                    <td className="px-5 py-3.5 text-slate-400 text-[11px]">
+                  <tr key={log._id} className="hover:bg-slate-50 dark:hover:bg-[#111111] transition-colors">
+                    <td className="px-5 py-3.5 text-slate-500 dark:text-[#888888] text-[11px]">
                       {new Date(log.createdAt).toLocaleString()}
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="text-white font-semibold text-xs">{log.action}</span>
+                      <span className="text-slate-900 dark:text-white font-semibold text-xs">{log.action}</span>
                     </td>
                     <td className="px-5 py-3.5 font-sans">
-                      <div className="text-slate-200 text-xs">{log.userName}</div>
+                      <div className="text-slate-900 dark:text-white text-xs">{log.userName}</div>
                       <div className="text-[10px] text-slate-500 font-mono">{log.userRole}</div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="text-blue-400">{log.resourceType}:</span>{' '}
-                      <span className="text-slate-300 truncate max-w-[180px] inline-block align-bottom font-sans">
+                      <span className="text-slate-500 dark:text-[#888888]">{log.resourceType}:</span>{' '}
+                      <span className="text-slate-700 dark:text-slate-300 truncate max-w-[180px] inline-block align-bottom font-sans">
                         {log.resourceName || log.resourceId}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-slate-400">{log.ipAddress}</td>
+                    <td className="px-5 py-3.5 text-slate-500 dark:text-[#888888]">{log.ipAddress}</td>
                     <td className="px-5 py-3.5">
                       <Badge
                         variant={
@@ -213,14 +213,14 @@ export const AuditLogsPage = () => {
         maxWidth="max-w-xl"
       >
         <div className="space-y-4 text-xs font-mono">
-          <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+          <div className="grid grid-cols-2 gap-3 p-3.5 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
             <div>
               <span className="text-slate-500 text-[10px]">OPERATOR</span>
               <p className="text-white font-semibold font-sans">{selectedLog?.userName} ({selectedLog?.userEmail})</p>
             </div>
             <div>
               <span className="text-slate-500 text-[10px]">ROLE</span>
-              <p className="text-blue-400 font-semibold">{selectedLog?.userRole}</p>
+              <p className="text-zinc-200 font-semibold">{selectedLog?.userRole}</p>
             </div>
             <div>
               <span className="text-slate-500 text-[10px]">RESOURCE</span>
