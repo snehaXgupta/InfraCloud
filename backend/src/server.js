@@ -36,7 +36,8 @@ app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
 // The production build is served from this same origin; cross-origin access is only for the dev server.
-const allowedOrigins = CLIENT_URL.split(',').map((o) => o.trim().replace(/\/$/, ''));
+const clientUrls = [CLIENT_URL, process.env.RENDER_EXTERNAL_URL].filter(Boolean).join(',');
+const allowedOrigins = clientUrls.split(',').map((o) => o.trim().replace(/\/$/, ''));
 app.use(
   cors({
     origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)),

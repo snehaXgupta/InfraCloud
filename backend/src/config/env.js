@@ -13,7 +13,7 @@ if (isProduction) {
     problems.push('JWT_SECRET must be set to a random value of at least 32 characters');
   }
   if (!process.env.MONGO_URI) problems.push('MONGO_URI must be set');
-  if (!process.env.CLIENT_URL) problems.push('CLIENT_URL must be set to the public URL of the panel');
+  if (!process.env.CLIENT_URL && !process.env.RENDER_EXTERNAL_URL) problems.push('CLIENT_URL must be set to the public URL of the panel');
   if (!/^[0-9a-f]{64}$/i.test(process.env.INTEGRATION_SECRET_KEY || '')) {
     problems.push('INTEGRATION_SECRET_KEY must be 64 hex characters (openssl rand -hex 32); it encrypts provider API keys');
   }
@@ -26,7 +26,7 @@ if (problems.length) {
 module.exports = {
   isProduction,
   JWT_SECRET: process.env.JWT_SECRET || DEV_JWT_SECRET,
-  CLIENT_URL: process.env.CLIENT_URL || 'http://localhost:5173',
+  CLIENT_URL: process.env.CLIENT_URL || process.env.RENDER_EXTERNAL_URL || 'http://localhost:5173',
   ENABLE_WEB_TERMINAL: process.env.ENABLE_WEB_TERMINAL === 'true',
   // Dev fallback is derived from the JWT secret; production requires its own key (checked above)
   INTEGRATION_SECRET_KEY:
