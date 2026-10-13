@@ -1,4 +1,12 @@
+const dns = require('dns');
 const mongoose = require('mongoose');
+
+// Configure reliable public DNS servers for MongoDB Atlas SRV records
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+} catch (e) {
+  // Ignore in environments where setting DNS servers is restricted
+}
 
 const connectDB = async () => {
   try {
