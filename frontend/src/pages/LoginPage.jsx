@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/common/Button';
+import api from '../services/api';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -28,8 +29,37 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [dbStatus, setDbStatus] = useState(null);
 
   const from = location.state?.from?.pathname || '/dashboard';
+
+  React.useEffect(() => {
+    let isMounted = true;
+    api.get('/health')
+      .then((res) => {
+        if (!isMounted) return;
+        const dbUp = res.data?.dependencies?.database === 'up';
+        const lastErr = res.data?.dbDiagnostics?.lastError;
+        if (!dbUp) {
+          setDbStatus({
+            up: false,
+            message: lastErr ? `Database disconnected: ${lastErr}` : 'Database is currently offline. Please check your database connection.',
+          });
+        }
+      })
+      .catch((err) => {
+        if (!isMounted) return;
+        const errData = err.response?.data;
+        if (errData?.dependencies?.database === 'down') {
+          const lastErr = errData?.dbDiagnostics?.lastError;
+          setDbStatus({
+            up: false,
+            message: lastErr ? `Database disconnected: ${lastErr}` : 'Database is currently offline.',
+          });
+        }
+      });
+    return () => { isMounted = false; };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,15 +71,19 @@ export const LoginPage = () => {
         const res = await register(name, email, password, role);
         if (res?.success) {
           navigate(from, { replace: true });
+        } else {
+          setErrorMsg(res?.error || 'Registration failed.');
         }
       } else {
         const res = await login(email, password);
         if (res?.success) {
           navigate(from, { replace: true });
+        } else {
+          setErrorMsg(res?.error || 'Authentication failed. Please check your credentials.');
         }
       }
     } catch (err) {
-      setErrorMsg('Authentication failed. Please check your credentials.');
+      setErrorMsg(err.response?.data?.error || 'Authentication failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
     }
@@ -88,6 +122,13 @@ export const LoginPage = () => {
       {/* Main Login Card */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md z-10 px-4 sm:px-0">
         <div className="bg-[#0d131f] border border-slate-800 py-8 px-6 sm:px-8 shadow-2xl rounded-2xl relative">
+          {dbStatus && !dbStatus.up && (
+            <div className="mb-5 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+              <span>{dbStatus.message}</span>
+            </div>
+          )}
+
           {errorMsg && (
             <div className="mb-5 p-3 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../config/env');
 const User = require('../models/User');
@@ -22,6 +23,13 @@ const login = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         error: 'Please provide an email and password',
+      });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database connection is currently unavailable. Please verify database configuration in your deployment.',
       });
     }
 
@@ -101,6 +109,13 @@ const register = async (req, res, next) => {
     const { name, email, password } = req.body;
     if (!password || password.length < 8) {
       return res.status(400).json({ success: false, error: 'Password must be at least 8 characters' });
+    }
+
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database connection is currently unavailable. Please verify database configuration in your deployment.',
+      });
     }
 
     const userExists = await User.findOne({ email });
