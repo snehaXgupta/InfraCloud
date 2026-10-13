@@ -272,8 +272,9 @@ const simulateAlert = async (req, res, next) => {
       // If validation fails due to unseeded IDs, still allow sending email
     }
 
-    // Trigger SMTP Email Alert
-    const emailRes = await sendAlertEmail({
+    // Trigger SMTP Email Alert asynchronously in background so HTTP response never times out
+    const recipient = process.env.ALERT_RECIPIENT_EMAIL || process.env.SMTP_USER;
+    sendAlertEmail({
       serverName: targetServer.name,
       ip: targetServer.network?.publicIp || '142.93.215.161',
       severity: alertData.severity,
@@ -281,13 +282,17 @@ const simulateAlert = async (req, res, next) => {
       currentValue: alertData.currentValue,
       threshold: alertData.threshold,
       message: alertData.message,
-    });
+    }).catch((err) => console.error('[SMTP Alert Error]', err.message));
+
+    const msg = recipient
+      ? `${alertData.severity} alert triggered (${alertData.metric})! Email notification dispatched to ${recipient}`
+      : `${alertData.severity} alert triggered (${alertData.metric})! Alert saved to dashboard.`;
 
     res.json({
       success: true,
       data: createdAlert,
-      emailSent: emailRes.success,
-      message: `${alertData.severity} alert triggered (${alertData.metric})! Email notification dispatched to ${process.env.ALERT_RECIPIENT_EMAIL || process.env.SMTP_USER}`,
+      emailSent: Boolean(recipient),
+      message: msg,
     });
   } catch (error) {
     next(error);

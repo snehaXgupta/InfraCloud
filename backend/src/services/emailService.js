@@ -1,7 +1,10 @@
 const nodemailer = require('nodemailer');
 const { getEmailMute } = require('./notificationSettings');
 
-// Initialize reusable transporter with smart Gmail detection & sanitization
+let cachedTransporter = null;
+let lastTransporterKey = null;
+
+// Initialize reusable transporter with connection pooling and smart Gmail detection
 const getTransporter = () => {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.SMTP_PORT) || 587;
@@ -13,10 +16,30 @@ const getTransporter = () => {
     return null;
   }
 
+  const key = `${host}:${port}:${user}:${pass}`;
+  if (cachedTransporter && lastTransporterKey === key) {
+    return cachedTransporter;
+  }
+
   // If using Gmail, nodemailer's built-in 'gmail' service is most reliable
   if (host.includes('gmail') || user.toLowerCase().endsWith('@gmail.com')) {
-    return nodemailer.createTransport({
+    cachedTransporter = nodemailer.createTransport({
       service: 'gmail',
+      pool: true,
+      maxConnections: 3,
+      auth: {
+        user,
+        pass,
+      },
+    });
+  } else {
+    const secure = process.env.SMTP_SECURE === 'true' || port === 465;
+    cachedTransporter = nodemailer.createTransport({
+      host,
+      port,
+      secure,
+      pool: true,
+      maxConnections: 3,
       auth: {
         user,
         pass,
@@ -24,16 +47,8 @@ const getTransporter = () => {
     });
   }
 
-  const secure = process.env.SMTP_SECURE === 'true' || port === 465;
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure,
-    auth: {
-      user,
-      pass,
-    },
-  });
+  lastTransporterKey = key;
+  return cachedTransporter;
 };
 
 /**
