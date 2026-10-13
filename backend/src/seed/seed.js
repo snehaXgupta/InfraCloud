@@ -14,18 +14,24 @@ const Operation = require('../models/Operation');
 const AuditLog = require('../models/AuditLog');
 const ServerRelationship = require('../models/ServerRelationship');
 
-const seedData = async () => {
+const seedData = async (isAutoBootstrap = false) => {
   // The seed wipes every collection and creates accounts with published passwords.
-  if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_SEED !== 'true') {
+  if (!isAutoBootstrap && process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_SEED !== 'true') {
     console.error('[Seed] Refusing to seed a production database. Use `npm run create-admin` instead,');
     console.error('       or set ALLOW_DEMO_SEED=true for a throwaway demo instance.');
     process.exit(1);
   }
 
   try {
-    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/server_management_platform';
-    console.log(`[Seed] Connecting to MongoDB at ${mongoUri}...`);
-    await mongoose.connect(mongoUri);
+    if (mongoose.connection.readyState !== 1) {
+      const dns = require('dns');
+      try {
+        dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+      } catch (e) {}
+      const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/server_management_platform';
+      console.log(`[Seed] Connecting to MongoDB at ${mongoUri}...`);
+      await mongoose.connect(mongoUri);
+    }
 
     console.log('[Seed] Purging existing collections...');
     await Promise.all([
@@ -585,12 +591,52 @@ const seedData = async () => {
     console.log('  billing@example.com / Billing@123 (Billing / Finance, both clients)');
     console.log('==================================================');
 
-    await mongoose.connection.close();
-    process.exit(0);
+    if (!isAutoBootstrap) {
+      await mongoose.connection.close();
+      process.exit(0);
+    }
+    return true;
   } catch (error) {
     console.error('[Seed Error]', error);
-    process.exit(1);
+    if (!isAutoBootstrap) {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 
-seedData();
+const autoBootstrap = async () => {
+  try {
+    const userCount = await User.countDocuments();
+    if (userCount === 0) {
+      console.log('[Bootstrap] No users found in database. Initializing default accounts...');
+      if (process.env.NODE_ENV === 'production' && process.env.ALLOW_DEMO_SEED !== 'true') {
+        const salt = await bcrypt.genSalt(10);
+        const email = (process.env.ADMIN_EMAIL || 'admin@example.com').trim().toLowerCase();
+        const password = process.env.ADMIN_PASSWORD || 'Admin@123';
+        const name = process.env.ADMIN_NAME || 'Platform Admin';
+        const passwordHash = await bcrypt.hash(password, salt);
+        await User.create({
+          name,
+          email,
+          passwordHash,
+          role: 'Platform Admin',
+          status: 'active',
+        });
+        console.log(`[Bootstrap] Default Platform Admin created: ${email}`);
+      } else {
+        console.log('[Bootstrap] Populating initial demo dataset...');
+        await seedData(true);
+      }
+    }
+  } catch (err) {
+    console.error('[Bootstrap Error]', err.message);
+  }
+};
+
+if (require.main === module) {
+  seedData();
+}
+
+module.exports = seedData;
+module.exports.autoBootstrap = autoBootstrap;

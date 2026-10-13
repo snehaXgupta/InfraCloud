@@ -12,7 +12,8 @@
     "simulate": "node scripts/simulate-fleet.js",
     "test:rbac": "node scripts/test-rbac.js",
     "test:resize": "node scripts/test-resize.js",
-    "test:operations": "node scripts/test-operations.js"
+    "test:operations": "node scripts/test-operations.js",
+    "test:db": "node scripts/test-db-connection.js"
   },
   "keywords": [
     "server-management",

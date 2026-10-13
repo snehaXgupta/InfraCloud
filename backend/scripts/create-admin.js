@@ -7,6 +7,11 @@
  * Platform Admin (useful for account recovery).
  */
 require('dotenv').config({ path: `${__dirname}/../.env` });
+const dns = require('dns');
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
+} catch (e) {}
+
 const mongoose = require('mongoose');
 const User = require('../src/models/User');
 
@@ -20,7 +25,8 @@ const User = require('../src/models/User');
     process.exit(1);
   }
 
-  await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/server_management_platform');
+  const rawUri = process.env.MONGO_URI || 'mongodb://localhost:27017/server_management_platform';
+  await mongoose.connect(rawUri);
 
   let user = await User.findOne({ email }).select('+passwordHash');
   if (user) {

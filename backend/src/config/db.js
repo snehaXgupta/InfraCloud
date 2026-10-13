@@ -10,6 +10,20 @@ try {
 
 let lastDbError = null;
 
+const normalizeMongoUri = (uri) => {
+  if (!uri || !uri.startsWith('mongodb')) return uri;
+  if (uri.includes('.mongodb.net')) {
+    const parts = uri.split('?');
+    const base = parts[0];
+    const query = parts[1] ? `?${parts[1]}` : '';
+    if (base.endsWith('.mongodb.net') || base.endsWith('.mongodb.net/')) {
+      const cleanBase = base.replace(/\/$/, '');
+      return `${cleanBase}/server_management_platform${query}`;
+    }
+  }
+  return uri;
+};
+
 const convertSrvToDirect = (uri) => {
   if (!uri || !uri.startsWith('mongodb+srv://')) return null;
   const match = uri.match(/^mongodb\+srv:\/\/([^:]+):([^@]+)@serverpanelcluster0\.rirs7s4\.mongodb\.net\/?([^?]*)/);
@@ -20,7 +34,18 @@ const convertSrvToDirect = (uri) => {
 };
 
 const connectDB = async () => {
-  const rawUri = process.env.MONGO_URI || 'mongodb://localhost:27017/server_management_platform';
+  const configuredUri = process.env.MONGO_URI || 'mongodb://localhost:27017/server_management_platform';
+
+  // Check for placeholder credentials
+  if (configuredUri.includes('<db_password>') || configuredUri.includes('<password>')) {
+    const placeholderMsg = "MONGO_URI contains placeholder '<db_password>'. Please set your actual database password in environment variables.";
+    console.error(`[Database Config Error] ${placeholderMsg}`);
+    lastDbError = new Error(placeholderMsg);
+    setTimeout(connectDB, 10000);
+    return null;
+  }
+
+  const rawUri = normalizeMongoUri(configuredUri);
   const directUri = convertSrvToDirect(rawUri);
 
   // If we have a direct replica-set fallback, try SRV first then direct, or direct if SRV is known to fail
@@ -34,7 +59,16 @@ const connectDB = async () => {
         serverSelectionTimeoutMS: 15000,
       });
       lastDbError = null;
-      console.log(`[Database] MongoDB Connected: ${conn.connection.host}`);
+      console.log(`[Database] MongoDB Connected: ${conn.connection.host} (db: ${conn.connection.name})`);
+
+      // Auto-bootstrap initial admin or demo seed if database is freshly initialized (0 users)
+      try {
+        const { autoBootstrap } = require('../seed/seed');
+        await autoBootstrap();
+      } catch (bootErr) {
+        console.error('[Database Auto-Bootstrap Warning]', bootErr.message);
+      }
+
       return conn;
     } catch (error) {
       lastDbError = error;
@@ -49,7 +83,12 @@ const connectDB = async () => {
 const getDbDiagnostics = () => {
   const uri = process.env.MONGO_URI || '';
   let maskedHost = 'none (using localhost:27017 fallback)';
+  let placeholderDetected = false;
+
   if (uri) {
+    if (uri.includes('<db_password>') || uri.includes('<password>')) {
+      placeholderDetected = true;
+    }
     try {
       const withoutCreds = uri.replace(/:\/\/[^@]+@/, '://');
       maskedHost = withoutCreds.split('/')[2] || withoutCreds;
@@ -57,14 +96,22 @@ const getDbDiagnostics = () => {
       maskedHost = 'configured';
     }
   }
+
+  let errorMsg = lastDbError ? lastDbError.message : null;
+  if (placeholderDetected) {
+    errorMsg = "MONGO_URI contains placeholder '<db_password>'. Replace with actual Atlas password in environment settings.";
+  }
+
   return {
     configured: Boolean(process.env.MONGO_URI),
     targetHost: maskedHost,
     connected: mongoose.connection.readyState === 1,
-    lastError: lastDbError ? lastDbError.message : null,
+    placeholderDetected,
+    lastError: errorMsg,
   };
 };
 
 module.exports = connectDB;
 module.exports.getDbDiagnostics = getDbDiagnostics;
+
 
