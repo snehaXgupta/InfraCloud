@@ -115,55 +115,6 @@ export const LandingPage = () => {
   return (
     <div className="min-h-screen bg-[#000000] text-slate-100 selection:bg-white/20 selection:text-white font-sans antialiased relative">
       {/* =========================================================================
-          FIXED CENTER RADIANT SPOTLIGHT GRADIENT
-          - Stays permanently locked in the center of the viewport as user scrolls
-          ========================================================================= */}
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
-      >
-        {/* Layer 1: Wide Center Radiant Spotlight Glow (Anchored in screen center) */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] sm:w-[1050px] h-[520px] pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.035) 40%, rgba(56, 189, 248, 0.02) 60%, transparent 75%)',
-            filter: 'blur(50px)',
-          }}
-        />
-
-        {/* Layer 2: Concentrated Radiant Core Glow */}
-        <div
-          className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] sm:w-[680px] h-[300px] pointer-events-none"
-          style={{
-            background:
-              'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 80%)',
-            filter: 'blur(24px)',
-          }}
-        />
-
-        {/* Layer 3: Architectural Blueprint Grid illuminated in the center */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle, rgba(255, 255, 255, 0.5) 1.2px, transparent 1.2px),
-              linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px)
-            `,
-            backgroundSize: '36px 36px',
-            maskImage:
-              'radial-gradient(ellipse 700px 450px at 50% 50%, black 20%, rgba(0, 0, 0, 0.5) 55%, transparent 85%)',
-            WebkitMaskImage:
-              'radial-gradient(ellipse 700px 450px at 50% 50%, black 20%, rgba(0, 0, 0, 0.5) 55%, transparent 85%)',
-          }}
-        />
-
-        {/* Layer 4: Ambient Top Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[220px] bg-white/[0.04] blur-3xl pointer-events-none" />
-      </div>
-
-      {/* =========================================================================
           1. TOP NAVIGATION
           ========================================================================= */}
       <header className="h-16 border-b border-[#1f1f1f] bg-[#000000]/90 backdrop-blur-md sticky top-0 z-50">
@@ -205,6 +156,46 @@ export const LandingPage = () => {
           2. HERO SECTION (PROFESSIONAL, ARCHITECTURAL, CLEAN)
           ========================================================================= */}
       <section className="relative z-10 pt-24 pb-20 overflow-hidden border-b border-[#1f1f1f]">
+        {/* Layer 1: Wide Center Radiant Spotlight Glow behind huge text */}
+        <div
+          className="absolute top-[38%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] sm:w-[1000px] h-[450px] pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.035) 40%, rgba(56, 189, 248, 0.02) 60%, transparent 75%)',
+            filter: 'blur(45px)',
+          }}
+        />
+
+        {/* Layer 2: Concentrated Radiant Core Glow directly behind huge headline */}
+        <div
+          className="absolute top-[38%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] sm:w-[650px] h-[280px] pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 80%)',
+            filter: 'blur(22px)',
+          }}
+        />
+
+        {/* Layer 3: Architectural Blueprint Grid illuminated in the center behind the text */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle, rgba(255, 255, 255, 0.5) 1.2px, transparent 1.2px),
+              linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px)
+            `,
+            backgroundSize: '36px 36px',
+            maskImage:
+              'radial-gradient(ellipse 700px 420px at 50% 38%, black 20%, rgba(0, 0, 0, 0.5) 55%, transparent 85%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse 700px 420px at 50% 38%, black 20%, rgba(0, 0, 0, 0.5) 55%, transparent 85%)',
+          }}
+        />
+
+        {/* Layer 4: Ambient Top Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[220px] bg-white/[0.04] blur-3xl pointer-events-none" />
+
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10 text-center">
           {/* Status Indicator */}
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#0a0a0a] border border-[#222222] text-zinc-300 text-xs font-mono mb-8">
@@ -269,7 +260,7 @@ export const LandingPage = () => {
       {/* =========================================================================
           3. CLOUD PLATFORMS SECTION
           ========================================================================= */}
-      <section className="relative z-10 py-14 border-b border-[#1f1f1f] bg-transparent">
+      <section className="py-14 border-b border-[#1f1f1f] bg-[#050505]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-8">
             <div>
@@ -310,7 +301,7 @@ export const LandingPage = () => {
       {/* =========================================================================
           4. EXACTLY 3 SUBTLE FEATURE CARDS (CLEAN, SOPHISTICATED, PURPOSEFUL)
           ========================================================================= */}
-      <section className="relative z-10 py-20 border-b border-[#1f1f1f] bg-transparent">
+      <section className="py-20 border-b border-[#1f1f1f] bg-[#000000]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
@@ -388,7 +379,7 @@ export const LandingPage = () => {
       {/* =========================================================================
           5. LIVE METRICS PREVIEW CANOPY
           ========================================================================= */}
-      <section className="relative z-10 py-16 border-b border-[#1f1f1f] bg-transparent">
+      <section className="py-16 border-b border-[#1f1f1f] bg-[#050505]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="rounded-xl border border-[#1f1f1f] bg-[#0a0a0a] overflow-hidden shadow-2xl">
             {/* Terminal Top Bar */}
@@ -422,7 +413,7 @@ export const LandingPage = () => {
       {/* =========================================================================
           6. BOTTOM CALL TO ACTION
           ========================================================================= */}
-      <section className="relative z-10 py-20 border-b border-[#1f1f1f] bg-transparent text-center">
+      <section className="py-20 border-b border-[#1f1f1f] bg-[#000000] text-center">
         <div className="max-w-3xl mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Ready to inspect your infrastructure?
