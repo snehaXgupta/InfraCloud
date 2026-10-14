@@ -9,7 +9,7 @@ export const LoadingSpinner = ({ label = 'Loading telemetry data...', fullPage =
     return (
       <div className="min-h-[50vh] flex flex-col items-center justify-center p-8">
         <div className="relative flex items-center justify-center mb-3">
-          <CloudOutlineLoader size="lg" showCenterIcon />
+          <CloudOutlineLoader size="lg" />
         </div>
         <p className="text-xs font-mono font-medium text-slate-500 dark:text-zinc-400 tracking-wider animate-pulse uppercase">
           {label}

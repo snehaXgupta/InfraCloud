@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   Server,
@@ -25,33 +25,9 @@ import { useAuth } from '../context/AuthContext';
 export const LandingPage = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const spotlightRef = useRef(null);
 
   // Compute console URL based on user authentication status
   const consoleUrl = user ? '/dashboard' : '/login';
-
-  // Smooth pointer tracking for blurry spotlight effect revealing background grid
-  useEffect(() => {
-    const handlePointerMove = (e) => {
-      if (!spotlightRef.current) return;
-      spotlightRef.current.style.setProperty('--mouse-x', `${e.clientX}px`);
-      spotlightRef.current.style.setProperty('--mouse-y', `${e.clientY}px`);
-      spotlightRef.current.style.setProperty('--spotlight-opacity', '1');
-    };
-
-    const handlePointerLeave = () => {
-      if (!spotlightRef.current) return;
-      spotlightRef.current.style.setProperty('--spotlight-opacity', '0.45');
-    };
-
-    window.addEventListener('pointermove', handlePointerMove, { passive: true });
-    document.addEventListener('mouseleave', handlePointerLeave);
-
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      document.removeEventListener('mouseleave', handlePointerLeave);
-    };
-  }, []);
 
   // Sample real-time telemetry series
   const sampleTelemetry = [
@@ -139,89 +115,6 @@ export const LandingPage = () => {
   return (
     <div className="min-h-screen bg-[#000000] text-slate-100 selection:bg-white/20 selection:text-white font-sans antialiased relative">
       {/* =========================================================================
-          DYNAMIC SPOTLIGHT & ARCHITECTURAL GRID (INTERACTIVE CURSOR EFFECT)
-          - Follows cursor dynamically with hardware-accelerated CSS variables
-          - Blurry spotlight beam illuminates and reveals the architectural grid with high clarity
-          ========================================================================= */}
-      <div
-        ref={spotlightRef}
-        aria-hidden="true"
-        className="fixed inset-0 pointer-events-none z-0 overflow-hidden"
-        style={{
-          '--mouse-x': '50vw',
-          '--mouse-y': '32vh',
-          '--spotlight-opacity': '0.9',
-        }}
-      >
-        {/* Layer 1: Ambient Base Grid (Faint, elegant background lines across the canvas) */}
-        <div
-          className="absolute inset-0 opacity-40"
-          style={{
-            backgroundImage: `
-              linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px)
-            `,
-            backgroundSize: '36px 36px',
-            maskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 50%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 90% 90% at 50% 50%, black 50%, transparent 100%)',
-          }}
-        />
-
-        {/* Layer 2: Wide Blurry Spotlight Glow (Atmospheric halo following cursor) */}
-        <div
-          className="absolute inset-0 transition-opacity duration-300"
-          style={{
-            opacity: 'var(--spotlight-opacity, 0.9)',
-            background: `
-              radial-gradient(
-                circle 480px at var(--mouse-x, 50vw) var(--mouse-y, 32vh),
-                rgba(255, 255, 255, 0.08) 0%,
-                rgba(255, 255, 255, 0.035) 30%,
-                rgba(56, 189, 248, 0.02) 60%,
-                transparent 80%
-              )
-            `,
-            filter: 'blur(32px)',
-          }}
-        />
-
-        {/* Layer 3: Concentrated Spotlight Core Glow (Inner light beam) */}
-        <div
-          className="absolute inset-0 transition-opacity duration-300"
-          style={{
-            opacity: 'var(--spotlight-opacity, 0.9)',
-            background: `
-              radial-gradient(
-                circle 240px at var(--mouse-x, 50vw) var(--mouse-y, 32vh),
-                rgba(255, 255, 255, 0.12) 0%,
-                rgba(255, 255, 255, 0.03) 50%,
-                transparent 75%
-              )
-            `,
-            filter: 'blur(14px)',
-          }}
-        />
-
-        {/* Layer 4: The High-Contrast Grid (REVEALED CLEARLY IN SPOTLIGHT) */}
-        <div
-          className="absolute inset-0 transition-opacity duration-300"
-          style={{
-            opacity: 'var(--spotlight-opacity, 0.9)',
-            backgroundImage: `
-              radial-gradient(circle, rgba(255, 255, 255, 0.65) 1.2px, transparent 1.2px),
-              linear-gradient(to right, rgba(255, 255, 255, 0.22) 1px, transparent 1px),
-              linear-gradient(to bottom, rgba(255, 255, 255, 0.22) 1px, transparent 1px)
-            `,
-            backgroundSize: '36px 36px',
-            maskImage:
-              'radial-gradient(circle 380px at var(--mouse-x, 50vw) var(--mouse-y, 32vh), black 0%, rgba(0, 0, 0, 0.8) 40%, transparent 80%)',
-            WebkitMaskImage:
-              'radial-gradient(circle 380px at var(--mouse-x, 50vw) var(--mouse-y, 32vh), black 0%, rgba(0, 0, 0, 0.8) 40%, transparent 80%)',
-          }}
-        />
-      </div>
-
-      {/* =========================================================================
           1. TOP NAVIGATION
           ========================================================================= */}
       <header className="h-16 border-b border-[#1f1f1f] bg-[#000000]/90 backdrop-blur-md sticky top-0 z-50">
@@ -263,7 +156,44 @@ export const LandingPage = () => {
           2. HERO SECTION (PROFESSIONAL, ARCHITECTURAL, CLEAN)
           ========================================================================= */}
       <section className="relative z-10 pt-24 pb-20 overflow-hidden border-b border-[#1f1f1f]">
-        {/* Ambient Top Glow */}
+        {/* Layer 1: Wide Center Radiant Spotlight Glow behind huge text */}
+        <div
+          className="absolute top-[38%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] sm:w-[1000px] h-[450px] pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.035) 40%, rgba(56, 189, 248, 0.02) 60%, transparent 75%)',
+            filter: 'blur(45px)',
+          }}
+        />
+
+        {/* Layer 2: Concentrated Radiant Core Glow directly behind huge headline */}
+        <div
+          className="absolute top-[38%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] sm:w-[650px] h-[280px] pointer-events-none"
+          style={{
+            background:
+              'radial-gradient(ellipse at center, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.04) 50%, transparent 80%)',
+            filter: 'blur(22px)',
+          }}
+        />
+
+        {/* Layer 3: Architectural Blueprint Grid illuminated in the center behind the text */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle, rgba(255, 255, 255, 0.5) 1.2px, transparent 1.2px),
+              linear-gradient(to right, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+              linear-gradient(to bottom, rgba(255, 255, 255, 0.12) 1px, transparent 1px)
+            `,
+            backgroundSize: '36px 36px',
+            maskImage:
+              'radial-gradient(ellipse 700px 420px at 50% 38%, black 20%, rgba(0, 0, 0, 0.5) 55%, transparent 85%)',
+            WebkitMaskImage:
+              'radial-gradient(ellipse 700px 420px at 50% 38%, black 20%, rgba(0, 0, 0, 0.5) 55%, transparent 85%)',
+          }}
+        />
+
+        {/* Layer 4: Ambient Top Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[220px] bg-white/[0.04] blur-3xl pointer-events-none" />
 
         <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10 text-center">
@@ -300,25 +230,25 @@ export const LandingPage = () => {
 
           {/* Key Executive Metrics */}
           <div className="mt-14 pt-10 border-t border-[#1a1a1a] grid grid-cols-2 md:grid-cols-4 gap-4 text-left">
-            <div className="p-4 rounded-xl bg-[#0a0a0a]/85 backdrop-blur-sm border border-[#1f1f1f]">
+            <div className="p-4 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
               <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">TELEMETRY LATENCY</span>
               <p className="text-xl font-bold text-white mt-1 font-mono">&lt; 15s Pulse</p>
               <p className="text-[11px] text-zinc-500 mt-0.5">Prometheus remote_write</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#0a0a0a]/85 backdrop-blur-sm border border-[#1f1f1f]">
+            <div className="p-4 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
               <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">CHANGE GOVERNANCE</span>
               <p className="text-xl font-bold text-white mt-1 font-mono">2-Person</p>
               <p className="text-[11px] text-zinc-500 mt-0.5">Peer-approved operations</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#0a0a0a]/85 backdrop-blur-sm border border-[#1f1f1f]">
+            <div className="p-4 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
               <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">AUDIT TRAIL</span>
               <p className="text-xl font-bold text-white mt-1 font-mono">100% Immutable</p>
               <p className="text-[11px] text-zinc-500 mt-0.5">Cryptographic log stream</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-[#0a0a0a]/85 backdrop-blur-sm border border-[#1f1f1f]">
+            <div className="p-4 rounded-xl bg-[#0a0a0a] border border-[#1f1f1f]">
               <span className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider">PLATFORM AVAILABILITY</span>
               <p className="text-xl font-bold text-emerald-400 mt-1 font-mono">99.98% SLA</p>
               <p className="text-[11px] text-zinc-500 mt-0.5">Automated heartbeat monitor</p>
@@ -330,7 +260,7 @@ export const LandingPage = () => {
       {/* =========================================================================
           3. CLOUD PLATFORMS SECTION
           ========================================================================= */}
-      <section className="relative z-10 py-14 border-b border-[#1f1f1f] bg-[#050505]/75 backdrop-blur-xs">
+      <section className="py-14 border-b border-[#1f1f1f] bg-[#050505]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-8">
             <div>
@@ -350,7 +280,7 @@ export const LandingPage = () => {
             {cloudPlatforms.map((p) => (
               <div
                 key={p.name}
-                className="p-4 rounded-xl border border-[#1f1f1f] bg-[#0a0a0a]/85 backdrop-blur-sm hover:border-zinc-700 transition-all flex flex-col justify-between group"
+                className="p-4 rounded-xl border border-[#1f1f1f] bg-[#0a0a0a] hover:border-zinc-700 transition-all flex flex-col justify-between group"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="p-2 rounded-lg bg-white/5 border border-white/10 group-hover:scale-105 transition-transform">
@@ -371,7 +301,7 @@ export const LandingPage = () => {
       {/* =========================================================================
           4. EXACTLY 3 SUBTLE FEATURE CARDS (CLEAN, SOPHISTICATED, PURPOSEFUL)
           ========================================================================= */}
-      <section className="relative z-10 py-20 border-b border-[#1f1f1f] bg-[#000000]/75 backdrop-blur-xs">
+      <section className="py-20 border-b border-[#1f1f1f] bg-[#000000]">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-2xl mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
@@ -384,7 +314,7 @@ export const LandingPage = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* PILLAR 1: FLEET OBSERVABILITY */}
-            <div className="p-6 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a]/85 backdrop-blur-sm hover:border-zinc-700 transition-all flex flex-col justify-between group">
+            <div className="p-6 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] hover:border-zinc-700 transition-all flex flex-col justify-between group">
               <div>
                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center mb-5 group-hover:scale-105 transition-transform">
                   <Activity className="w-5 h-5 text-white" />
@@ -406,7 +336,7 @@ export const LandingPage = () => {
             </div>
 
             {/* PILLAR 2: TWO-PERSON GOVERNED OPERATIONS */}
-            <div className="p-6 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a]/85 backdrop-blur-sm hover:border-zinc-700 transition-all flex flex-col justify-between group">
+            <div className="p-6 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] hover:border-zinc-700 transition-all flex flex-col justify-between group">
               <div>
                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center mb-5 group-hover:scale-105 transition-transform">
                   <Shield className="w-5 h-5 text-white" />
@@ -425,7 +355,7 @@ export const LandingPage = () => {
             </div>
 
             {/* PILLAR 3: MULTITENANCY & COST ACCRUAL */}
-            <div className="p-6 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a]/85 backdrop-blur-sm hover:border-zinc-700 transition-all flex flex-col justify-between group">
+            <div className="p-6 rounded-2xl border border-[#1f1f1f] bg-[#0a0a0a] hover:border-zinc-700 transition-all flex flex-col justify-between group">
               <div>
                 <div className="w-10 h-10 rounded-xl bg-white/5 border border-white/10 text-white flex items-center justify-center mb-5 group-hover:scale-105 transition-transform">
                   <DollarSign className="w-5 h-5 text-white" />
@@ -449,9 +379,9 @@ export const LandingPage = () => {
       {/* =========================================================================
           5. LIVE METRICS PREVIEW CANOPY
           ========================================================================= */}
-      <section className="relative z-10 py-16 border-b border-[#1f1f1f] bg-[#050505]/75 backdrop-blur-xs">
+      <section className="py-16 border-b border-[#1f1f1f] bg-[#050505]">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="rounded-xl border border-[#1f1f1f] bg-[#0a0a0a]/85 backdrop-blur-sm overflow-hidden shadow-2xl">
+          <div className="rounded-xl border border-[#1f1f1f] bg-[#0a0a0a] overflow-hidden shadow-2xl">
             {/* Terminal Top Bar */}
             <div className="h-10 border-b border-[#1f1f1f] px-4 flex items-center justify-between text-xs font-mono">
               <div className="flex items-center gap-2">
@@ -483,7 +413,7 @@ export const LandingPage = () => {
       {/* =========================================================================
           6. BOTTOM CALL TO ACTION
           ========================================================================= */}
-      <section className="relative z-10 py-20 border-b border-[#1f1f1f] bg-[#000000]/75 backdrop-blur-xs text-center">
+      <section className="py-20 border-b border-[#1f1f1f] bg-[#000000] text-center">
         <div className="max-w-3xl mx-auto px-4">
           <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
             Ready to inspect your infrastructure?
@@ -506,7 +436,7 @@ export const LandingPage = () => {
       {/* =========================================================================
           7. FOOTER (INCLUDES: "InfraCloud by Simpel TechLabs Pvt. Ltd.")
           ========================================================================= */}
-      <footer className="relative z-10 bg-[#000000]/90 backdrop-blur-md py-10">
+      <footer className="bg-[#000000] py-10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-zinc-500 font-mono">
           <div className="flex items-center gap-2.5">
             <Server className="w-4 h-4 text-white" />

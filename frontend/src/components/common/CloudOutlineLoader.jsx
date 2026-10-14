@@ -8,7 +8,6 @@ export const CloudOutlineLoader = ({
   size = 'md',
   className = '',
   once = false,
-  showCenterIcon = false,
 }) => {
   const sizeMap = {
     xs: 'w-4 h-4',
@@ -49,11 +48,6 @@ export const CloudOutlineLoader = ({
           className={once ? 'animate-cloud-draw-once' : 'animate-cloud-draw'}
         />
       </svg>
-
-      {/* Subtle telemetry center indicator dot */}
-      {showCenterIcon && (
-        <span className="absolute w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping pointer-events-none" />
-      )}
     </div>
   );
 };
