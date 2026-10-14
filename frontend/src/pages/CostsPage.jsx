@@ -7,10 +7,10 @@ import { Button } from '../components/common/Button';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useTheme } from '../context/ThemeContext';
 import api from '../services/api';
 
 const COST_MANAGERS = ['Platform Admin', 'Billing / Finance'];
-const BAR_COLOR = '#ffffff';
 
 const LABEL_STYLES = {
   Actual: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 dark:text-emerald-400',
@@ -85,9 +85,14 @@ const BreakdownTable = ({ title, rows, money, linkTo }) => (
 
 export const CostsPage = () => {
   const { user } = useAuth();
+  const { isDark } = useTheme();
   const { success, error: showError } = useToast();
   const canManage = COST_MANAGERS.includes(user?.role);
   const months = useMemo(() => recentMonths(12), []);
+
+  const barColor = isDark ? '#ffffff' : '#09090b';
+  const gridColor = isDark ? '#222222' : '#e5e5e5';
+  const axisColor = isDark ? '#666666' : '#888888';
 
   const [month, setMonth] = useState(months[0]);
   const [data, setData] = useState(null);
@@ -280,10 +285,10 @@ export const CostsPage = () => {
           <div className="w-full h-56">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyRows} margin={{ top: 8, right: 8, left: 0, bottom: 0 }} barCategoryGap="25%">
-                <CartesianGrid strokeDasharray="3 3" stroke="#222222" vertical={false} />
-                <XAxis dataKey="day" stroke="#666666" fontSize={10} tickLine={false} axisLine={{ stroke: '#222222' }} interval={1} />
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                <XAxis dataKey="day" stroke={axisColor} fontSize={10} tickLine={false} axisLine={{ stroke: gridColor }} interval={1} />
                 <YAxis
-                  stroke="#666666"
+                  stroke={axisColor}
                   fontSize={10}
                   tickLine={false}
                   axisLine={false}
@@ -291,7 +296,7 @@ export const CostsPage = () => {
                   tickFormatter={(v) => money(v).replace(/\.00$/, '')}
                 />
                 <Tooltip
-                  cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                  cursor={{ fill: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)' }}
                   content={({ active, payload }) =>
                     active && payload?.length && payload[0].value != null ? (
                       <div className="bg-white dark:bg-black border border-slate-200 dark:border-[#222222] px-3 py-2 rounded-lg shadow-sm text-[11px] font-mono">
@@ -301,7 +306,7 @@ export const CostsPage = () => {
                     ) : null
                   }
                 />
-                <Bar dataKey="amount" fill={BAR_COLOR} radius={[4, 4, 0, 0]} maxBarSize={18} isAnimationActive={false} />
+                <Bar dataKey="amount" fill={barColor} radius={[4, 4, 0, 0]} maxBarSize={18} isAnimationActive={false} />
               </BarChart>
             </ResponsiveContainer>
           </div>

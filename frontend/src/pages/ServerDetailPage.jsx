@@ -43,6 +43,7 @@ import { InstallAgentModal } from '../components/servers/InstallAgentModal';
 import { Modal } from '../components/common/Modal';
 import api from '../services/api';
 import { useToast } from '../context/ToastContext';
+import { useTheme } from '../context/ThemeContext';
 
 const formatAge = (date) => {
   const seconds = Math.max(0, Math.round((Date.now() - new Date(date).getTime()) / 1000));
@@ -84,6 +85,11 @@ const MetricSourceBadge = ({ metrics }) => {
 export const ServerDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isDark } = useTheme();
+  const chartColor = isDark ? '#ffffff' : '#09090b';
+  const gridColor = isDark ? '#222222' : '#e5e5e5';
+  const axisColor = isDark ? '#666666' : '#888888';
+
   const [server, setServer] = useState(null);
   const [metrics, setMetrics] = useState(null);
   const [cost, setCost] = useState(null);
@@ -506,20 +512,20 @@ export const ServerDetailPage = () => {
             <AreaChart data={telemetrySeries} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ffffff" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#ffffff" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor={chartColor} stopOpacity={isDark ? 0.25 : 0.12} />
+                  <stop offset="95%" stopColor={chartColor} stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#222222" vertical={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
               <XAxis
                 dataKey="label"
-                stroke="#666666"
+                stroke={axisColor}
                 fontSize={10}
                 tickLine={false}
-                axisLine={{ stroke: '#222222' }}
+                axisLine={{ stroke: gridColor }}
               />
               <YAxis
-                stroke="#666666"
+                stroke={axisColor}
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
@@ -544,7 +550,7 @@ export const ServerDetailPage = () => {
               <Area
                 type="monotone"
                 dataKey={activeMetricTab === 'network' ? 'networkIn' : activeMetricTab}
-                stroke="#ffffff"
+                stroke={chartColor}
                 strokeWidth={1.5}
                 fillOpacity={1}
                 fill="url(#chartGradient)"
