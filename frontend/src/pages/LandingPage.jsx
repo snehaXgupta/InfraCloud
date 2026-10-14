@@ -131,10 +131,15 @@ export const LandingPage = () => {
             </div>
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             <Link to="/login">
-              <button className="px-3.5 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer">
+              <button className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer">
                 Sign In
+              </button>
+            </Link>
+            <Link to="/login?mode=register">
+              <button className="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-300 hover:text-white border border-[#262626] hover:border-[#383838] bg-[#0c0c0c] transition-colors cursor-pointer hidden sm:inline-flex">
+                Register
               </button>
             </Link>
             <Link to={consoleUrl}>
@@ -182,9 +187,9 @@ export const LandingPage = () => {
                 <ArrowRight className="w-4 h-4" />
               </button>
             </Link>
-            <Link to="/login" className="w-full sm:w-auto">
+            <Link to="/login?mode=register" className="w-full sm:w-auto">
               <button className="w-full sm:w-auto px-5 py-2.5 rounded-md bg-[#0a0a0a] border border-[#222222] hover:bg-[#141414] text-sm font-medium text-zinc-300 hover:text-white transition-colors cursor-pointer">
-                Sign In with Workspace Account
+                Register New User
               </button>
             </Link>
           </div>

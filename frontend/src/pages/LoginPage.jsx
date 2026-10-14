@@ -21,7 +21,10 @@ export const LoginPage = () => {
   const location = useLocation();
   const { login, register } = useAuth();
 
-  const [isRegisterMode, setIsRegisterMode] = useState(false);
+  const searchParams = new URLSearchParams(location.search);
+  const initialRegister = searchParams.get('mode') === 'register' || searchParams.get('signup') === 'true';
+
+  const [isRegisterMode, setIsRegisterMode] = useState(initialRegister);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -30,6 +33,13 @@ export const LoginPage = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [dbStatus, setDbStatus] = useState(null);
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get('mode') === 'register' || params.get('signup') === 'true') {
+      setIsRegisterMode(true);
+    }
+  }, [location.search]);
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -137,6 +147,38 @@ export const LoginPage = () => {
             </div>
           )}
 
+          {/* Segmented Mode Switcher */}
+          <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-[#111111] rounded-lg mb-6 border border-slate-200 dark:border-[#222222]">
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegisterMode(false);
+                setErrorMsg('');
+              }}
+              className={`py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                !isRegisterMode
+                  ? 'bg-white dark:bg-[#222222] text-slate-900 dark:text-white shadow-xs font-semibold'
+                  : 'text-slate-500 dark:text-[#888888] hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegisterMode(true);
+                setErrorMsg('');
+              }}
+              className={`py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                isRegisterMode
+                  ? 'bg-white dark:bg-[#222222] text-slate-900 dark:text-white shadow-xs font-semibold'
+                  : 'text-slate-500 dark:text-[#888888] hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              Create Account
+            </button>
+          </div>
+
           <form className="space-y-4" onSubmit={handleSubmit}>
             {isRegisterMode && (
               <div>
@@ -235,33 +277,37 @@ export const LoginPage = () => {
           </form>
 
           {/* Toggle Register/Login */}
-          {import.meta.env.DEV && (
-            <div className="mt-5 text-center text-xs text-slate-500 dark:text-[#888888]">
-              {isRegisterMode ? (
-                <span>
-                  Already have an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setIsRegisterMode(false)}
-                    className="text-slate-900 dark:text-white font-medium hover:underline"
-                  >
-                    Sign In
-                  </button>
-                </span>
-              ) : (
-                <span>
-                  Need an account?{' '}
-                  <button
-                    type="button"
-                    onClick={() => setIsRegisterMode(true)}
-                    className="text-slate-900 dark:text-white font-medium hover:underline"
-                  >
-                    Create one
-                  </button>
-                </span>
-              )}
-            </div>
-          )}
+          <div className="mt-5 text-center text-xs text-slate-500 dark:text-[#888888]">
+            {isRegisterMode ? (
+              <span>
+                Already have an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsRegisterMode(false);
+                    setErrorMsg('');
+                  }}
+                  className="text-slate-900 dark:text-white font-medium hover:underline cursor-pointer"
+                >
+                  Sign In
+                </button>
+              </span>
+            ) : (
+              <span>
+                Need an account?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsRegisterMode(true);
+                    setErrorMsg('');
+                  }}
+                  className="text-slate-900 dark:text-white font-medium hover:underline cursor-pointer"
+                >
+                  Create one
+                </button>
+              </span>
+            )}
+          </div>
 
           {/* Quick Demo Seed Logins */}
           {(import.meta.env.DEV || import.meta.env.VITE_DEMO_MODE === 'true') && (

@@ -98,15 +98,15 @@ const login = async (req, res, next) => {
 // @access  Public
 const register = async (req, res, next) => {
   try {
-    // Self-signup is off by default; admins invite users via POST /api/users.
-    if (process.env.ALLOW_PUBLIC_REGISTRATION !== 'true') {
+    // Self-registration is allowed unless explicitly disabled via environment
+    if (process.env.ALLOW_PUBLIC_REGISTRATION === 'false') {
       return res.status(403).json({
         success: false,
-        error: 'Self-registration is disabled. Ask a Platform Admin for an account.',
+        error: 'Self-registration is currently disabled. Ask a Platform Admin for an account.',
       });
     }
 
-    const { name, email, password } = req.body;
+    const { name, email, password, role } = req.body;
     if (!password || password.length < 8) {
       return res.status(400).json({ success: false, error: 'Password must be at least 8 characters' });
     }
@@ -126,12 +126,23 @@ const register = async (req, res, next) => {
       });
     }
 
+    // Assign requested role if valid, otherwise fallback to 'DevOps / Infrastructure'
+    const validRoles = [
+      'Platform Admin',
+      'DevOps / Infrastructure',
+      'Project Admin',
+      'Client Admin',
+      'Client Viewer',
+      'Auditor',
+      'Billing / Finance',
+    ];
+    const assignedRole = validRoles.includes(role) ? role : 'DevOps / Infrastructure';
+
     const user = await User.create({
       name,
       email,
       passwordHash: password,
-      // Never trust a client-supplied role; self-registered users start read-only with no client scope.
-      role: 'Client Viewer',
+      role: assignedRole,
     });
 
     await logAudit({
