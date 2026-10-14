@@ -1,25 +1,27 @@
 import React from 'react';
-import { Loader2, AlertCircle, Database, Server } from 'lucide-react';
+import { Database } from 'lucide-react';
 import { Button } from './Button';
 import { Modal } from './Modal';
+import { CloudOutlineLoader } from './CloudOutlineLoader';
 
 export const LoadingSpinner = ({ label = 'Loading telemetry data...', fullPage = false }) => {
   if (fullPage) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center p-8">
-        <div className="relative flex items-center justify-center">
-          <div className="w-12 h-12 rounded-full border-2 border-white/20 border-t-white animate-spin"></div>
-          <Server className="w-5 h-5 text-white absolute" />
+      <div className="min-h-[50vh] flex flex-col items-center justify-center p-8">
+        <div className="relative flex items-center justify-center mb-3">
+          <CloudOutlineLoader size="lg" showCenterIcon />
         </div>
-        <p className="mt-4 text-sm font-medium text-slate-400 tracking-wide animate-pulse">{label}</p>
+        <p className="text-xs font-mono font-medium text-slate-500 dark:text-zinc-400 tracking-wider animate-pulse uppercase">
+          {label}
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-center gap-3 p-6 text-slate-400">
-      <Loader2 className="w-5 h-5 animate-spin text-zinc-300" />
-      <span className="text-sm font-medium">{label}</span>
+    <div className="flex items-center justify-center gap-2.5 p-6 text-slate-500 dark:text-zinc-400">
+      <CloudOutlineLoader size="xs" />
+      <span className="text-xs font-mono font-medium">{label}</span>
     </div>
   );
 };

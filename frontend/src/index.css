@@ -101,3 +101,37 @@
     background-color: var(--card-subtle);
   }
 }
+
+/* Cloud Outline Completing Animation */
+@keyframes cloudStrokeDraw {
+  0% {
+    stroke-dashoffset: 100;
+    opacity: 0.2;
+  }
+  65% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  85% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+.animate-cloud-draw {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: cloudStrokeDraw 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-cloud-draw-once {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: cloudStrokeDraw 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+

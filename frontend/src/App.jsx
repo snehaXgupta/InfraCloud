@@ -4,6 +4,7 @@ import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { AppRoutes } from './routes/AppRoutes';
+import { RouteCloudProgress } from './components/common/RouteCloudProgress';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       <ThemeProvider>
         <ToastProvider>
           <AuthProvider>
+            <RouteCloudProgress />
             <AppRoutes />
           </AuthProvider>
         </ToastProvider>
