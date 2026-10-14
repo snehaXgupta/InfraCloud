@@ -130,9 +130,6 @@ export const SettingsPage = () => {
           <Settings className="w-6 h-6 text-slate-700 dark:text-white" />
           Platform Settings &amp; Appearance
         </h1>
-        <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-          Configure appearance mode, typography, telemetry thresholds, and security credentials
-        </p>
       </div>
 
       {/* 1. APPEARANCE & THEME SECTION */}

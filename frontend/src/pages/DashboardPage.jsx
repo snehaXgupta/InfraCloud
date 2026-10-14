@@ -129,14 +129,11 @@ export const DashboardPage = () => {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
       {/* Welcome Banner matching Vercel */}
-      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight text-slate-900 dark:text-white font-sans">
             Welcome back, {userDisplayName}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 dark:text-[#888888] mt-1.5 max-w-3xl leading-relaxed">
-            Manage users, spaces, and browse read-only DigitalOcean Spaces content across your entire organisation.
-          </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">

@@ -70,9 +70,6 @@ export const AuditLogsPage = () => {
             <FileSpreadsheet className="w-6 h-6 text-slate-700 dark:text-zinc-300" />
             Compliance & Security Audit Trail
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
-            Immutable log of all user logins, infrastructure modifications, operation executions, and security events
-          </p>
         </div>
 
         <Button

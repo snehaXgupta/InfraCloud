@@ -76,9 +76,6 @@ export const ServersPage = () => {
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             Droplets
           </h1>
-          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-            DigitalOcean droplets managed through the panel. Click any card to open its insights.
-          </p>
         </div>
 
         <div className="flex items-center gap-2.5">

@@ -192,9 +192,6 @@ export const IntegrationsPage = () => {
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <Plug className="w-5 h-5 text-slate-700 dark:text-white" /> Integrations
           </h1>
-          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-            Provider accounts used for resize and live plan prices. Monitoring does not need these — it uses the agent.
-          </p>
         </div>
         {isAdmin && (
           <Button size="sm" onClick={() => setAddOpen(true)} leftIcon={<Plus className="w-3.5 h-3.5" />}>

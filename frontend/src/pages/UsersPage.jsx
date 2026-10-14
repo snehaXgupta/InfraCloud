@@ -194,9 +194,6 @@ export const UsersPage = () => {
             <Users className="w-6 h-6 text-slate-700 dark:text-white" />
             Users & Role-Based Access Control
           </h1>
-          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-            Scoped role definitions, operator privileges, and access governance across control-plane tiers
-          </p>
         </div>
 
         <Button

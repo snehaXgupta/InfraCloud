@@ -89,9 +89,6 @@ export const ClientsPage = () => {
             <Building2 className="w-6 h-6 text-slate-700 dark:text-white" />
             Client Management
           </h1>
-          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-            Top-level organizational tenant control with scoped projects, environments, and SLA definitions
-          </p>
         </div>
 
         <Button variant="primary" size="sm" onClick={() => setIsCreateOpen(true)} leftIcon={<Plus className="w-4 h-4" />}>

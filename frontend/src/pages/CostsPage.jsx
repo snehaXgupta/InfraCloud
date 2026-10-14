@@ -195,9 +195,6 @@ export const CostsPage = () => {
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <DollarSign className="w-5 h-5 text-slate-700 dark:text-white" /> Costs
           </h1>
-          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-            Estimated from each server's plan price, replaced by Actuals when a provider invoice is imported.
-          </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           <select

@@ -150,9 +150,6 @@ export const AlertsPage = () => {
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             Infrastructure Alerts
           </h1>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Active threshold violations, server down monitors, and automatic email notifications
-          </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">

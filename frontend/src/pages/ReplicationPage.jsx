@@ -97,9 +97,6 @@ export const ReplicationPage = () => {
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <GitBranch className="w-5 h-5 text-slate-700 dark:text-white" /> Replication
           </h1>
-          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-            Primary → replica pairs. The replica’s agent measures lag locally; Sync and Recovery run on the replica after approval.
-          </p>
         </div>
         {MANAGERS.includes(user?.role) && (
           <Button size="sm" onClick={() => setAddOpen(true)} leftIcon={<Plus className="w-3.5 h-3.5" />}>

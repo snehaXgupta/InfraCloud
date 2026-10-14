@@ -94,9 +94,6 @@ export const ProjectsPage = () => {
             <FolderGit2 className="w-6 h-6 text-slate-700 dark:text-white" />
             Project Management
           </h1>
-          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-            Application microservices, infrastructure stacks, and scoped deployment environments
-          </p>
         </div>
 
         <Button variant="primary" size="sm" onClick={() => setIsCreateOpen(true)} leftIcon={<Plus className="w-4 h-4" />}>

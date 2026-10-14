@@ -141,9 +141,6 @@ export const OperationsPage = () => {
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <Workflow className="w-5 h-5 text-slate-700 dark:text-white" /> Operations
           </h1>
-          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-            Approved catalog only — the agent on each server runs its own built-in scripts. Risky operations need a second person’s approval.
-          </p>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex gap-1 p-1 rounded-lg bg-slate-100 dark:bg-[#111111] border border-slate-200 dark:border-[#222222] text-xs">
