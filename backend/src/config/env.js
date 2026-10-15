@@ -2,6 +2,10 @@
  * Central runtime configuration. In production, missing or weak secrets stop the process
  * at boot instead of silently falling back to development defaults.
  */
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '../../../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 require('dotenv').config();
 
 const isProduction = process.env.NODE_ENV === 'production';
