@@ -4,6 +4,7 @@ import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
 import { useToast } from '../../context/ToastContext';
 import api from '../../services/api';
+import { copyToClipboardSafe } from '../../services/clipboard';
 
 const HEARTBEAT_FRESH_MS = 60 * 1000;
 
@@ -87,11 +88,15 @@ export const InstallAgentModal = ({ isOpen, server, onClose, onRefreshServer }) 
   const linuxCommand = `curl -fsSL ${baseUrl}/api/agent/install.sh | sudo SMP_URL=${baseUrl} SMP_TOKEN=${tokenText} bash`;
   const manualCommand = `curl -fsSL ${baseUrl}/api/agent/script -o infra-agent.js && SMP_TOKEN=${tokenText} node infra-agent.js --endpoint ${baseUrl}`;
 
-  const copyToClipboard = (text, type) => {
-    navigator.clipboard.writeText(text);
-    setCopiedType(type);
-    success(`Copied ${type} command to clipboard`);
-    setTimeout(() => setCopiedType(null), 2000);
+  const copyToClipboard = async (text, type) => {
+    const ok = await copyToClipboardSafe(text);
+    if (ok) {
+      setCopiedType(type);
+      success(`Copied ${type} command to clipboard`);
+      setTimeout(() => setCopiedType(null), 2000);
+    } else {
+      showError('Unable to copy automatically. Please select and copy manually.');
+    }
   };
 
   const lastHeartbeat = liveServerData?.agent?.lastHeartbeat;

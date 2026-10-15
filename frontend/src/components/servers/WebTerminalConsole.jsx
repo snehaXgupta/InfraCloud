@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { copyToClipboardSafe } from '../../services/clipboard';
 
 export const WebTerminalConsole = ({ server, height = '500px' }) => {
   const terminalRef = useRef(null);
@@ -193,14 +194,18 @@ export const WebTerminalConsole = ({ server, height = '500px' }) => {
     }
   };
 
-  const copySSHCommand = () => {
+  const copySSHCommand = async () => {
     const ip = server?.network?.publicIp || customHost || '127.0.0.1';
     const user = customUsername || 'root';
     const cmd = `ssh ${user}@${ip} -p ${customPort || 22}`;
-    navigator.clipboard.writeText(cmd);
-    setIsCopied(true);
-    success('Copied SSH command');
-    setTimeout(() => setIsCopied(false), 2000);
+    const ok = await copyToClipboardSafe(cmd);
+    if (ok) {
+      setIsCopied(true);
+      success('Copied SSH command');
+      setTimeout(() => setIsCopied(false), 2000);
+    } else {
+      showError('Unable to copy SSH command automatically');
+    }
   };
 
   return (

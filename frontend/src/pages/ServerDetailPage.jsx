@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { copyToClipboardSafe } from '../services/clipboard';
 import {
   ArrowLeft,
   RefreshCw,
@@ -143,11 +144,15 @@ export const ServerDetailPage = () => {
     return () => clearInterval(interval);
   }, [id, timeRange]);
 
-  const copyToClipboard = (text, fieldName) => {
-    navigator.clipboard.writeText(text);
-    setCopiedField(fieldName);
-    success(`Copied ${fieldName} to clipboard`);
-    setTimeout(() => setCopiedField(null), 2000);
+  const copyToClipboard = async (text, fieldName) => {
+    const ok = await copyToClipboardSafe(text);
+    if (ok) {
+      setCopiedField(fieldName);
+      success(`Copied ${fieldName} to clipboard`);
+      setTimeout(() => setCopiedField(null), 2000);
+    } else {
+      showError(`Unable to copy ${fieldName} automatically`);
+    }
   };
 
   const handleAcknowledgeAlert = async (alertId) => {
@@ -195,7 +200,37 @@ export const ServerDetailPage = () => {
   const currentCpu = metrics?.currentSummary?.cpu ?? server.metricsSummary?.cpuUsage ?? 3.1;
   const currentMemory = metrics?.currentSummary?.memory ?? server.metricsSummary?.memoryUsage ?? 11.6;
   const currentDisk = metrics?.currentSummary?.disk ?? server.metricsSummary?.diskUsage ?? 57.3;
-  const telemetrySeries = metrics?.series || [];
+
+  const telemetrySeries = useMemo(() => {
+    if (!metrics?.series) return [];
+    return metrics.series.map((item) => {
+      if (!item.timestamp) return item;
+      const date = new Date(item.timestamp);
+      const isSeconds = ['5m', '15m'].includes(timeRange);
+      const isDays = ['7d', '30d'].includes(timeRange);
+      let localLabel;
+      if (isDays) {
+        localLabel = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+      } else {
+        localLabel = date.toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: isSeconds ? '2-digit' : undefined,
+        });
+      }
+      return {
+        ...item,
+        label: localLabel,
+        localTooltipTime: date.toLocaleString([], {
+          month: 'short',
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+      };
+    });
+  }, [metrics?.series, timeRange]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -537,7 +572,7 @@ export const ServerDetailPage = () => {
                   if (active && payload && payload.length) {
                     return (
                       <div className="bg-white dark:bg-black border border-slate-200 dark:border-[#222222] px-3 py-2 rounded-lg shadow-sm text-[11px] font-mono">
-                        <p className="text-slate-500 dark:text-[#888888] mb-1">{payload[0]?.payload?.timestamp || label}</p>
+                        <p className="text-slate-500 dark:text-[#888888] mb-1">{payload[0]?.payload?.localTooltipTime || payload[0]?.payload?.timestamp || label}</p>
                         <p className="font-bold text-slate-900 dark:text-white">
                           {activeMetricTab.toUpperCase()} : {payload[0]?.value}%
                         </p>
