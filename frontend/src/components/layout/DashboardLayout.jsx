@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Header } from './Header';
 import { CommandPalette } from '../common/CommandPalette';
+import { ErrorBoundary } from '../common/ErrorBoundary';
 import api from '../../services/api';
 
 export const DashboardLayout = () => {
@@ -76,7 +77,9 @@ export const DashboardLayout = () => {
         />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
 

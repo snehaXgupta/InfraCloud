@@ -36,6 +36,7 @@ import {
 } from 'recharts';
 import { Badge, ServerStatusBadge, SeverityBadge, ProviderBadge } from '../components/common/Badge';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { OperationModal } from '../components/servers/OperationModal';
 import { ResizeServerModal } from '../components/servers/ResizeServerModal';
 import { WebTerminalConsole } from '../components/servers/WebTerminalConsole';
@@ -83,7 +84,7 @@ const MetricSourceBadge = ({ metrics }) => {
   );
 };
 
-export const ServerDetailPage = () => {
+const ServerDetailContent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isDark } = useTheme();
@@ -179,6 +180,41 @@ export const ServerDetailPage = () => {
     }
   };
 
+  const telemetrySeries = useMemo(() => {
+    if (!metrics?.series || !Array.isArray(metrics.series)) return [];
+    return metrics.series.map((item) => {
+      if (!item.timestamp) return item;
+      try {
+        const date = new Date(item.timestamp);
+        const isSeconds = ['5m', '15m'].includes(timeRange);
+        const isDays = ['7d', '30d'].includes(timeRange);
+        let localLabel;
+        if (isDays) {
+          localLabel = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        } else {
+          localLabel = date.toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: isSeconds ? '2-digit' : undefined,
+          });
+        }
+        return {
+          ...item,
+          label: localLabel,
+          localTooltipTime: date.toLocaleString([], {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }),
+        };
+      } catch (e) {
+        return item;
+      }
+    });
+  }, [metrics?.series, timeRange]);
+
   if (isLoading && !server) {
     return <LoadingSpinner fullPage label="Loading server telemetry..." />;
   }
@@ -189,7 +225,7 @@ export const ServerDetailPage = () => {
         <h2 className="text-lg font-bold text-slate-900 dark:text-white">Server not found</h2>
         <button
           onClick={() => navigate('/servers')}
-          className="mt-4 px-4 py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-black font-semibold text-xs hover:bg-slate-800 dark:hover:bg-[#eaeaea] transition-colors"
+          className="mt-4 px-4 py-2 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-black font-semibold text-xs hover:bg-slate-800 dark:hover:bg-[#eaeaea] transition-colors cursor-pointer"
         >
           Back to Servers
         </button>
@@ -200,37 +236,6 @@ export const ServerDetailPage = () => {
   const currentCpu = metrics?.currentSummary?.cpu ?? server.metricsSummary?.cpuUsage ?? 3.1;
   const currentMemory = metrics?.currentSummary?.memory ?? server.metricsSummary?.memoryUsage ?? 11.6;
   const currentDisk = metrics?.currentSummary?.disk ?? server.metricsSummary?.diskUsage ?? 57.3;
-
-  const telemetrySeries = useMemo(() => {
-    if (!metrics?.series) return [];
-    return metrics.series.map((item) => {
-      if (!item.timestamp) return item;
-      const date = new Date(item.timestamp);
-      const isSeconds = ['5m', '15m'].includes(timeRange);
-      const isDays = ['7d', '30d'].includes(timeRange);
-      let localLabel;
-      if (isDays) {
-        localLabel = date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-      } else {
-        localLabel = date.toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          second: isSeconds ? '2-digit' : undefined,
-        });
-      }
-      return {
-        ...item,
-        label: localLabel,
-        localTooltipTime: date.toLocaleString([], {
-          month: 'short',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
-        }),
-      };
-    });
-  }, [metrics?.series, timeRange]);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-12">
@@ -331,7 +336,7 @@ export const ServerDetailPage = () => {
             <span className="text-slate-400 dark:text-[#666666]">·</span>
             <span>{server.provider || 'DigitalOcean'}</span>
             <span className="text-slate-400 dark:text-[#666666]">·</span>
-            <span className="text-slate-500 dark:text-[#888888]">ID {server._id?.substring(server._id.length - 9)}</span>
+            <span className="text-slate-500 dark:text-[#888888]">ID {String(server._id || '').slice(-9)}</span>
           </div>
 
           {/* Network IPs Line with Copy Buttons */}
@@ -339,9 +344,9 @@ export const ServerDetailPage = () => {
             <div className="flex items-center gap-1.5 font-mono">
               <Globe className="w-3.5 h-3.5 text-slate-500 dark:text-[#888888]" />
               <span className="text-slate-500 dark:text-[#888888]">Public:</span>
-              <strong className="text-slate-900 dark:text-slate-200">{server.network?.publicIp || '139.59.74.30'}</strong>
+              <strong className="text-slate-900 dark:text-slate-200">{server.network?.publicIp || server.hostname || '139.59.74.30'}</strong>
               <button
-                onClick={() => copyToClipboard(server.network?.publicIp || '139.59.74.30', 'Public IP')}
+                onClick={() => copyToClipboard(server.network?.publicIp || server.hostname || '139.59.74.30', 'Public IP')}
                 className="text-slate-400 hover:text-black dark:hover:text-white p-0.5 cursor-pointer transition-colors"
                 title="Copy Public IP"
               >
@@ -369,7 +374,7 @@ export const ServerDetailPage = () => {
           <div>
             <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 dark:text-[#888888] block mb-1">Configuration</span>
             <span className="text-xs font-semibold text-slate-900 dark:text-white font-mono">
-              {server.compute?.vcpu || 4} vCPUs · {server.compute?.ramGb || 8} GB RAM · {server.storage?.diskTotalGb || 50} GB
+              {server.compute?.vcpu || server.vcpu || 4} vCPUs · {server.compute?.ramGb || server.ramGb || 8} GB RAM · {server.storage?.diskTotalGb || server.diskTotalGb || 50} GB
             </span>
           </div>
 
@@ -384,9 +389,16 @@ export const ServerDetailPage = () => {
             <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 dark:text-[#888888] block mb-1">
               {cost?.rateSource === 'manual-rate' ? 'Monthly Rate' : 'Estimated Cost'}
             </span>
-            {cost ? (
-              <Link to="/costs" className="text-xs font-bold text-slate-900 dark:text-white font-mono hover:text-black dark:hover:text-white transition-colors" title={`Month to date: ${cost.amount} ${cost.currency} (${cost.label})`}>
-                {new Intl.NumberFormat([], { style: 'currency', currency: cost.currency }).format(cost.monthlyRate)} / mo
+            {cost && Number.isFinite(cost.monthlyRate) ? (
+              <Link
+                to="/costs"
+                className="text-xs font-bold text-slate-900 dark:text-white font-mono hover:text-black dark:hover:text-white transition-colors"
+                title={`Month to date: ${cost.amount || 0} ${cost.currency || 'USD'} (${cost.label || 'Estimated'})`}
+              >
+                {new Intl.NumberFormat('en-US', {
+                  style: 'currency',
+                  currency: cost.currency && cost.currency.length === 3 ? cost.currency : 'USD',
+                }).format(cost.monthlyRate)} / mo
               </Link>
             ) : (
               <span className="text-xs font-bold text-slate-500 dark:text-[#888888] font-mono">—</span>
@@ -564,7 +576,7 @@ export const ServerDetailPage = () => {
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
-                domain={[0, (dataMax) => Math.max(20, Math.ceil(dataMax * 1.2))]}
+                domain={[0, (dataMax) => (Number.isFinite(dataMax) && dataMax > 0 ? Math.max(20, Math.ceil(dataMax * 1.2)) : 100)]}
                 tickFormatter={(v) => `${v}%`}
               />
               <Tooltip
@@ -606,7 +618,7 @@ export const ServerDetailPage = () => {
             { id: 'terminal', label: 'Terminal Console' },
             {
               id: 'alerts',
-              label: `Alerts (${server.alerts?.filter((a) => a.status !== 'resolved').length || 0})`,
+              label: `Alerts (${Array.isArray(server.alerts) ? server.alerts.filter((a) => a && a.status !== 'resolved').length : 0})`,
             },
             { id: 'activity', label: 'Operations Activity' },
           ].map((tab) => (
@@ -873,5 +885,13 @@ export const ServerDetailPage = () => {
         </div>
       </Modal>
     </div>
+  );
+};
+
+export const ServerDetailPage = () => {
+  return (
+    <ErrorBoundary>
+      <ServerDetailContent />
+    </ErrorBoundary>
   );
 };

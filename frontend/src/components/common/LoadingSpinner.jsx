@@ -1,5 +1,5 @@
 import React from 'react';
-import { Database } from 'lucide-react';
+import { Database, AlertCircle } from 'lucide-react';
 import { Button } from './Button';
 import { Modal } from './Modal';
 import { CloudOutlineLoader } from './CloudOutlineLoader';

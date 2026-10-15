@@ -86,8 +86,11 @@ const getServerById = async (req, res, next) => {
       { name: 'sshd.service', status: 'active (running)', pid: 820, memory: '12.4 MB', cpu: '0.0%', uptime: '14d 6h' },
     ];
 
+    const diskTotal = server.storage?.diskTotalGb ?? 50;
+    const diskUsed = server.storage?.diskUsedGb ?? 20;
+    const diskPercent = server.metricsSummary?.diskUsage ?? 40;
     const filesystem = [
-      { filesystem: '/dev/nvme0n1p1', mount: '/', size: `${server.storage.diskTotalGb}G`, used: `${server.storage.diskUsedGb}G`, avail: `${server.storage.diskTotalGb - server.storage.diskUsedGb}G`, usePercent: `${server.metricsSummary.diskUsage}%` },
+      { filesystem: '/dev/nvme0n1p1', mount: '/', size: `${diskTotal}G`, used: `${diskUsed}G`, avail: `${Math.max(0, diskTotal - diskUsed)}G`, usePercent: `${diskPercent}%` },
       { filesystem: 'tmpfs', mount: '/run', size: '3.2G', used: '48M', avail: '3.1G', usePercent: '2%' },
       { filesystem: '/dev/nvme0n1p2', mount: '/var/lib/docker', size: '100G', used: '32G', avail: '68G', usePercent: '32%' },
       { filesystem: '/dev/nvme1n1', mount: '/data/persistent', size: '500G', used: '194G', avail: '306G', usePercent: '39%' },
