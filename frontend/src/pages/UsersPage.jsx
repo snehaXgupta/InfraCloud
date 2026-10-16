@@ -94,6 +94,32 @@ const getRoleDefaults = (role, matrix) => {
   return matrix?.[role] || DEFAULT_ROLE_PERMS[role] || DEFAULT_ROLE_PERMS['Client Viewer'];
 };
 
+const ToggleSwitch = ({ checked, onChange, disabled }) => (
+  <button
+    type="button"
+    role="switch"
+    aria-checked={checked}
+    disabled={disabled}
+    onClick={(e) => {
+      e.stopPropagation();
+      onChange();
+    }}
+    className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
+      disabled ? 'opacity-40 cursor-not-allowed' : ''
+    } ${
+      checked
+        ? 'bg-emerald-500 shadow-sm shadow-emerald-500/30'
+        : 'bg-slate-200 dark:bg-[#1a1a1a] border border-slate-300 dark:border-[#333]'
+    }`}
+  >
+    <span
+      className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+        checked ? 'translate-x-3.5 translate-y-0.5' : 'translate-x-0.5 translate-y-0.5'
+      }`}
+    />
+  </button>
+);
+
 const ClientScopePicker = ({ role, clients, value = [], onChange }) => {
   if (GLOBAL_ROLES.includes(role)) {
     return <p className="text-[11px] text-slate-400">This role can see every client.</p>;
@@ -540,38 +566,39 @@ export const UsersPage = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-2 rounded-lg bg-slate-50 dark:bg-[#0c0c0c] border border-slate-200 dark:border-[#1e1e1e]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2.5 rounded-xl bg-slate-50 dark:bg-[#090909] border border-slate-200 dark:border-[#1e1e1e]">
               {MODULES_DEFINITION.map((m) => {
                 const isChecked = !!formData.customPermissions?.[m.key];
                 return (
-                  <label
+                  <div
                     key={m.key}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleAddModule(m.key);
-                    }}
-                    className={`flex items-start gap-2.5 p-2 rounded-md border cursor-pointer select-none transition-all ${
+                    onClick={() => toggleAddModule(m.key)}
+                    className={`flex items-start justify-between gap-2.5 p-2.5 rounded-lg border cursor-pointer select-none transition-all ${
                       isChecked
-                        ? 'bg-slate-100 dark:bg-white/[0.06] border-slate-300 dark:border-white/20 text-slate-900 dark:text-white'
-                        : 'border-transparent text-slate-500 dark:text-[#777777] hover:bg-slate-100/50 dark:hover:bg-white/[0.02]'
+                        ? 'bg-white dark:bg-[#111111] border-slate-300 dark:border-white/20 text-slate-900 dark:text-white shadow-xs'
+                        : 'bg-transparent border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-[#777] hover:bg-slate-100/50 dark:hover:bg-white/[0.02]'
                     }`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => {}}
-                      className="mt-0.5 rounded border-slate-300 dark:border-[#333] text-black focus:ring-0"
-                    />
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-medium flex items-center justify-between">
+                      <div className="text-xs font-semibold flex items-center gap-1.5">
                         <span>{m.label}</span>
-                        <span className={`text-[9px] font-mono px-1 rounded ${isChecked ? 'text-emerald-500 font-semibold' : 'text-slate-400'}`}>
+                        <span
+                          className={`text-[9px] font-mono px-1 rounded ${
+                            isChecked
+                              ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                              : 'text-slate-400 dark:text-zinc-600'
+                          }`}
+                        >
                           {isChecked ? 'Allowed' : 'Denied'}
                         </span>
                       </div>
-                      <div className="text-[10px] text-slate-400 dark:text-[#777777] truncate">{m.desc}</div>
+                      <div className="text-[10px] text-slate-400 dark:text-[#777] mt-0.5 leading-snug">{m.desc}</div>
                     </div>
-                  </label>
+                    <ToggleSwitch
+                      checked={isChecked}
+                      onChange={() => toggleAddModule(m.key)}
+                    />
+                  </div>
                 );
               })}
             </div>
@@ -657,38 +684,39 @@ export const UsersPage = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-2 rounded-lg bg-slate-50 dark:bg-[#0c0c0c] border border-slate-200 dark:border-[#1e1e1e]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-60 overflow-y-auto p-2.5 rounded-xl bg-slate-50 dark:bg-[#090909] border border-slate-200 dark:border-[#1e1e1e]">
               {MODULES_DEFINITION.map((m) => {
                 const isChecked = !!editingUser?.customPermissions?.[m.key];
                 return (
-                  <label
+                  <div
                     key={m.key}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      toggleEditModule(m.key);
-                    }}
-                    className={`flex items-start gap-2.5 p-2 rounded-md border cursor-pointer select-none transition-all ${
+                    onClick={() => toggleEditModule(m.key)}
+                    className={`flex items-start justify-between gap-2.5 p-2.5 rounded-lg border cursor-pointer select-none transition-all ${
                       isChecked
-                        ? 'bg-slate-100 dark:bg-white/[0.06] border-slate-300 dark:border-white/20 text-slate-900 dark:text-white'
-                        : 'border-transparent text-slate-500 dark:text-[#777777] hover:bg-slate-100/50 dark:hover:bg-white/[0.02]'
+                        ? 'bg-white dark:bg-[#111111] border-slate-300 dark:border-white/20 text-slate-900 dark:text-white shadow-xs'
+                        : 'bg-transparent border-slate-200/50 dark:border-white/5 text-slate-500 dark:text-[#777] hover:bg-slate-100/50 dark:hover:bg-white/[0.02]'
                     }`}
                   >
-                    <input
-                      type="checkbox"
-                      checked={isChecked}
-                      onChange={() => {}}
-                      className="mt-0.5 rounded border-slate-300 dark:border-[#333] text-black focus:ring-0"
-                    />
                     <div className="min-w-0 flex-1">
-                      <div className="text-xs font-medium flex items-center justify-between">
+                      <div className="text-xs font-semibold flex items-center gap-1.5">
                         <span>{m.label}</span>
-                        <span className={`text-[9px] font-mono px-1 rounded ${isChecked ? 'text-emerald-500 font-semibold' : 'text-slate-400'}`}>
+                        <span
+                          className={`text-[9px] font-mono px-1 rounded ${
+                            isChecked
+                              ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20'
+                              : 'text-slate-400 dark:text-zinc-600'
+                          }`}
+                        >
                           {isChecked ? 'Allowed' : 'Denied'}
                         </span>
                       </div>
-                      <div className="text-[10px] text-slate-400 dark:text-[#777777] truncate">{m.desc}</div>
+                      <div className="text-[10px] text-slate-400 dark:text-[#777] mt-0.5 leading-snug">{m.desc}</div>
                     </div>
-                  </label>
+                    <ToggleSwitch
+                      checked={isChecked}
+                      onChange={() => toggleEditModule(m.key)}
+                    />
+                  </div>
                 );
               })}
             </div>

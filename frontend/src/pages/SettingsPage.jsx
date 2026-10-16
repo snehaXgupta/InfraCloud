@@ -18,6 +18,15 @@ import {
   Palette,
   Type,
   RotateCcw,
+  Workflow,
+  AlertTriangle,
+  DollarSign,
+  FileSpreadsheet,
+  Users,
+  LayoutGrid,
+  Table,
+  Minus,
+  CheckCheck,
 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -119,16 +128,156 @@ const AlertEmailCard = ({ canManage }) => {
   );
 };
 
+const ToggleSwitch = ({ checked, onChange, disabled, size = 'md' }) => {
+  const isSm = size === 'sm';
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      disabled={disabled}
+      onClick={onChange}
+      className={`relative inline-flex shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none ${
+        isSm ? 'h-4 w-7' : 'h-5 w-9'
+      } ${disabled ? 'opacity-40 cursor-not-allowed' : ''} ${
+        checked
+          ? 'bg-emerald-500 shadow-sm shadow-emerald-500/30'
+          : 'bg-slate-200 dark:bg-[#1a1a1a] border border-slate-300 dark:border-[#333]'
+      }`}
+    >
+      <span
+        className={`pointer-events-none inline-block transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+          isSm
+            ? (checked ? 'h-3 w-3 translate-x-3.5 translate-y-0.5' : 'h-3 w-3 translate-x-0.5 translate-y-0.5')
+            : (checked ? 'h-4 w-4 translate-x-4 translate-y-0.5' : 'h-4 w-4 translate-x-0.5 translate-y-0.5')
+        }`}
+      />
+    </button>
+  );
+};
+
 const RBAC_MODULES = [
-  { key: 'servers', label: 'Servers', desc: 'Droplets' },
-  { key: 'terminal', label: 'Terminal', desc: 'Console' },
-  { key: 'operations', label: 'Operations', desc: 'Scripts' },
-  { key: 'alerts', label: 'Alerts', desc: 'Incidents' },
-  { key: 'costs', label: 'Costs', desc: 'Billing' },
-  { key: 'auditLogs', label: 'Audit', desc: 'Logs' },
-  { key: 'users', label: 'Users', desc: 'Directory' },
-  { key: 'settings', label: 'Settings', desc: 'System' },
+  {
+    key: 'servers',
+    label: 'Droplets / Nodes',
+    short: 'Servers',
+    icon: Server,
+    color: 'emerald',
+    badge: 'Compute',
+    desc: 'Live telemetry, filesystem storage, hardware metrics & node health',
+  },
+  {
+    key: 'terminal',
+    label: 'Web Terminal',
+    short: 'Terminal',
+    icon: TerminalSquare,
+    color: 'emerald',
+    badge: 'Console',
+    desc: 'Interactive remote shell session with bidirectional terminal streaming',
+  },
+  {
+    key: 'operations',
+    label: 'Operations & Runbooks',
+    short: 'Operations',
+    icon: Workflow,
+    color: 'purple',
+    badge: 'Automation',
+    desc: 'Pre-flight playbooks, catalog scripts, and system maintenance jobs',
+  },
+  {
+    key: 'alerts',
+    label: 'Alerts & Incidents',
+    short: 'Alerts',
+    icon: AlertTriangle,
+    color: 'amber',
+    badge: 'Monitoring',
+    desc: 'CPU/Memory/Disk anomaly detection, thresholds & recovery notifications',
+  },
+  {
+    key: 'costs',
+    label: 'Costs & Billing',
+    short: 'Costs',
+    icon: DollarSign,
+    color: 'rose',
+    badge: 'Finances',
+    desc: 'Monthly cloud spend forecasts, resource expenditure & billing breakdowns',
+  },
+  {
+    key: 'auditLogs',
+    label: 'Audit Trail',
+    short: 'Audit',
+    icon: FileSpreadsheet,
+    color: 'indigo',
+    badge: 'Compliance',
+    desc: 'Immutable, tamper-evident security audit events and operator compliance trail',
+  },
+  {
+    key: 'users',
+    label: 'User Directory',
+    short: 'Users',
+    icon: Users,
+    color: 'cyan',
+    badge: 'Governance',
+    desc: 'Operator lifecycle governance, RBAC role assignment & client scopes',
+  },
+  {
+    key: 'settings',
+    label: 'Platform Settings',
+    short: 'Settings',
+    icon: Settings,
+    color: 'slate',
+    badge: 'System',
+    desc: 'Global alert policies, notification mute controls & interface configuration',
+  },
 ];
+
+const ROLES_ORDER = [
+  'Platform Admin',
+  'DevOps / Infrastructure',
+  'Project Admin',
+  'Client Admin',
+  'Client Viewer',
+  'Auditor',
+  'Billing / Finance',
+];
+
+const ROLES_META = {
+  'Platform Admin': {
+    scope: 'Global Scope',
+    color: 'border-slate-300 dark:border-white/20 text-slate-900 dark:text-white bg-slate-100 dark:bg-white/10',
+    desc: 'Unrestricted control plane governance, security policies, and user lifecycle.',
+  },
+  'DevOps / Infrastructure': {
+    scope: 'Assigned Clients',
+    color: 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10',
+    desc: 'Full server provisioning, operation execution, metric diagnostics, and alert remediation.',
+  },
+  'Project Admin': {
+    scope: 'Assigned Clients',
+    color: 'border-purple-500/40 text-purple-400 bg-purple-500/10',
+    desc: 'Manage environments, deployment gates, and scoped servers within assigned projects.',
+  },
+  'Client Admin': {
+    scope: 'Single Client Scope',
+    color: 'border-cyan-500/40 text-cyan-400 bg-cyan-500/10',
+    desc: 'Manage projects, view billing SLAs, and assign stakeholder permissions.',
+  },
+  'Client Viewer': {
+    scope: 'Read-Only Scoped',
+    color: 'border-slate-600 text-slate-300 bg-slate-800',
+    desc: 'Read-only telemetry insights, server uptime inspection, and public health visibility.',
+  },
+  'Auditor': {
+    scope: 'Compliance Scope',
+    color: 'border-amber-500/40 text-amber-400 bg-amber-500/10',
+    desc: 'Full immutable compliance trail, security event logs, and operational governance inspection.',
+  },
+  'Billing / Finance': {
+    scope: 'Financial Scope',
+    color: 'border-rose-500/40 text-rose-400 bg-rose-500/10',
+    desc: 'Cost and usage visibility for assigned clients. No operational execution.',
+  },
+};
 
 const DEFAULT_ROLE_PERMS = {
   'Platform Admin': { servers: true, terminal: true, operations: true, alerts: true, costs: true, auditLogs: true, users: true, settings: true },
@@ -144,6 +293,8 @@ const RolePermissionsMatrixCard = ({ canManage }) => {
   const { success, error: showError } = useToast();
   const [matrix, setMatrix] = useState(DEFAULT_ROLE_PERMS);
   const [initialMatrix, setInitialMatrix] = useState(DEFAULT_ROLE_PERMS);
+  const [selectedRole, setSelectedRole] = useState('DevOps / Infrastructure');
+  const [viewMode, setViewMode] = useState('studio'); // 'studio' | 'matrix'
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -178,6 +329,28 @@ const RolePermissionsMatrixCard = ({ canManage }) => {
     }));
   };
 
+  const handleBulkRole = (role, grantAll) => {
+    if (!canManage) return;
+    setMatrix((prev) => {
+      const updated = {};
+      RBAC_MODULES.forEach((m) => {
+        updated[m.key] = grantAll;
+      });
+      return {
+        ...prev,
+        [role]: updated,
+      };
+    });
+  };
+
+  const handleResetRole = (role) => {
+    if (!canManage) return;
+    setMatrix((prev) => ({
+      ...prev,
+      [role]: { ...DEFAULT_ROLE_PERMS[role] },
+    }));
+  };
+
   const handleSave = async () => {
     if (!canManage) return;
     setSaving(true);
@@ -186,7 +359,7 @@ const RolePermissionsMatrixCard = ({ canManage }) => {
       if (res.data?.success) {
         setInitialMatrix(JSON.parse(JSON.stringify(res.data.data)));
         setMatrix(res.data.data);
-        success('Role permissions matrix saved successfully');
+        success('Role permissions saved successfully');
       }
     } catch (err) {
       showError(err.response?.data?.error || 'Failed to update role permissions');
@@ -195,109 +368,357 @@ const RolePermissionsMatrixCard = ({ canManage }) => {
     }
   };
 
-  const handleResetToDefaults = () => {
+  const handleResetAllToDefaults = () => {
     if (!canManage) return;
     setMatrix(JSON.parse(JSON.stringify(DEFAULT_ROLE_PERMS)));
   };
 
+  const getActiveCount = (role) => {
+    const rolePerms = matrix[role] || DEFAULT_ROLE_PERMS[role] || {};
+    return Object.values(rolePerms).filter(Boolean).length;
+  };
+
+  const activeRolePerms = matrix[selectedRole] || DEFAULT_ROLE_PERMS[selectedRole] || {};
+  const activeRoleCount = getActiveCount(selectedRole);
+
   return (
-    <div className="rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] p-6 space-y-4 shadow-sm">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1f1f1f] pb-4">
+    <div className="rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] p-6 space-y-5 shadow-sm">
+      {/* Header with Title, View Mode Switch, and Save Actions */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 dark:border-[#1f1f1f] pb-4">
         <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-              <Shield className="w-4 h-4 text-slate-700 dark:text-white" />
-              Role Permissions Matrix (RBAC)
-            </h3>
-            <span
-              className={`px-2 py-0.5 rounded border text-[10px] font-mono font-semibold ${
-                canManage
-                  ? 'bg-emerald-50 dark:bg-[#0e241b] border-emerald-300 dark:border-emerald-600/40 text-emerald-700 dark:text-emerald-400'
-                  : 'bg-slate-100 dark:bg-[#111111] border-slate-200 dark:border-[#222222] text-slate-500'
-              }`}
-            >
-              {canManage ? 'CONFIGURABLE' : 'READ-ONLY'}
-            </span>
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#161616] border border-slate-200 dark:border-[#262626] flex items-center justify-center text-slate-900 dark:text-white">
+              <Shield className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
+                  Role-Based Access Control (RBAC)
+                </h3>
+                <span
+                  className={`px-2 py-0.5 rounded border text-[10px] font-mono font-semibold ${
+                    canManage
+                      ? 'bg-emerald-50 dark:bg-[#0e241b] border-emerald-300 dark:border-emerald-600/40 text-emerald-700 dark:text-emerald-400'
+                      : 'bg-slate-100 dark:bg-[#111111] border-slate-200 dark:border-[#222222] text-slate-500'
+                  }`}
+                >
+                  {canManage ? 'CONFIGURABLE' : 'READ-ONLY'}
+                </span>
+                {hasChanges && (
+                  <span className="px-2 py-0.5 rounded border text-[10px] font-mono font-semibold bg-amber-500/10 border-amber-500/30 text-amber-500 animate-pulse">
+                    UNSAVED EDITS
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500 dark:text-[#888888] mt-0.5">
+                Default module policies for platform roles. Custom individual overrides in user access take precedence.
+              </p>
+            </div>
           </div>
-          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-            Configure default module privileges for platform roles. Changes apply to all users with that role (unless individually customized).
-          </p>
         </div>
 
-        {canManage && (
-          <div className="flex items-center gap-2">
-            {hasChanges && (
-              <Button size="xs" variant="outline" onClick={handleResetToDefaults} disabled={saving} leftIcon={<RotateCcw className="w-3 h-3" />}>
-                Reset to Defaults
-              </Button>
-            )}
-            <Button
-              size="xs"
-              variant="primary"
-              disabled={!hasChanges || saving}
-              isLoading={saving}
-              onClick={handleSave}
+        <div className="flex items-center gap-3 self-start lg:self-auto flex-wrap">
+          {/* Segmented View Mode Switch: Policy Studio vs Comparison Matrix */}
+          <div className="inline-flex rounded-lg p-0.5 bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#242424]">
+            <button
+              type="button"
+              onClick={() => setViewMode('studio')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                viewMode === 'studio'
+                  ? 'bg-white dark:bg-[#202020] text-slate-900 dark:text-white shadow-sm font-semibold'
+                  : 'text-slate-500 dark:text-[#888888] hover:text-black dark:hover:text-white'
+              }`}
             >
-              {hasChanges ? 'Save Role Matrix' : 'Saved'}
-            </Button>
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span>Policy Studio</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('matrix')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all ${
+                viewMode === 'matrix'
+                  ? 'bg-white dark:bg-[#202020] text-slate-900 dark:text-white shadow-sm font-semibold'
+                  : 'text-slate-500 dark:text-[#888888] hover:text-black dark:hover:text-white'
+              }`}
+            >
+              <Table className="w-3.5 h-3.5" />
+              <span>Comparison Matrix</span>
+            </button>
           </div>
-        )}
+
+          {canManage && (
+            <div className="flex items-center gap-2">
+              {hasChanges && (
+                <Button
+                  size="xs"
+                  variant="outline"
+                  onClick={handleResetAllToDefaults}
+                  disabled={saving}
+                  leftIcon={<RotateCcw className="w-3 h-3" />}
+                >
+                  Reset Defaults
+                </Button>
+              )}
+              <Button
+                size="xs"
+                variant={hasChanges ? 'primary' : 'secondary'}
+                disabled={!hasChanges || saving}
+                isLoading={saving}
+                onClick={handleSave}
+                leftIcon={<CheckCheck className="w-3.5 h-3.5" />}
+              >
+                {hasChanges ? 'Save Changes' : 'Saved'}
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs">
-          <thead className="bg-slate-50 dark:bg-[#050505] text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888] border-b border-slate-200 dark:border-[#1f1f1f]">
-            <tr>
-              <th className="text-left font-medium p-3">Platform Role</th>
-              {RBAC_MODULES.map((m) => (
-                <th key={m.key} className="text-center font-medium p-3 whitespace-nowrap">
-                  <div>{m.label}</div>
-                  <div className="text-[9px] text-slate-400 font-sans font-normal normal-case">{m.desc}</div>
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-[#1f1f1f] text-slate-700 dark:text-slate-300 font-sans">
-            {Object.keys(DEFAULT_ROLE_PERMS).map((role) => {
-              const perms = matrix[role] || DEFAULT_ROLE_PERMS[role];
+      {/* VIEW 1: POLICY STUDIO (Role Selector Tabs + Clean Module Feature Cards with Micro-Switches) */}
+      {viewMode === 'studio' && (
+        <div className="space-y-4">
+          {/* Horizontal Role Selector Bar */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
+            {ROLES_ORDER.map((role) => {
+              const isSelected = selectedRole === role;
+              const count = getActiveCount(role);
+              const meta = ROLES_META[role];
               return (
-                <tr key={role} className="hover:bg-slate-50/50 dark:hover:bg-[#111111]/50 transition-colors">
-                  <td className="p-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
-                    {role}
-                  </td>
-                  {RBAC_MODULES.map((m) => {
-                    const isChecked = !!perms?.[m.key];
-                    return (
-                      <td key={m.key} className="p-3 text-center">
-                        <button
-                          type="button"
-                          className={`inline-flex items-center justify-center w-6 h-6 rounded transition-all ${
-                            canManage ? 'cursor-pointer hover:scale-110' : 'cursor-default opacity-80'
-                          } ${
-                            isChecked
-                              ? 'bg-slate-900 dark:bg-white text-white dark:text-black border border-black dark:border-white'
-                              : 'bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] text-transparent'
+                <button
+                  key={role}
+                  type="button"
+                  onClick={() => setSelectedRole(role)}
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
+                    isSelected
+                      ? 'bg-slate-900 dark:bg-white text-white dark:text-black border-slate-900 dark:border-white shadow-sm font-semibold'
+                      : 'bg-slate-50 dark:bg-[#0e0e0e] text-slate-600 dark:text-[#999999] border-slate-200 dark:border-[#1f1f1f] hover:border-slate-400 dark:hover:border-[#333] hover:text-black dark:hover:text-white'
+                  }`}
+                >
+                  <span>{role}</span>
+                  <span
+                    className={`px-1.5 py-0.2 text-[10px] font-mono rounded ${
+                      isSelected
+                        ? 'bg-white/20 dark:bg-black/20 text-white dark:text-black'
+                        : 'bg-slate-200 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#777]'
+                    }`}
+                  >
+                    {count}/{RBAC_MODULES.length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Role Meta Card */}
+          <div className="rounded-xl p-4 bg-slate-50 dark:bg-[#0e0e0e] border border-slate-200 dark:border-[#1e1e1e] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-sm font-bold text-slate-900 dark:text-white">{selectedRole}</span>
+                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${ROLES_META[selectedRole]?.color}`}>
+                  {ROLES_META[selectedRole]?.scope}
+                </span>
+                <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400">
+                  {activeRoleCount} of {RBAC_MODULES.length} modules granted
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-[#888888]">{ROLES_META[selectedRole]?.desc}</p>
+            </div>
+
+            {canManage && (
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleBulkRole(selectedRole, true)}
+                  className="px-2.5 py-1 text-[11px] font-mono rounded bg-slate-200/70 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-colors"
+                >
+                  Grant All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleBulkRole(selectedRole, false)}
+                  className="px-2.5 py-1 text-[11px] font-mono rounded bg-slate-200/70 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-colors"
+                >
+                  Revoke All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleResetRole(selectedRole)}
+                  className="px-2 py-1 text-[11px] font-mono text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
+                  title="Reset to default permissions"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* 8 Module Policy Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {RBAC_MODULES.map((m) => {
+              const isEnabled = !!activeRolePerms[m.key];
+              const Icon = m.icon;
+              return (
+                <div
+                  key={m.key}
+                  className={`p-4 rounded-xl border transition-all flex flex-col justify-between space-y-3 ${
+                    isEnabled
+                      ? 'bg-slate-50/80 dark:bg-[#0c0c0c] border-slate-300 dark:border-white/15 shadow-sm'
+                      : 'bg-white dark:bg-[#070707] border-slate-200 dark:border-[#1a1a1a] opacity-80 hover:opacity-100'
+                  }`}
+                >
+                  <div className="space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors ${
+                            isEnabled
+                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 dark:text-emerald-400'
+                              : 'bg-slate-100 dark:bg-[#141414] border-slate-200 dark:border-[#222222] text-slate-400 dark:text-zinc-600'
                           }`}
-                          onClick={() => {
-                            if (!canManage) return;
-                            handleToggle(role, m.key);
-                          }}
                         >
-                          <Check className={`w-3.5 h-3.5 stroke-[2.5] ${isChecked ? 'opacity-100' : 'opacity-0'}`} />
-                        </button>
-                      </td>
+                          <Icon className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white">{m.label}</h4>
+                          <span className="text-[10px] font-mono text-slate-400 dark:text-[#777] uppercase tracking-wider">
+                            {m.badge}
+                          </span>
+                        </div>
+                      </div>
+
+                      <ToggleSwitch
+                        checked={isEnabled}
+                        disabled={!canManage}
+                        onChange={() => handleToggle(selectedRole, m.key)}
+                      />
+                    </div>
+
+                    <p className="text-[11px] text-slate-500 dark:text-[#888888] leading-relaxed min-h-[32px]">
+                      {m.desc}
+                    </p>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100 dark:border-[#181818] flex items-center justify-between text-[11px] font-mono">
+                    <span className="text-slate-400 dark:text-[#666]">Access State</span>
+                    {isEnabled ? (
+                      <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
+                        <Check className="w-3.5 h-3.5 stroke-[2.5]" />
+                        <span>Granted</span>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-slate-400 dark:text-zinc-600">
+                        <Lock className="w-3 h-3" />
+                        <span>Restricted</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* VIEW 2: COMPARISON MATRIX (Refined High-Density Table - No Chunky Blocks) */}
+      {viewMode === 'matrix' && (
+        <div className="space-y-2">
+          <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-[#1f1f1f]">
+            <table className="w-full text-xs">
+              <thead className="bg-slate-50 dark:bg-[#070707] text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888] border-b border-slate-200 dark:border-[#1f1f1f]">
+                <tr>
+                  <th className="text-left font-semibold p-3.5 pl-4 min-w-[200px]">
+                    Platform Role Policy
+                  </th>
+                  {RBAC_MODULES.map((m) => {
+                    const Icon = m.icon;
+                    return (
+                      <th key={m.key} className="text-center font-medium p-3 whitespace-nowrap min-w-[96px]">
+                        <div className="flex items-center justify-center gap-1.5 text-slate-700 dark:text-slate-200 font-sans font-semibold">
+                          <Icon className="w-3.5 h-3.5 opacity-80" />
+                          <span>{m.short}</span>
+                        </div>
+                        <div className="text-[9px] text-slate-400 font-mono normal-case tracking-normal">
+                          {m.badge}
+                        </div>
+                      </th>
                     );
                   })}
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-      {!canManage && (
-        <p className="text-[11px] text-slate-500 dark:text-[#888888] pt-1">
-          Only Platform Admins can edit the role permissions matrix.
-        </p>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-[#1a1a1a] font-sans">
+                {ROLES_ORDER.map((role) => {
+                  const perms = matrix[role] || DEFAULT_ROLE_PERMS[role];
+                  const count = getActiveCount(role);
+                  const meta = ROLES_META[role];
+                  return (
+                    <tr
+                      key={role}
+                      className="hover:bg-slate-50/70 dark:hover:bg-white/[0.02] transition-colors group"
+                    >
+                      <td className="p-3 pl-4 whitespace-nowrap">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-slate-900 dark:text-white text-xs">{role}</span>
+                          <span className={`px-1.5 py-0.2 rounded text-[9px] font-mono border ${meta.color}`}>
+                            {meta.scope}
+                          </span>
+                        </div>
+                        <div className="text-[10px] font-mono text-slate-400 dark:text-[#666] mt-0.5">
+                          {count} of {RBAC_MODULES.length} modules active
+                        </div>
+                      </td>
+
+                      {RBAC_MODULES.map((m) => {
+                        const isChecked = !!perms?.[m.key];
+                        return (
+                          <td key={m.key} className="p-2.5 text-center">
+                            {canManage ? (
+                              <button
+                                type="button"
+                                onClick={() => handleToggle(role, m.key)}
+                                className={`inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-mono transition-all cursor-pointer ${
+                                  isChecked
+                                    ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-semibold'
+                                    : 'bg-slate-100 hover:bg-slate-200 dark:bg-white/[0.03] dark:hover:bg-white/[0.08] text-slate-400 dark:text-zinc-500 border border-slate-200 dark:border-white/5'
+                                }`}
+                                title={`Click to toggle ${m.label} for ${role}`}
+                              >
+                                {isChecked ? (
+                                  <>
+                                    <Check className="w-3 h-3 stroke-[2.5]" />
+                                    <span>Allow</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Minus className="w-3 h-3" />
+                                    <span>Deny</span>
+                                  </>
+                                )}
+                              </button>
+                            ) : (
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono ${
+                                  isChecked
+                                    ? 'text-emerald-500 font-semibold'
+                                    : 'text-slate-400 dark:text-zinc-600'
+                                }`}
+                              >
+                                {isChecked ? 'Allow' : 'Deny'}
+                              </span>
+                            )}
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-[#777] px-1 pt-1 font-mono">
+            <span>Click any cell to toggle permissions for that role.</span>
+            <span>All updates take effect control-plane wide upon save.</span>
+          </div>
+        </div>
       )}
     </div>
   );
