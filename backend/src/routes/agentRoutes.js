@@ -196,6 +196,16 @@ router.post('/heartbeat', requireAgentToken, async (req, res) => {
       server.status = 'healthy';
     }
 
+    if (req.body?.webServer && typeof req.body.webServer === 'object') {
+      server.set('webServer', {
+        ...(server.webServer ? server.webServer.toObject() : {}),
+        ...req.body.webServer,
+      });
+    }
+    if (Array.isArray(req.body?.websites) && req.body.websites.length > 0) {
+      server.set('websites', req.body.websites);
+    }
+
     await server.save();
 
     // Operations (§8) and replication (§9) ride on the heartbeat reply: outbound-only for the server

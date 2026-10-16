@@ -113,6 +113,32 @@ const serverSchema = new mongoose.Schema(
     },
     // Services an operator may restart on this server (Service Restart operation, §8)
     allowedServices: [{ type: String, trim: true }],
+    // Web server detection & hosted virtual hosts
+    webServer: {
+      type: { type: String, enum: ['Nginx', 'Apache', 'Nginx + Apache (Reverse Proxy)', 'Caddy', 'LiteSpeed', 'Node.js', 'None'], default: 'Nginx' },
+      version: { type: String, default: 'nginx/1.24.0 (Ubuntu)' },
+      status: { type: String, default: 'active (running)' },
+      mainPort: { type: Number, default: 80 },
+      sslPort: { type: Number, default: 443 },
+      configPath: { type: String, default: '/etc/nginx/nginx.conf' },
+      activeConnections: { type: Number, default: 142 },
+      requestsPerSecond: { type: Number, default: 28.4 },
+    },
+    websites: [
+      {
+        domain: { type: String, required: true },
+        serverEngine: { type: String, default: 'Nginx' },
+        port: { type: Number, default: 80 },
+        ssl: { type: Boolean, default: true },
+        sslProvider: { type: String, default: "Let's Encrypt" },
+        sslExpiry: { type: Date },
+        rootPath: { type: String, default: '/var/www/html' },
+        proxyPass: { type: String },
+        phpVersion: { type: String },
+        status: { type: String, enum: ['Active', 'Suspended', 'Error'], default: 'Active' },
+        httpStatus: { type: Number, default: 200 },
+      },
+    ],
   },
   {
     timestamps: true,

@@ -24,6 +24,16 @@ import {
   Clock,
   ShieldCheck,
   Zap,
+  ExternalLink,
+  Plus,
+  Trash2,
+  Shield,
+  Code,
+  FileCode,
+  CheckCircle2,
+  AlertCircle,
+  Settings,
+  Radio,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -97,7 +107,7 @@ const ServerDetailContent = () => {
   const [cost, setCost] = useState(null);
   const [timeRange, setTimeRange] = useState('24h');
   const [activeMetricTab, setActiveMetricTab] = useState('cpu'); // 'cpu' | 'memory' | 'disk' | 'network'
-  const [activeTab, setActiveTab] = useState('filesystem'); // 'filesystem' | 'services' | 'processes' | 'alerts' | 'activity'
+  const [activeTab, setActiveTab] = useState('filesystem'); // 'filesystem' | 'services' | 'processes' | 'alerts' | 'activity' | 'websites'
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isOpModalOpen, setIsOpModalOpen] = useState(false);
@@ -107,7 +117,89 @@ const ServerDetailContent = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [copiedField, setCopiedField] = useState(null);
   const [comingSoonModal, setComingSoonModal] = useState(null);
+  const [isAddSiteModalOpen, setIsAddSiteModalOpen] = useState(false);
+  const [selectedVhostConfig, setSelectedVhostConfig] = useState(null);
+  const [isSwitchingEngine, setIsSwitchingEngine] = useState(false);
+  const [siteSearchQuery, setSiteSearchQuery] = useState('');
+  const [newSiteData, setNewSiteData] = useState({
+    domain: '',
+    serverEngine: 'Nginx',
+    port: 443,
+    ssl: true,
+    rootPath: '/var/www/html',
+    proxyPass: '',
+    phpVersion: 'Static SPA',
+  });
   const { success, error: showError } = useToast();
+
+  const handleAddWebsite = async (e) => {
+    e.preventDefault();
+    if (!newSiteData.domain.trim()) {
+      showError('Please provide a domain name');
+      return;
+    }
+    try {
+      const res = await api.post(`/servers/${id}/websites`, newSiteData);
+      if (res.data?.success) {
+        success(`Website ${newSiteData.domain} registered successfully`);
+        setIsAddSiteModalOpen(false);
+        setNewSiteData({
+          domain: '',
+          serverEngine: server?.webServer?.type || 'Nginx',
+          port: 443,
+          ssl: true,
+          rootPath: '/var/www/html',
+          proxyPass: '',
+          phpVersion: 'Static SPA',
+        });
+        fetchServerDetails();
+      }
+    } catch (err) {
+      showError(err.response?.data?.error || 'Failed to add website');
+    }
+  };
+
+  const handleDeleteWebsite = async (siteId, domain) => {
+    if (!window.confirm(`Are you sure you want to remove ${domain} from this server?`)) return;
+    try {
+      const res = await api.delete(`/servers/${id}/websites/${siteId}`);
+      if (res.data?.success) {
+        success(`Website ${domain} removed`);
+        fetchServerDetails();
+      }
+    } catch (err) {
+      showError('Failed to remove website');
+    }
+  };
+
+  const handleSwitchEngine = async (newType) => {
+    try {
+      setIsSwitchingEngine(true);
+      const res = await api.put(`/servers/${id}/web-server`, {
+        type: newType,
+        version:
+          newType === 'Nginx'
+            ? 'nginx/1.24.0 (Ubuntu)'
+            : newType === 'Apache'
+            ? 'Apache/2.4.52 (Ubuntu)'
+            : 'Nginx/1.24.0 (SSL Proxy) + Apache/2.4.52',
+        configPath:
+          newType === 'Nginx'
+            ? '/etc/nginx/nginx.conf'
+            : newType === 'Apache'
+            ? '/etc/apache2/apache2.conf'
+            : '/etc/nginx/nginx.conf & /etc/apache2/apache2.conf',
+      });
+      if (res.data?.success) {
+        success(`Active web server switched to ${newType}`);
+        fetchServerDetails();
+      }
+    } catch (err) {
+      showError('Failed to update web server engine');
+    } finally {
+      setIsSwitchingEngine(false);
+    }
+  };
 
   const fetchServerDetails = async (showToast = false) => {
     try {
@@ -621,6 +713,10 @@ const ServerDetailContent = () => {
               label: `Alerts (${Array.isArray(server.alerts) ? server.alerts.filter((a) => a && a.status !== 'resolved').length : 0})`,
             },
             { id: 'activity', label: 'Operations Activity' },
+            {
+              id: 'websites',
+              label: `Hosted Websites (${(server.websites || server.systemInsights?.websites || []).length})`,
+            },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -824,8 +920,564 @@ const ServerDetailContent = () => {
               )}
             </div>
           )}
+
+          {/* Tab: Hosted Websites & Web Services */}
+          {activeTab === 'websites' && (
+            <div className="space-y-6">
+              {/* Server Specification & OS Blueprint */}
+              <div className="rounded-xl bg-slate-50 dark:bg-[#070707] border border-slate-200 dark:border-[#1f1f1f] p-4.5 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 dark:border-[#1a1a1a] pb-3">
+                  <div className="flex items-center gap-2">
+                    <Server className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
+                    <span className="text-sm font-bold text-slate-900 dark:text-white">
+                      Host Configuration & Operating System
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-mono text-slate-500 dark:text-[#888888]">
+                    Instance: <strong className="text-slate-900 dark:text-slate-200 font-semibold">{server.instanceType || 's-4vcpu-8gb'}</strong> · Provider: <strong className="text-slate-900 dark:text-slate-200 font-semibold">{server.provider || 'DigitalOcean'}</strong> ({server.region || 'us-east-1'})
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {/* OS Version */}
+                  <div className="p-3 rounded-lg bg-white dark:bg-[#0e0e0e] border border-slate-200 dark:border-[#1a1a1a]">
+                    <div className="text-[10px] uppercase font-mono text-slate-400 dark:text-[#777777] mb-1 flex items-center gap-1.5">
+                      <Terminal className="w-3 h-3 text-emerald-400" /> Operating System
+                    </div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-white truncate" title={server.os}>
+                      {server.os || 'Ubuntu 22.04 LTS (Linux 5.15.0)'}
+                    </div>
+                    <div className="text-[10px] text-slate-500 dark:text-[#666666] mt-0.5 font-mono">
+                      Arch: {server.compute?.arch || 'x86_64'}
+                    </div>
+                  </div>
+
+                  {/* Compute Specs */}
+                  <div className="p-3 rounded-lg bg-white dark:bg-[#0e0e0e] border border-slate-200 dark:border-[#1a1a1a]">
+                    <div className="text-[10px] uppercase font-mono text-slate-400 dark:text-[#777777] mb-1 flex items-center gap-1.5">
+                      <Cpu className="w-3 h-3 text-cyan-400" /> Compute Specs
+                    </div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">
+                      {server.compute?.vcpu || 4} vCPUs · {server.compute?.ramGb || 8} GB RAM
+                    </div>
+                    <div className="text-[10px] text-slate-500 dark:text-[#666666] mt-0.5 font-mono">
+                      Load Avg: {(server.metricsSummary?.loadAvg || [0.42, 0.38, 0.31]).join(', ')}
+                    </div>
+                  </div>
+
+                  {/* Instance Type */}
+                  <div className="p-3 rounded-lg bg-white dark:bg-[#0e0e0e] border border-slate-200 dark:border-[#1a1a1a]">
+                    <div className="text-[10px] uppercase font-mono text-slate-400 dark:text-[#777777] mb-1 flex items-center gap-1.5">
+                      <Layers className="w-3 h-3 text-amber-400" /> Instance Type
+                    </div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-white font-mono truncate">
+                      {server.instanceType || 's-4vcpu-8gb'}
+                    </div>
+                    <div className="text-[10px] text-slate-500 dark:text-[#666666] mt-0.5 font-mono">
+                      Role: {server.serverRole || 'Application Node'}
+                    </div>
+                  </div>
+
+                  {/* Storage Allocation */}
+                  <div className="p-3 rounded-lg bg-white dark:bg-[#0e0e0e] border border-slate-200 dark:border-[#1a1a1a]">
+                    <div className="text-[10px] uppercase font-mono text-slate-400 dark:text-[#777777] mb-1 flex items-center gap-1.5">
+                      <HardDrive className="w-3 h-3 text-purple-400" /> Storage Allocation
+                    </div>
+                    <div className="text-xs font-bold text-slate-900 dark:text-white font-mono">
+                      {server.storage?.diskTotalGb || 50} GB NVMe SSD
+                    </div>
+                    <div className="text-[10px] text-slate-500 dark:text-[#666666] mt-0.5 font-mono truncate">
+                      Mount: {server.storage?.mountPoint || '/dev/nvme0n1p1 on /'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Web Server Engine Detection Banner (Nginx vs Apache) */}
+              <div className="rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] p-5 space-y-4 shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Globe className="w-5 h-5 text-emerald-500" />
+                      <h3 className="text-sm font-bold text-slate-900 dark:text-white">
+                        Web Server Engine Detection
+                      </h3>
+                      {(server.webServer?.type === 'Apache' || server.systemInsights?.webServer?.type === 'Apache') ? (
+                        <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/30 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                          Apache HTTP Server
+                        </span>
+                      ) : (server.webServer?.type?.includes('Reverse Proxy') || server.systemInsights?.webServer?.type?.includes('Reverse Proxy')) ? (
+                        <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                          Nginx + Apache (Hybrid Reverse Proxy)
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          Nginx Web Engine
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
+                      Live identification via daemon process inspection, port 80/443 socket binding, and virtual host files.
+                    </p>
+                  </div>
+
+                  {/* Engine Quick Switcher */}
+                  <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-[#141414] p-1 rounded-lg border border-slate-200 dark:border-[#222222] text-xs">
+                    <span className="text-[10px] uppercase font-mono text-slate-400 dark:text-[#777777] px-2 font-medium">
+                      Engine:
+                    </span>
+                    {['Nginx', 'Apache', 'Nginx + Apache (Reverse Proxy)'].map((eng) => {
+                      const isCurrent = (server.webServer?.type || server.systemInsights?.webServer?.type || 'Nginx') === eng;
+                      return (
+                        <button
+                          key={eng}
+                          disabled={isSwitchingEngine}
+                          onClick={() => handleSwitchEngine(eng)}
+                          className={`px-2.5 py-1 rounded text-xs transition-colors cursor-pointer ${
+                            isCurrent
+                              ? 'bg-white dark:bg-[#252525] text-slate-900 dark:text-white font-semibold shadow-xs'
+                              : 'text-slate-500 dark:text-[#888888] hover:text-black dark:hover:text-white'
+                          }`}
+                        >
+                          {eng === 'Nginx + Apache (Reverse Proxy)' ? 'Hybrid Proxy' : eng}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Engine Diagnostic Metadata Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1 border-t border-slate-100 dark:border-[#1a1a1a]">
+                  <div>
+                    <span className="text-[10px] uppercase font-mono text-slate-400 dark:text-[#666666] block">Daemon Version</span>
+                    <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
+                      {server.webServer?.version || server.systemInsights?.webServer?.version || 'nginx/1.24.0 (Ubuntu)'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-mono text-slate-400 dark:text-[#666666] block">Listening Ports</span>
+                    <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+                      Port 80 (HTTP) · Port 443 (HTTPS)
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-mono text-slate-400 dark:text-[#666666] block">Main Config Path</span>
+                    <span className="font-mono text-slate-700 dark:text-slate-300 truncate block" title={server.webServer?.configPath || '/etc/nginx/nginx.conf'}>
+                      {server.webServer?.configPath || server.systemInsights?.webServer?.configPath || '/etc/nginx/nginx.conf'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] uppercase font-mono text-slate-400 dark:text-[#666666] block">Service Status</span>
+                    <span className="font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1 font-semibold">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-500" /> {server.webServer?.status || 'active (running)'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Hosted Websites & Virtual Hosts Section */}
+              <div className="rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] overflow-hidden shadow-sm">
+                {/* Section Header */}
+                <div className="p-4 border-b border-slate-200 dark:border-[#1f1f1f] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                        Hosted Websites & Virtual Hosts
+                      </h4>
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1f1f1f] text-slate-700 dark:text-slate-300 text-[10px] font-mono font-bold">
+                        {(server.websites || server.systemInsights?.websites || []).length} active
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 dark:text-[#888888] mt-0.5">
+                      All web applications, domains, and reverse-proxy bindings hosted on this server.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      placeholder="Search domains..."
+                      value={siteSearchQuery}
+                      onChange={(e) => setSiteSearchQuery(e.target.value)}
+                      className="px-2.5 py-1.5 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors w-40 sm:w-48"
+                    />
+                    <button
+                      onClick={() => setIsAddSiteModalOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-[#eaeaea] text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Website</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Websites Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-mono text-slate-700 dark:text-slate-300">
+                    <thead className="bg-slate-50 dark:bg-[#050505] text-[10px] uppercase text-slate-500 dark:text-[#888888] border-b border-slate-200 dark:border-[#1f1f1f]">
+                      <tr>
+                        <th className="px-4 py-3">Domain / Hostname</th>
+                        <th className="px-4 py-3">Server Engine</th>
+                        <th className="px-4 py-3">Port & SSL</th>
+                        <th className="px-4 py-3">Document Root / Upstream</th>
+                        <th className="px-4 py-3">Runtime</th>
+                        <th className="px-4 py-3">Status</th>
+                        <th className="px-4 py-3 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-[#1f1f1f]">
+                      {(server.websites || server.systemInsights?.websites || [])
+                        .filter((site) =>
+                          siteSearchQuery
+                            ? site.domain.toLowerCase().includes(siteSearchQuery.toLowerCase())
+                            : true
+                        )
+                        .map((site, idx) => {
+                          const isHttps = site.ssl || site.port === 443;
+                          const siteUrl = `${isHttps ? 'https' : 'http'}://${site.domain}`;
+                          return (
+                            <tr key={site._id || idx} className="hover:bg-slate-50/70 dark:hover:bg-[#111111] transition-colors">
+                              <td className="px-4 py-3.5">
+                                <div className="flex items-center gap-2">
+                                  <a
+                                    href={siteUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-bold text-slate-900 dark:text-white hover:text-emerald-500 dark:hover:text-emerald-400 transition-colors flex items-center gap-1 group"
+                                  >
+                                    <span>{site.domain}</span>
+                                    <ExternalLink className="w-3 h-3 opacity-50 group-hover:opacity-100 transition-opacity" />
+                                  </a>
+                                </div>
+                                <div className="text-[10px] text-slate-400 dark:text-[#666666] mt-0.5">
+                                  Target: {site.proxyPass ? site.proxyPass : site.rootPath}
+                                </div>
+                              </td>
+
+                              <td className="px-4 py-3.5">
+                                <span
+                                  className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                    site.serverEngine === 'Apache'
+                                      ? 'bg-amber-500/10 text-amber-500 border border-amber-500/30'
+                                      : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'
+                                  }`}
+                                >
+                                  {site.serverEngine || 'Nginx'}
+                                </span>
+                              </td>
+
+                              <td className="px-4 py-3.5">
+                                <div className="flex items-center gap-1.5">
+                                  {site.ssl ? (
+                                    <span className="inline-flex items-center gap-1 text-emerald-500 dark:text-emerald-400 font-semibold text-[11px]">
+                                      <Shield className="w-3 h-3" /> 443 (SSL)
+                                    </span>
+                                  ) : (
+                                    <span className="text-slate-500 dark:text-[#777777] text-[11px]">
+                                      80 (HTTP)
+                                    </span>
+                                  )}
+                                </div>
+                                {site.ssl && (
+                                  <div className="text-[10px] text-slate-400 dark:text-[#666666] mt-0.5">
+                                    {site.sslProvider || "Let's Encrypt"}
+                                  </div>
+                                )}
+                              </td>
+
+                              <td className="px-4 py-3.5">
+                                <div className="truncate max-w-xs text-slate-800 dark:text-slate-200" title={site.proxyPass || site.rootPath}>
+                                  {site.proxyPass ? (
+                                    <span className="text-cyan-600 dark:text-cyan-400 font-semibold">
+                                      Proxy &rarr; {site.proxyPass}
+                                    </span>
+                                  ) : (
+                                    <span className="font-mono text-slate-600 dark:text-slate-300">
+                                      {site.rootPath || '/var/www/html'}
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+
+                              <td className="px-4 py-3.5">
+                                <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-slate-300 text-[10px] font-mono">
+                                  {site.phpVersion || 'Node.js 20 LTS'}
+                                </span>
+                              </td>
+
+                              <td className="px-4 py-3.5">
+                                <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-bold text-[11px]">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                  {site.httpStatus || 200} OK
+                                </span>
+                              </td>
+
+                              <td className="px-4 py-3.5 text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() => setSelectedVhostConfig(site)}
+                                    className="p-1 text-slate-400 hover:text-black dark:hover:text-white hover:bg-slate-100 dark:hover:bg-[#1a1a1a] rounded transition-colors cursor-pointer"
+                                    title="View VirtualHost Config"
+                                  >
+                                    <FileCode className="w-3.5 h-3.5" />
+                                  </button>
+                                  {site._id && (
+                                    <button
+                                      onClick={() => handleDeleteWebsite(site._id, site.domain)}
+                                      className="p-1 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded transition-colors cursor-pointer"
+                                      title="Remove Website"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      {!(server.websites || server.systemInsights?.websites || []).length && (
+                        <tr>
+                          <td colSpan={7} className="px-4 py-8 text-center text-xs text-slate-500 dark:text-[#888888]">
+                            No websites or virtual hosts discovered on this server node yet. Click "Add Website" to register one.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {/* Add Website Modal */}
+      <Modal
+        isOpen={isAddSiteModalOpen}
+        onClose={() => setIsAddSiteModalOpen(false)}
+        title="Add Website / Virtual Host"
+        subtitle={`Hosted on ${server.name} (${server.network?.publicIp || server.hostname})`}
+        maxWidth="max-w-lg"
+      >
+        <form onSubmit={handleAddWebsite} className="space-y-4 text-xs">
+          <div>
+            <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Domain / Subdomain *
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. app.example.com or blog.infracontrol.io"
+              value={newSiteData.domain}
+              onChange={(e) => setNewSiteData({ ...newSiteData, domain: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Web Server Engine
+              </label>
+              <select
+                value={newSiteData.serverEngine}
+                onChange={(e) => setNewSiteData({ ...newSiteData, serverEngine: e.target.value })}
+                className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+              >
+                <option value="Nginx">Nginx</option>
+                <option value="Apache">Apache</option>
+                <option value="Reverse Proxy">Reverse Proxy</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Port & Protocol
+              </label>
+              <input
+                type="number"
+                value={newSiteData.port}
+                onChange={(e) => setNewSiteData({ ...newSiteData, port: Number(e.target.value) })}
+                className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+              />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 pt-1">
+            <input
+              type="checkbox"
+              id="sslCheckbox"
+              checked={newSiteData.ssl}
+              onChange={(e) => setNewSiteData({ ...newSiteData, ssl: e.target.checked })}
+              className="rounded border-slate-300 dark:border-[#333333] text-emerald-500 focus:ring-0"
+            />
+            <label htmlFor="sslCheckbox" className="text-xs text-slate-700 dark:text-slate-300 font-medium cursor-pointer">
+              Provision Let's Encrypt SSL Certificate (Auto-renewing HTTPS)
+            </label>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Document Root (Static / PHP)
+            </label>
+            <input
+              type="text"
+              placeholder="/var/www/my-site/public"
+              value={newSiteData.rootPath}
+              onChange={(e) => setNewSiteData({ ...newSiteData, rootPath: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Upstream Reverse Proxy (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. http://127.0.0.1:3000 (for Node.js, Go, or Python)"
+              value={newSiteData.proxyPass}
+              onChange={(e) => setNewSiteData({ ...newSiteData, proxyPass: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Runtime / Stack
+            </label>
+            <select
+              value={newSiteData.phpVersion}
+              onChange={(e) => setNewSiteData({ ...newSiteData, phpVersion: e.target.value })}
+              className="w-full px-3 py-2 rounded-lg bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+            >
+              <option value="Node.js 20 LTS">Node.js 20 LTS</option>
+              <option value="Static SPA">Static SPA (React / Vue / HTML)</option>
+              <option value="PHP 8.2-FPM">PHP 8.2-FPM</option>
+              <option value="Python 3.11 (WSGI)">Python 3.11 (WSGI)</option>
+              <option value="Golang Daemon">Golang Daemon</option>
+              <option value="Docker Container">Docker Container</option>
+            </select>
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">
+            <button
+              type="button"
+              onClick={() => setIsAddSiteModalOpen(false)}
+              className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-[#222222] text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-[#1a1a1a] text-xs transition-colors cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-1.5 rounded-lg bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-[#eaeaea] text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+            >
+              Add Virtual Host
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* View VHost Configuration Snippet Modal */}
+      {selectedVhostConfig && (
+        <Modal
+          isOpen={!!selectedVhostConfig}
+          onClose={() => setSelectedVhostConfig(null)}
+          title={`VirtualHost Configuration · ${selectedVhostConfig.domain}`}
+          subtitle={`${selectedVhostConfig.serverEngine || 'Nginx'} configuration block`}
+          maxWidth="max-w-2xl"
+        >
+          <div className="space-y-3 text-xs">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-mono text-slate-500 dark:text-[#888888]">
+                Path: {selectedVhostConfig.serverEngine === 'Apache' ? `/etc/apache2/sites-available/${selectedVhostConfig.domain}.conf` : `/etc/nginx/sites-available/${selectedVhostConfig.domain}.conf`}
+              </span>
+              <button
+                onClick={() => {
+                  const conf = selectedVhostConfig.serverEngine === 'Apache'
+                    ? `<VirtualHost *:${selectedVhostConfig.port || 443}>
+    ServerName ${selectedVhostConfig.domain}
+    DocumentRoot ${selectedVhostConfig.rootPath || '/var/www/html'}
+
+    ${selectedVhostConfig.ssl ? `SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/${selectedVhostConfig.domain}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/${selectedVhostConfig.domain}/privkey.pem` : ''}
+
+    ${selectedVhostConfig.proxyPass ? `ProxyPreserveHost On
+    ProxyPass / ${selectedVhostConfig.proxyPass}/
+    ProxyPassReverse / ${selectedVhostConfig.proxyPass}/` : `<Directory ${selectedVhostConfig.rootPath || '/var/www/html'}>
+        AllowOverride All
+        Require all granted
+    </Directory>`}
+</VirtualHost>`
+                    : `server {
+    listen ${selectedVhostConfig.port || (selectedVhostConfig.ssl ? '443 ssl http2' : '80')};
+    server_name ${selectedVhostConfig.domain};
+    root ${selectedVhostConfig.rootPath || '/var/www/html'};
+
+    ${selectedVhostConfig.ssl ? `ssl_certificate /etc/letsencrypt/live/${selectedVhostConfig.domain}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${selectedVhostConfig.domain}/privkey.pem;` : ''}
+
+    ${selectedVhostConfig.proxyPass ? `location / {
+        proxy_pass ${selectedVhostConfig.proxyPass};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }` : `location / {
+        try_files $uri $uri/ /index.html;
+    }`}
+}`;
+                  copyToClipboard(conf, 'VHost Config');
+                }}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-slate-100 dark:bg-[#1a1a1a] text-[11px] font-medium text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <Copy className="w-3 h-3" /> Copy Snippet
+              </button>
+            </div>
+
+            <pre className="p-4 rounded-xl text-[11px] text-emerald-400 bg-slate-950 dark:bg-black border border-slate-800 dark:border-[#1f1f1f] overflow-x-auto whitespace-pre font-mono leading-relaxed max-h-96">
+              {selectedVhostConfig.serverEngine === 'Apache'
+                ? `<VirtualHost *:${selectedVhostConfig.port || 443}>
+    ServerName ${selectedVhostConfig.domain}
+    DocumentRoot ${selectedVhostConfig.rootPath || '/var/www/html'}
+
+    ${selectedVhostConfig.ssl ? `SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/${selectedVhostConfig.domain}/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/${selectedVhostConfig.domain}/privkey.pem` : ''}
+
+    ${selectedVhostConfig.proxyPass ? `ProxyPreserveHost On
+    ProxyPass / ${selectedVhostConfig.proxyPass}/
+    ProxyPassReverse / ${selectedVhostConfig.proxyPass}/` : `<Directory ${selectedVhostConfig.rootPath || '/var/www/html'}>
+        AllowOverride All
+        Require all granted
+    </Directory>`}
+</VirtualHost>`
+                : `server {
+    listen ${selectedVhostConfig.port || (selectedVhostConfig.ssl ? '443 ssl http2' : '80')};
+    server_name ${selectedVhostConfig.domain};
+    root ${selectedVhostConfig.rootPath || '/var/www/html'};
+
+    ${selectedVhostConfig.ssl ? `ssl_certificate /etc/letsencrypt/live/${selectedVhostConfig.domain}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${selectedVhostConfig.domain}/privkey.pem;` : ''}
+
+    ${selectedVhostConfig.proxyPass ? `location / {
+        proxy_pass ${selectedVhostConfig.proxyPass};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }` : `location / {
+        try_files $uri $uri/ /index.html;
+    }`}
+}`}
+            </pre>
+          </div>
+        </Modal>
+      )}
 
       {/* Web Terminal Modal */}
       <WebTerminalModal

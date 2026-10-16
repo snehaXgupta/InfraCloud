@@ -151,6 +151,157 @@ function collectTelemetry() {
   };
 }
 
+let webDiscoveryCache = null;
+let lastWebDiscovery = 0;
+
+function detectWebServerAndSites() {
+  if (webDiscoveryCache && Date.now() - lastWebDiscovery < 60000) {
+    return webDiscoveryCache;
+  }
+
+  let hasNginx = false;
+  let hasApache = false;
+  let nginxVer = '';
+  let apacheVer = '';
+  let nginxActive = false;
+  let apacheActive = false;
+
+  if (IS_LINUX) {
+    try {
+      const r = execSync('nginx -v 2>&1', { timeout: 1500, encoding: 'utf-8' });
+      nginxVer = (r.match(/nginx version:\s*(.+)/i) || [])[1] || 'nginx';
+      hasNginx = true;
+    } catch (e) {
+      const out = (e.stdout || '') + (e.stderr || '');
+      const m = out.match(/nginx version:\s*(.+)/i);
+      if (m) {
+        nginxVer = m[1];
+        hasNginx = true;
+      }
+    }
+
+    try {
+      const r = execSync('systemctl is-active nginx 2>/dev/null', { timeout: 1500, encoding: 'utf-8' }).trim();
+      if (r === 'active') nginxActive = true;
+    } catch (e) {}
+
+    try {
+      const r = execSync('apache2 -v 2>&1 || httpd -v 2>&1', { timeout: 1500, encoding: 'utf-8' });
+      apacheVer = (r.match(/Server version:\s*(.+)/i) || [])[1] || 'apache';
+      hasApache = true;
+    } catch (e) {
+      const out = (e.stdout || '') + (e.stderr || '');
+      const m = out.match(/Server version:\s*(.+)/i);
+      if (m) {
+        apacheVer = m[1];
+        hasApache = true;
+      }
+    }
+
+    try {
+      const r = execSync('systemctl is-active apache2 2>/dev/null || systemctl is-active httpd 2>/dev/null', { timeout: 1500, encoding: 'utf-8' }).trim();
+      if (r === 'active') apacheActive = true;
+    } catch (e) {}
+  }
+
+  let type = 'None';
+  let version = 'Not installed';
+  let status = 'inactive';
+  let configPath = '';
+
+  if (nginxActive && apacheActive) {
+    type = 'Nginx + Apache (Reverse Proxy)';
+    version = `${nginxVer || 'nginx'} + ${apacheVer || 'apache'}`;
+    status = 'active (running)';
+    configPath = '/etc/nginx/nginx.conf & /etc/apache2/apache2.conf';
+  } else if (nginxActive || (hasNginx && !hasApache)) {
+    type = 'Nginx';
+    version = nginxVer || 'nginx/1.24.0';
+    status = nginxActive ? 'active (running)' : 'installed (stopped)';
+    configPath = '/etc/nginx/nginx.conf';
+  } else if (apacheActive || (hasApache && !hasNginx)) {
+    type = 'Apache';
+    version = apacheVer || 'Apache/2.4';
+    status = apacheActive ? 'active (running)' : 'installed (stopped)';
+    configPath = '/etc/apache2/apache2.conf';
+  }
+
+  const sites = [];
+  const addSite = (domain, engine, port, ssl, rootPath, proxyPass) => {
+    if (!domain || domain === '_' || domain === 'localhost' || domain === 'default') return;
+    if (sites.some((s) => s.domain === domain)) return;
+    sites.push({
+      domain,
+      serverEngine: engine,
+      port: port || (ssl ? 443 : 80),
+      ssl: !!ssl,
+      sslProvider: ssl ? "Let's Encrypt" : 'None',
+      rootPath: rootPath || '/var/www/html',
+      proxyPass: proxyPass || undefined,
+      status: 'Active',
+      httpStatus: 200,
+    });
+  };
+
+  if (IS_LINUX) {
+    // Check Nginx sites
+    for (const dir of ['/etc/nginx/sites-enabled', '/etc/nginx/conf.d']) {
+      try {
+        if (fs.existsSync(dir)) {
+          for (const f of fs.readdirSync(dir)) {
+            try {
+              const content = fs.readFileSync(path.join(dir, f), 'utf-8');
+              const serverNameMatch = content.match(/server_name\s+([^;]+);/);
+              const sslMatch = content.includes('ssl_certificate') || content.includes('listen 443') || content.includes('ssl;');
+              const proxyMatch = content.match(/proxy_pass\s+([^;]+);/);
+              const rootMatch = content.match(/root\s+([^;]+);/);
+              if (serverNameMatch) {
+                const domains = serverNameMatch[1].trim().split(/\s+/);
+                for (const d of domains) {
+                  addSite(d, 'Nginx', sslMatch ? 443 : 80, sslMatch, rootMatch?.[1]?.trim(), proxyMatch?.[1]?.trim());
+                }
+              }
+            } catch (e) {}
+          }
+        }
+      } catch (e) {}
+    }
+
+    // Check Apache sites
+    for (const dir of ['/etc/apache2/sites-enabled', '/etc/httpd/conf.d']) {
+      try {
+        if (fs.existsSync(dir)) {
+          for (const f of fs.readdirSync(dir)) {
+            try {
+              const content = fs.readFileSync(path.join(dir, f), 'utf-8');
+              const serverNameMatch = content.match(/ServerName\s+([^\r\n]+)/i);
+              const sslMatch = content.includes('SSLEngine on') || content.includes(':443');
+              const rootMatch = content.match(/DocumentRoot\s+([^\r\n]+)/i);
+              if (serverNameMatch) {
+                addSite(serverNameMatch[1].trim(), 'Apache', sslMatch ? 443 : 80, sslMatch, rootMatch?.[1]?.trim());
+              }
+            } catch (e) {}
+          }
+        }
+      } catch (e) {}
+    }
+  }
+
+  webDiscoveryCache = {
+    webServer: {
+      type,
+      version,
+      status,
+      mainPort: 80,
+      sslPort: 443,
+      configPath,
+    },
+    websites: sites,
+  };
+  lastWebDiscovery = Date.now();
+  return webDiscoveryCache;
+}
+
 // ── Process helper (bounded time, captured output) ───────────────────────────
 function run(command, argv, opts) {
   opts = opts || {};
@@ -481,6 +632,9 @@ let connected = false;
 
 async function heartbeat() {
   const payload = collectTelemetry();
+  const webInfo = detectWebServerAndSites();
+  if (webInfo?.webServer) payload.webServer = webInfo.webServer;
+  if (webInfo?.websites?.length) payload.websites = webInfo.websites;
   if (replicationResults.length) payload.replication = replicationResults;
   try {
     const r = await postJson('/api/agent/heartbeat', payload);

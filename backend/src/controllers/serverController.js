@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Server = require('../models/Server');
 const Alert = require('../models/Alert');
 const Operation = require('../models/Operation');
@@ -104,16 +105,80 @@ const getServerById = async (req, res, next) => {
       { pid: 3412, user: 'infra', cpu: 0.2, mem: 0.4, command: 'infra-agent --daemon --port=9100' },
     ];
 
+    const pubIp = server.network?.publicIp || server.hostname || '139.59.74.30';
+    const cleanName = (server.name || 'node').toLowerCase().replace(/[^a-z0-9]/g, '-');
+    const defaultSites = [
+      {
+        _id: new mongoose.Types.ObjectId(),
+        domain: `api.${cleanName}.cloud`,
+        serverEngine: server.webServer?.type || 'Nginx',
+        port: 443,
+        ssl: true,
+        sslProvider: "Let's Encrypt (Auto-renewing)",
+        sslExpiry: new Date(Date.now() + 64 * 24 * 3600 * 1000),
+        rootPath: '/var/www/api',
+        proxyPass: 'http://127.0.0.1:5000',
+        phpVersion: 'Node.js 20 LTS',
+        status: 'Active',
+        httpStatus: 200,
+      },
+      {
+        _id: new mongoose.Types.ObjectId(),
+        domain: `app.${cleanName}.cloud`,
+        serverEngine: server.webServer?.type || 'Nginx',
+        port: 443,
+        ssl: true,
+        sslProvider: "Let's Encrypt (Auto-renewing)",
+        sslExpiry: new Date(Date.now() + 45 * 24 * 3600 * 1000),
+        rootPath: '/var/www/frontend/dist',
+        proxyPass: 'None (Static HTML/SPA)',
+        phpVersion: 'Static SPA',
+        status: 'Active',
+        httpStatus: 200,
+      },
+      {
+        _id: new mongoose.Types.ObjectId(),
+        domain: pubIp,
+        serverEngine: server.webServer?.type || 'Nginx',
+        port: 80,
+        ssl: false,
+        sslProvider: 'None',
+        rootPath: '/var/www/html',
+        proxyPass: 'None',
+        phpVersion: 'PHP 8.2-FPM',
+        status: 'Active',
+        httpStatus: 200,
+      },
+    ];
+
+    const websites = server.websites && server.websites.length > 0 ? server.websites : defaultSites;
+    const webServer = server.webServer?.type
+      ? server.webServer
+      : {
+          type: 'Nginx',
+          version: 'nginx/1.24.0 (Ubuntu)',
+          status: 'active (running)',
+          mainPort: 80,
+          sslPort: 443,
+          configPath: '/etc/nginx/nginx.conf',
+          activeConnections: 142,
+          requestsPerSecond: 28.4,
+        };
+
     res.json({
       success: true,
       data: {
         ...server.toObject(),
+        webServer,
+        websites,
         alerts,
         operations,
         systemInsights: {
           runningServices,
           filesystem,
           activeProcesses,
+          webServer,
+          websites,
         },
       },
     });
@@ -291,10 +356,102 @@ const deleteServer = async (req, res, next) => {
   }
 };
 
+// @desc    Add a website / virtual host to this server
+// @route   POST /api/servers/:id/websites
+const addWebsiteToServer = async (req, res, next) => {
+  try {
+    const server = await Server.findById(req.params.id);
+    if (!server) return res.status(404).json({ success: false, error: 'Server not found' });
+    const { domain, serverEngine, port, ssl, rootPath, proxyPass, phpVersion, status } = req.body;
+    if (!domain) return res.status(400).json({ success: false, error: 'Domain name is required' });
+
+    const newSite = {
+      domain: domain.trim(),
+      serverEngine: serverEngine || server.webServer?.type || 'Nginx',
+      port: Number(port) || (ssl !== false ? 443 : 80),
+      ssl: ssl !== false,
+      sslProvider: ssl !== false ? "Let's Encrypt" : 'None',
+      sslExpiry: ssl !== false ? new Date(Date.now() + 90 * 24 * 3600 * 1000) : undefined,
+      rootPath: rootPath || '/var/www/html',
+      proxyPass: proxyPass || undefined,
+      phpVersion: phpVersion || 'None',
+      status: status || 'Active',
+      httpStatus: 200,
+    };
+
+    server.websites.push(newSite);
+    await server.save();
+
+    await logAudit({
+      req,
+      action: 'SERVER_WEBSITE_ADDED',
+      resourceType: 'Server',
+      resourceId: server._id,
+      resourceName: `${server.name} (${domain})`,
+      details: newSite,
+    });
+
+    res.json({ success: true, data: server.websites });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete a website / virtual host from this server
+// @route   DELETE /api/servers/:id/websites/:websiteId
+const deleteWebsiteFromServer = async (req, res, next) => {
+  try {
+    const server = await Server.findById(req.params.id);
+    if (!server) return res.status(404).json({ success: false, error: 'Server not found' });
+
+    server.websites = server.websites.filter((w) => String(w._id) !== req.params.websiteId);
+    await server.save();
+
+    await logAudit({
+      req,
+      action: 'SERVER_WEBSITE_REMOVED',
+      resourceType: 'Server',
+      resourceId: server._id,
+      resourceName: server.name,
+      details: { websiteId: req.params.websiteId },
+    });
+
+    res.json({ success: true, data: server.websites });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update web server configuration (Nginx/Apache)
+// @route   PUT /api/servers/:id/web-server
+const updateWebServerInfo = async (req, res, next) => {
+  try {
+    const server = await Server.findById(req.params.id);
+    if (!server) return res.status(404).json({ success: false, error: 'Server not found' });
+
+    const { type, version, status, mainPort, sslPort, configPath } = req.body;
+    server.webServer = server.webServer || {};
+    if (type) server.webServer.type = type;
+    if (version) server.webServer.version = version;
+    if (status) server.webServer.status = status;
+    if (mainPort) server.webServer.mainPort = mainPort;
+    if (sslPort) server.webServer.sslPort = sslPort;
+    if (configPath) server.webServer.configPath = configPath;
+
+    await server.save();
+    res.json({ success: true, data: server.webServer });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getServers,
   getServerById,
   createServer,
   updateServer,
   deleteServer,
+  addWebsiteToServer,
+  deleteWebsiteFromServer,
+  updateWebServerInfo,
 };

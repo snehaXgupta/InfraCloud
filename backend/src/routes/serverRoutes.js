@@ -6,6 +6,9 @@ const {
   createServer,
   updateServer,
   deleteServer,
+  addWebsiteToServer,
+  deleteWebsiteFromServer,
+  updateWebServerInfo,
 } = require('../controllers/serverController');
 const { getResizeOptions, createResizeRequest } = require('../controllers/resizeController');
 const { getServerMetrics } = require('../controllers/metricsController');
@@ -33,5 +36,8 @@ router.get('/:id/metrics', getServerMetrics);
 router.post('/:id/agent-token', authorize(R.ADMIN, R.DEVOPS), issueAgentToken);
 router.get('/:id/resize-options', getResizeOptions);
 router.post('/:id/resize-requests', authorize(R.ADMIN, R.DEVOPS, R.PROJECT_ADMIN), createResizeRequest);
+router.post('/:id/websites', authorize(...SERVER_MANAGERS), addWebsiteToServer);
+router.delete('/:id/websites/:websiteId', authorize(...SERVER_MANAGERS), deleteWebsiteFromServer);
+router.put('/:id/web-server', authorize(...SERVER_MANAGERS), updateWebServerInfo);
 
 module.exports = router;
