@@ -998,30 +998,27 @@ const ServerDetailContent = () => {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Globe className="w-5 h-5 text-emerald-500" />
+                      <Globe className="w-4 h-4 text-emerald-500" />
                       <h3 className="text-sm font-bold text-slate-900 dark:text-white">
-                        Web Server Engine Detection
+                        Web Server Engine
                       </h3>
                       {(server.webServer?.type === 'Apache' || server.systemInsights?.webServer?.type === 'Apache') ? (
                         <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-amber-500/10 text-amber-500 border border-amber-500/30 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                           Apache HTTP Server
                         </span>
                       ) : (server.webServer?.type?.includes('Reverse Proxy') || server.systemInsights?.webServer?.type?.includes('Reverse Proxy')) ? (
                         <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-                          Nginx + Apache (Hybrid Reverse Proxy)
+                          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                          Nginx + Apache (Hybrid Proxy)
                         </span>
                       ) : (
                         <span className="px-2.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5">
-                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                           Nginx Web Engine
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
-                      Live identification via daemon process inspection, port 80/443 socket binding, and virtual host files.
-                    </p>
                   </div>
 
                   {/* Engine Quick Switcher */}
@@ -1050,7 +1047,7 @@ const ServerDetailContent = () => {
                 </div>
 
                 {/* Engine Diagnostic Metadata Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-1 border-t border-slate-100 dark:border-[#1a1a1a]">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs pt-2 border-t border-slate-100 dark:border-[#1a1a1a]">
                   <div>
                     <span className="text-[10px] uppercase font-mono text-slate-400 dark:text-[#666666] block">Daemon Version</span>
                     <span className="font-mono font-semibold text-slate-800 dark:text-slate-200">
@@ -1082,18 +1079,13 @@ const ServerDetailContent = () => {
               <div className="rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] overflow-hidden shadow-sm">
                 {/* Section Header */}
                 <div className="p-4 border-b border-slate-200 dark:border-[#1f1f1f] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                        Hosted Websites & Virtual Hosts
-                      </h4>
-                      <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1f1f1f] text-slate-700 dark:text-slate-300 text-[10px] font-mono font-bold">
-                        {(server.websites || server.systemInsights?.websites || []).length} active
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-500 dark:text-[#888888] mt-0.5">
-                      All web applications, domains, and reverse-proxy bindings hosted on this server.
-                    </p>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                      Hosted Websites
+                    </h4>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-[#1f1f1f] text-slate-700 dark:text-slate-300 text-[10px] font-mono font-bold">
+                      {(server.websites || server.systemInsights?.websites || []).length} active
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-2">
