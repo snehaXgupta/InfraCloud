@@ -389,12 +389,10 @@ export const UsersPage = () => {
               <thead className="bg-slate-50 dark:bg-[#050505] text-[11px] uppercase font-mono text-slate-500 dark:text-[#888888] border-b border-slate-200 dark:border-[#1f1f1f]">
                 <tr>
                   <th className="px-5 py-3.5">User Profile</th>
-                  <th className="px-5 py-3.5">Assigned RBAC Role</th>
-                  <th className="px-5 py-3.5">Module Privileges</th>
+                  <th className="px-5 py-3.5">Assigned Role &amp; Permissions</th>
                   <th className="px-5 py-3.5">Client Scope</th>
                   <th className="px-5 py-3.5">Status</th>
                   <th className="px-5 py-3.5">Last Login</th>
-                  <th className="px-5 py-3.5">Member Since</th>
                   <th className="px-5 py-3.5 text-right">Actions</th>
                 </tr>
               </thead>
@@ -419,29 +417,17 @@ export const UsersPage = () => {
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-3.5">
-                        <span className="text-slate-700 dark:text-slate-300 font-semibold text-xs">{u.role}</span>
-                      </td>
                       <td className="px-5 py-3.5 font-sans">
-                        <div className="flex flex-wrap gap-1 max-w-xs">
-                          {MODULES_DEFINITION.map((m) => {
-                            const isAllowed = effective[m.key] === true;
-                            if (!isAllowed) return null;
-                            return (
-                              <span
-                                key={m.key}
-                                className="inline-block px-1.5 py-0.5 text-[9px] font-mono rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10"
-                              >
-                                {m.short}
-                              </span>
-                            );
-                          })}
-                          {hasCustomOverrides && (
-                            <span className="inline-block px-1.5 py-0.5 text-[9px] font-mono rounded bg-amber-500/10 text-amber-500 border border-amber-500/30 font-semibold">
-                              Custom
-                            </span>
-                          )}
-                        </div>
+                        <div className="font-semibold text-slate-800 dark:text-slate-200 text-xs">{u.role}</div>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEdit(u)}
+                          className="inline-flex items-center gap-1 text-[11px] font-mono text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer mt-0.5"
+                          title="Click to view and edit module permissions"
+                        >
+                          <Shield className="w-3 h-3 text-slate-400" />
+                          <span>{hasCustomOverrides ? 'Custom Permissions' : 'Role Policy'}</span>
+                        </button>
                       </td>
                       <td className="px-5 py-3.5 font-sans text-[11px] text-slate-600 dark:text-slate-300">{clientNames(u)}</td>
                       <td className="px-5 py-3.5">

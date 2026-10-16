@@ -476,140 +476,127 @@ const RolePermissionsMatrixCard = ({ canManage }) => {
 
       {/* VIEW 1: POLICY STUDIO (Role Selector Tabs + Clean Module Feature Cards with Micro-Switches) */}
       {viewMode === 'studio' && (
-        <div className="space-y-4">
-          {/* Horizontal Role Selector Bar */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-2 scrollbar-none">
+        <div className="space-y-3.5">
+          {/* Horizontal Role Selector Bar - No Scrollbar, No 5/8 numbers */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-[#121212] border border-slate-200 dark:border-[#202020]">
             {ROLES_ORDER.map((role) => {
               const isSelected = selectedRole === role;
-              const count = getActiveCount(role);
-              const meta = ROLES_META[role];
               return (
                 <button
                   key={role}
                   type="button"
                   onClick={() => setSelectedRole(role)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap transition-all border ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-slate-900 dark:bg-white text-white dark:text-black border-slate-900 dark:border-white shadow-sm font-semibold'
-                      : 'bg-slate-50 dark:bg-[#0e0e0e] text-slate-600 dark:text-[#999999] border-slate-200 dark:border-[#1f1f1f] hover:border-slate-400 dark:hover:border-[#333] hover:text-black dark:hover:text-white'
+                      ? 'bg-white dark:bg-[#222222] text-slate-900 dark:text-white shadow-xs font-semibold'
+                      : 'text-slate-600 dark:text-[#888888] hover:text-black dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/[0.04]'
                   }`}
                 >
-                  <span>{role}</span>
-                  <span
-                    className={`px-1.5 py-0.2 text-[10px] font-mono rounded ${
-                      isSelected
-                        ? 'bg-white/20 dark:bg-black/20 text-white dark:text-black'
-                        : 'bg-slate-200 dark:bg-[#1a1a1a] text-slate-500 dark:text-[#777]'
-                    }`}
-                  >
-                    {count}/{RBAC_MODULES.length}
-                  </span>
+                  {role}
                 </button>
               );
             })}
           </div>
 
-          {/* Active Role Meta Card */}
-          <div className="rounded-xl p-4 bg-slate-50 dark:bg-[#0e0e0e] border border-slate-200 dark:border-[#1e1e1e] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-sm font-bold text-slate-900 dark:text-white">{selectedRole}</span>
-                <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold border ${ROLES_META[selectedRole]?.color}`}>
-                  {ROLES_META[selectedRole]?.scope}
-                </span>
-                <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400">
-                  {activeRoleCount} of {RBAC_MODULES.length} modules granted
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-[#888888]">{ROLES_META[selectedRole]?.desc}</p>
+          {/* Active Role Quick Info & Actions Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 px-3.5 py-2 rounded-lg bg-slate-50 dark:bg-[#0c0c0c] border border-slate-200 dark:border-[#1a1a1a]">
+            <div className="flex items-center gap-2 flex-wrap text-xs">
+              <span className="font-bold text-slate-900 dark:text-white">{selectedRole}</span>
+              <span className={`px-2 py-0.5 rounded text-[10px] font-mono border ${ROLES_META[selectedRole]?.color}`}>
+                {ROLES_META[selectedRole]?.scope}
+              </span>
+              <span className="text-slate-400 dark:text-[#666] hidden md:inline">•</span>
+              <span className="text-slate-500 dark:text-[#888] text-[11px] truncate max-w-md">
+                {ROLES_META[selectedRole]?.desc}
+              </span>
             </div>
 
             {canManage && (
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-2 shrink-0 text-[11px] font-mono">
                 <button
                   type="button"
                   onClick={() => handleBulkRole(selectedRole, true)}
-                  className="px-2.5 py-1 text-[11px] font-mono rounded bg-slate-200/70 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-colors"
+                  className="text-slate-500 hover:text-emerald-500 dark:text-[#888] dark:hover:text-emerald-400 transition-colors cursor-pointer"
                 >
-                  Grant All
+                  Grant all
                 </button>
+                <span className="text-slate-300 dark:text-[#333]">|</span>
                 <button
                   type="button"
                   onClick={() => handleBulkRole(selectedRole, false)}
-                  className="px-2.5 py-1 text-[11px] font-mono rounded bg-slate-200/70 dark:bg-white/[0.06] hover:bg-slate-200 dark:hover:bg-white/10 text-slate-700 dark:text-slate-300 transition-colors"
+                  className="text-slate-500 hover:text-rose-500 dark:text-[#888] dark:hover:text-rose-400 transition-colors cursor-pointer"
                 >
-                  Revoke All
+                  Revoke all
                 </button>
+                <span className="text-slate-300 dark:text-[#333]">|</span>
                 <button
                   type="button"
                   onClick={() => handleResetRole(selectedRole)}
-                  className="px-2 py-1 text-[11px] font-mono text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
-                  title="Reset to default permissions"
+                  className="text-slate-500 hover:text-black dark:text-[#888] dark:hover:text-white transition-colors cursor-pointer"
+                  title="Reset role to default"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  Reset
                 </button>
               </div>
             )}
           </div>
 
-          {/* 8 Module Policy Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* 8 Compact Module Feature Tiles (Streamlined, Clear & Less Bulky) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5">
             {RBAC_MODULES.map((m) => {
               const isEnabled = !!activeRolePerms[m.key];
               const Icon = m.icon;
               return (
                 <div
                   key={m.key}
-                  className={`p-4 rounded-xl border transition-all flex flex-col justify-between space-y-3 ${
+                  onClick={() => {
+                    if (canManage) handleToggle(selectedRole, m.key);
+                  }}
+                  className={`p-3 rounded-xl border transition-all select-none ${
+                    canManage ? 'cursor-pointer' : ''
+                  } ${
                     isEnabled
-                      ? 'bg-slate-50/80 dark:bg-[#0c0c0c] border-slate-300 dark:border-white/15 shadow-sm'
-                      : 'bg-white dark:bg-[#070707] border-slate-200 dark:border-[#1a1a1a] opacity-80 hover:opacity-100'
+                      ? 'bg-slate-50 dark:bg-[#0e0e0e] border-slate-300 dark:border-white/15 hover:border-slate-400 dark:hover:border-white/25 shadow-xs'
+                      : 'bg-white dark:bg-[#070707] border-slate-200 dark:border-[#191919] opacity-75 hover:opacity-100 hover:border-slate-300 dark:hover:border-[#2a2a2a]'
                   }`}
                 >
-                  <div className="space-y-2.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2.5">
-                        <div
-                          className={`w-8 h-8 rounded-lg flex items-center justify-center border transition-colors ${
-                            isEnabled
-                              ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 dark:text-emerald-400'
-                              : 'bg-slate-100 dark:bg-[#141414] border-slate-200 dark:border-[#222222] text-slate-400 dark:text-zinc-600'
-                          }`}
-                        >
-                          <Icon className="w-4 h-4" />
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-slate-900 dark:text-white">{m.label}</h4>
-                          <span className="text-[10px] font-mono text-slate-400 dark:text-[#777] uppercase tracking-wider">
-                            {m.badge}
-                          </span>
-                        </div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div
+                        className={`w-6 h-6 rounded-md flex items-center justify-center shrink-0 border transition-colors ${
+                          isEnabled
+                            ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500 dark:text-emerald-400'
+                            : 'bg-slate-100 dark:bg-[#141414] border-slate-200 dark:border-[#222222] text-slate-400 dark:text-zinc-600'
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5" />
                       </div>
-
-                      <ToggleSwitch
-                        checked={isEnabled}
-                        disabled={!canManage}
-                        onChange={() => handleToggle(selectedRole, m.key)}
-                      />
+                      <span className="text-xs font-semibold text-slate-900 dark:text-white truncate">
+                        {m.label}
+                      </span>
                     </div>
 
-                    <p className="text-[11px] text-slate-500 dark:text-[#888888] leading-relaxed min-h-[32px]">
-                      {m.desc}
-                    </p>
+                    <ToggleSwitch
+                      checked={isEnabled}
+                      disabled={!canManage}
+                      size="sm"
+                      onChange={() => handleToggle(selectedRole, m.key)}
+                    />
                   </div>
 
-                  <div className="pt-2 border-t border-slate-100 dark:border-[#181818] flex items-center justify-between text-[11px] font-mono">
-                    <span className="text-slate-400 dark:text-[#666]">Access State</span>
+                  <p className="text-[11px] text-slate-500 dark:text-[#888888] leading-snug line-clamp-2">
+                    {m.desc}
+                  </p>
+
+                  <div className="mt-2 pt-2 border-t border-slate-100 dark:border-[#171717] flex items-center justify-between text-[10px] font-mono">
+                    <span className="text-slate-400 dark:text-[#666]">{m.badge}</span>
                     {isEnabled ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-semibold">
-                        <Check className="w-3.5 h-3.5 stroke-[2.5]" />
-                        <span>Granted</span>
+                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                        <Check className="w-3 h-3 stroke-[2.5]" />
+                        Allowed
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-slate-400 dark:text-zinc-600">
-                        <Lock className="w-3 h-3" />
-                        <span>Restricted</span>
-                      </span>
+                      <span className="text-slate-400 dark:text-zinc-600">Restricted</span>
                     )}
                   </div>
                 </div>
