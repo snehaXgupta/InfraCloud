@@ -477,8 +477,8 @@ const RolePermissionsMatrixCard = ({ canManage }) => {
       {/* VIEW 1: POLICY STUDIO (Role Selector Tabs + Clean Module Feature Cards with Micro-Switches) */}
       {viewMode === 'studio' && (
         <div className="space-y-3.5">
-          {/* Horizontal Role Selector Bar - No Scrollbar, No 5/8 numbers */}
-          <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-slate-100 dark:bg-[#121212] border border-slate-200 dark:border-[#202020]">
+          {/* Horizontal Role Selector Bar - Fills the entire bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-1 p-1 rounded-xl bg-slate-100 dark:bg-[#121212] border border-slate-200 dark:border-[#202020] w-full">
             {ROLES_ORDER.map((role) => {
               const isSelected = selectedRole === role;
               return (
@@ -486,7 +486,8 @@ const RolePermissionsMatrixCard = ({ canManage }) => {
                   key={role}
                   type="button"
                   onClick={() => setSelectedRole(role)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
+                  title={role}
+                  className={`w-full py-2 px-1.5 rounded-lg text-xs font-medium transition-all text-center truncate cursor-pointer ${
                     isSelected
                       ? 'bg-white dark:bg-[#222222] text-slate-900 dark:text-white shadow-xs font-semibold'
                       : 'text-slate-600 dark:text-[#888888] hover:text-black dark:hover:text-white hover:bg-white/60 dark:hover:bg-white/[0.04]'
