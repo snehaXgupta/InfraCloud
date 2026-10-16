@@ -28,23 +28,24 @@ export const Sidebar = ({ activeAlertsCount = 0, isMobile = false, onCloseMobile
   const DEVOPS = 'DevOps / Infrastructure';
   const navigation = [
     { name: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-    { name: 'Spaces', to: '/clients', icon: Database },
-    { name: 'Droplets', to: '/servers', icon: Server },
-    { name: 'Projects', to: '/projects', icon: FolderGit2 },
-    { name: 'Users', to: '/users', icon: Users, roles: [ADMIN] },
-    { name: 'Operations', to: '/operations', icon: Workflow, roles: [ADMIN, DEVOPS, 'Project Admin', 'Client Admin', 'Auditor'] },
-    { name: 'Replication', to: '/replication', icon: GitBranch },
-    { name: 'Resize Requests', to: '/resize-requests', icon: Sliders },
-    { name: 'Costs', to: '/costs', icon: DollarSign },
-    { name: 'Integrations', to: '/integrations', icon: Plug, roles: [ADMIN, DEVOPS] },
-    { name: 'Audit Logs', to: '/audit-logs', icon: FileSpreadsheet, roles: [ADMIN, 'Auditor'] },
+    { name: 'Spaces', to: '/clients', icon: Database, module: 'servers' },
+    { name: 'Droplets', to: '/servers', icon: Server, module: 'servers' },
+    { name: 'Projects', to: '/projects', icon: FolderGit2, module: 'servers' },
+    { name: 'Users', to: '/users', icon: Users, roles: [ADMIN], module: 'users' },
+    { name: 'Operations', to: '/operations', icon: Workflow, roles: [ADMIN, DEVOPS, 'Project Admin', 'Client Admin', 'Auditor'], module: 'operations' },
+    { name: 'Replication', to: '/replication', icon: GitBranch, module: 'operations' },
+    { name: 'Resize Requests', to: '/resize-requests', icon: Sliders, module: 'operations' },
+    { name: 'Costs', to: '/costs', icon: DollarSign, module: 'costs' },
+    { name: 'Integrations', to: '/integrations', icon: Plug, roles: [ADMIN, DEVOPS], module: 'settings' },
+    { name: 'Audit Logs', to: '/audit-logs', icon: FileSpreadsheet, roles: [ADMIN, 'Auditor'], module: 'auditLogs' },
     {
       name: 'Alerts',
       to: '/alerts',
       icon: AlertTriangle,
       badge: activeAlertsCount > 0 ? activeAlertsCount : null,
+      module: 'alerts',
     },
-    { name: 'Settings', to: '/settings', icon: Settings },
+    { name: 'Settings', to: '/settings', icon: Settings, module: 'settings' },
   ];
 
   return (
@@ -72,7 +73,18 @@ export const Sidebar = ({ activeAlertsCount = 0, isMobile = false, onCloseMobile
 
       {/* Main Navigation Links */}
       <div className="flex-1 px-2.5 py-3 space-y-0.5 overflow-y-auto">
-        {navigation.filter((item) => !item.roles || item.roles.includes(user?.role)).map((item) => (
+        {navigation.filter((item) => {
+          if (user?.role === ADMIN && !user?.customPermissions?.[item.module]) return true;
+          if (user?.effectivePermissions && item.module) {
+            if (user.effectivePermissions[item.module] === false) return false;
+            if (user.effectivePermissions[item.module] === true && !item.roles) return true;
+          }
+          if (item.roles && !item.roles.includes(user?.role)) {
+            if (item.module && user?.effectivePermissions?.[item.module] === true) return true;
+            return false;
+          }
+          return true;
+        }).map((item) => (
           <NavLink
             key={item.name}
             to={item.to}

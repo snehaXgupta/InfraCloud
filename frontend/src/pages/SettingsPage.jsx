@@ -17,6 +17,7 @@ import {
   Check,
   Palette,
   Type,
+  RotateCcw,
 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -113,6 +114,190 @@ const AlertEmailCard = ({ canManage }) => {
         </div>
       ) : (
         <p className="text-[11px] text-slate-500 dark:text-[#888888]">Only a Platform Admin can change this.</p>
+      )}
+    </div>
+  );
+};
+
+const RBAC_MODULES = [
+  { key: 'servers', label: 'Servers', desc: 'Droplets' },
+  { key: 'terminal', label: 'Terminal', desc: 'Console' },
+  { key: 'operations', label: 'Operations', desc: 'Scripts' },
+  { key: 'alerts', label: 'Alerts', desc: 'Incidents' },
+  { key: 'costs', label: 'Costs', desc: 'Billing' },
+  { key: 'auditLogs', label: 'Audit', desc: 'Logs' },
+  { key: 'users', label: 'Users', desc: 'Directory' },
+  { key: 'settings', label: 'Settings', desc: 'System' },
+];
+
+const DEFAULT_ROLE_PERMS = {
+  'Platform Admin': { servers: true, terminal: true, operations: true, alerts: true, costs: true, auditLogs: true, users: true, settings: true },
+  'DevOps / Infrastructure': { servers: true, terminal: true, operations: true, alerts: true, costs: false, auditLogs: true, users: false, settings: false },
+  'Project Admin': { servers: true, terminal: false, operations: true, alerts: true, costs: false, auditLogs: false, users: false, settings: false },
+  'Client Admin': { servers: true, terminal: false, operations: false, alerts: true, costs: true, auditLogs: false, users: false, settings: false },
+  'Client Viewer': { servers: true, terminal: false, operations: false, alerts: true, costs: false, auditLogs: false, users: false, settings: false },
+  'Auditor': { servers: true, terminal: false, operations: false, alerts: false, costs: true, auditLogs: true, users: false, settings: false },
+  'Billing / Finance': { servers: false, terminal: false, operations: false, alerts: false, costs: true, auditLogs: false, users: false, settings: false },
+};
+
+const RolePermissionsMatrixCard = ({ canManage }) => {
+  const { success, error: showError } = useToast();
+  const [matrix, setMatrix] = useState(DEFAULT_ROLE_PERMS);
+  const [initialMatrix, setInitialMatrix] = useState(DEFAULT_ROLE_PERMS);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const fetchMatrix = async () => {
+    try {
+      const res = await api.get('/settings/roles');
+      if (res.data?.success && res.data.data) {
+        setMatrix(res.data.data);
+        setInitialMatrix(JSON.parse(JSON.stringify(res.data.data)));
+      }
+    } catch (err) {
+      console.error('Failed to load role matrix:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMatrix();
+  }, []);
+
+  const hasChanges = JSON.stringify(matrix) !== JSON.stringify(initialMatrix);
+
+  const handleToggle = (role, modKey) => {
+    if (!canManage) return;
+    setMatrix((prev) => ({
+      ...prev,
+      [role]: {
+        ...prev[role],
+        [modKey]: !prev[role]?.[modKey],
+      },
+    }));
+  };
+
+  const handleSave = async () => {
+    if (!canManage) return;
+    setSaving(true);
+    try {
+      const res = await api.put('/settings/roles', { matrix });
+      if (res.data?.success) {
+        setInitialMatrix(JSON.parse(JSON.stringify(res.data.data)));
+        setMatrix(res.data.data);
+        success('Role permissions matrix saved successfully');
+      }
+    } catch (err) {
+      showError(err.response?.data?.error || 'Failed to update role permissions');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleResetToDefaults = () => {
+    if (!canManage) return;
+    setMatrix(JSON.parse(JSON.stringify(DEFAULT_ROLE_PERMS)));
+  };
+
+  return (
+    <div className="rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] p-6 space-y-4 shadow-sm">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 dark:border-[#1f1f1f] pb-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Shield className="w-4 h-4 text-slate-700 dark:text-white" />
+              Role Permissions Matrix (RBAC)
+            </h3>
+            <span
+              className={`px-2 py-0.5 rounded border text-[10px] font-mono font-semibold ${
+                canManage
+                  ? 'bg-emerald-50 dark:bg-[#0e241b] border-emerald-300 dark:border-emerald-600/40 text-emerald-700 dark:text-emerald-400'
+                  : 'bg-slate-100 dark:bg-[#111111] border-slate-200 dark:border-[#222222] text-slate-500'
+              }`}
+            >
+              {canManage ? 'CONFIGURABLE' : 'READ-ONLY'}
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
+            Configure default module privileges for platform roles. Changes apply to all users with that role (unless individually customized).
+          </p>
+        </div>
+
+        {canManage && (
+          <div className="flex items-center gap-2">
+            {hasChanges && (
+              <Button size="xs" variant="outline" onClick={handleResetToDefaults} disabled={saving} leftIcon={<RotateCcw className="w-3 h-3" />}>
+                Reset to Defaults
+              </Button>
+            )}
+            <Button
+              size="xs"
+              variant="primary"
+              disabled={!hasChanges || saving}
+              isLoading={saving}
+              onClick={handleSave}
+            >
+              {hasChanges ? 'Save Role Matrix' : 'Saved'}
+            </Button>
+          </div>
+        )}
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs">
+          <thead className="bg-slate-50 dark:bg-[#050505] text-[10px] uppercase font-mono text-slate-500 dark:text-[#888888] border-b border-slate-200 dark:border-[#1f1f1f]">
+            <tr>
+              <th className="text-left font-medium p-3">Platform Role</th>
+              {RBAC_MODULES.map((m) => (
+                <th key={m.key} className="text-center font-medium p-3 whitespace-nowrap">
+                  <div>{m.label}</div>
+                  <div className="text-[9px] text-slate-400 font-sans font-normal normal-case">{m.desc}</div>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-[#1f1f1f] text-slate-700 dark:text-slate-300 font-sans">
+            {Object.keys(DEFAULT_ROLE_PERMS).map((role) => {
+              const perms = matrix[role] || DEFAULT_ROLE_PERMS[role];
+              return (
+                <tr key={role} className="hover:bg-slate-50/50 dark:hover:bg-[#111111]/50 transition-colors">
+                  <td className="p-3 font-semibold text-slate-900 dark:text-white whitespace-nowrap">
+                    {role}
+                  </td>
+                  {RBAC_MODULES.map((m) => {
+                    const isChecked = !!perms?.[m.key];
+                    return (
+                      <td key={m.key} className="p-3 text-center">
+                        <button
+                          type="button"
+                          className={`inline-flex items-center justify-center w-6 h-6 rounded transition-all ${
+                            canManage ? 'cursor-pointer hover:scale-110' : 'cursor-default opacity-80'
+                          } ${
+                            isChecked
+                              ? 'bg-slate-900 dark:bg-white text-white dark:text-black border border-black dark:border-white'
+                              : 'bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] text-transparent'
+                          }`}
+                          onClick={() => {
+                            if (!canManage) return;
+                            handleToggle(role, m.key);
+                          }}
+                        >
+                          <Check className={`w-3.5 h-3.5 stroke-[2.5] ${isChecked ? 'opacity-100' : 'opacity-0'}`} />
+                        </button>
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+      {!canManage && (
+        <p className="text-[11px] text-slate-500 dark:text-[#888888] pt-1">
+          Only Platform Admins can edit the role permissions matrix.
+        </p>
       )}
     </div>
   );
@@ -280,7 +465,10 @@ export const SettingsPage = () => {
         </div>
       </div>
 
-      {/* 2. THRESHOLDS & SPECIFICATIONS GRID */}
+      {/* 2. ROLE PERMISSIONS MATRIX (RBAC) */}
+      <RolePermissionsMatrixCard canManage={user?.role === 'Platform Admin'} />
+
+      {/* 3. THRESHOLDS & SPECIFICATIONS GRID */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Left 2 Cols: Thresholds */}
         <div className="md:col-span-2 space-y-6">

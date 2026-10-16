@@ -9,6 +9,9 @@ import {
   UserCheck,
   ShieldAlert,
   Search,
+  Check,
+  RotateCcw,
+  Sliders,
 } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../components/common/Card';
 import { Button } from '../components/common/Button';
@@ -17,6 +20,27 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { Modal } from '../components/common/Modal';
 import api from '../services/api';
 import { useToast } from '../context/ToastContext';
+
+export const MODULES_DEFINITION = [
+  { key: 'servers', label: 'Droplets / Servers', short: 'Servers', desc: 'Node telemetry, specs & state' },
+  { key: 'terminal', label: 'Web Terminal', short: 'Terminal', desc: 'Interactive console shell access' },
+  { key: 'operations', label: 'Operations & Scripts', short: 'Operations', desc: 'Pre-flight playbooks & runbooks' },
+  { key: 'alerts', label: 'Alerts & Incidents', short: 'Alerts', desc: 'Threshold anomalies & notifications' },
+  { key: 'costs', label: 'Costs & Billing', short: 'Costs', desc: 'Spend analysis & financial breakdown' },
+  { key: 'auditLogs', label: 'Audit Trail', short: 'Audit', desc: 'Immutable compliance & security logs' },
+  { key: 'users', label: 'User Directory', short: 'Users', desc: 'Operator lifecycle & RBAC policies' },
+  { key: 'settings', label: 'Platform Settings', short: 'Settings', desc: 'Alert rules, notification mute & UI' },
+];
+
+export const DEFAULT_ROLE_PERMS = {
+  'Platform Admin': { servers: true, terminal: true, operations: true, alerts: true, costs: true, auditLogs: true, users: true, settings: true },
+  'DevOps / Infrastructure': { servers: true, terminal: true, operations: true, alerts: true, costs: false, auditLogs: true, users: false, settings: false },
+  'Project Admin': { servers: true, terminal: false, operations: true, alerts: true, costs: false, auditLogs: false, users: false, settings: false },
+  'Client Admin': { servers: true, terminal: false, operations: false, alerts: true, costs: true, auditLogs: false, users: false, settings: false },
+  'Client Viewer': { servers: true, terminal: false, operations: false, alerts: true, costs: false, auditLogs: false, users: false, settings: false },
+  'Auditor': { servers: true, terminal: false, operations: false, alerts: false, costs: true, auditLogs: true, users: false, settings: false },
+  'Billing / Finance': { servers: false, terminal: false, operations: false, alerts: false, costs: true, auditLogs: false, users: false, settings: false },
+};
 
 export const ROLES_DEFINITION = [
   {
@@ -66,6 +90,10 @@ export const ROLES_DEFINITION = [
 // Roles that see every client regardless of assignment (mirrors backend middleware/scope.js)
 const GLOBAL_ROLES = ['Platform Admin', 'Auditor'];
 
+const getRoleDefaults = (role, matrix) => {
+  return matrix?.[role] || DEFAULT_ROLE_PERMS[role] || DEFAULT_ROLE_PERMS['Client Viewer'];
+};
+
 const ClientScopePicker = ({ role, clients, value = [], onChange }) => {
   if (GLOBAL_ROLES.includes(role)) {
     return <p className="text-[11px] text-slate-400">This role can see every client.</p>;
@@ -94,6 +122,7 @@ const ClientScopePicker = ({ role, clients, value = [], onChange }) => {
 
 export const UsersPage = () => {
   const [users, setUsers] = useState([]);
+  const [roleMatrix, setRoleMatrix] = useState({});
   const [clients, setClients] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -105,6 +134,7 @@ export const UsersPage = () => {
     password: '',
     role: 'Client Viewer',
     assignedClients: [],
+    customPermissions: { ...DEFAULT_ROLE_PERMS['Client Viewer'] },
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { success, error: showError } = useToast();
@@ -114,6 +144,9 @@ export const UsersPage = () => {
       const res = await api.get('/users');
       if (res.data?.success) {
         setUsers(res.data.data);
+        if (res.data.roleMatrix) {
+          setRoleMatrix(res.data.roleMatrix);
+        }
       }
     } catch (err) {
       showError('Failed to fetch user directory');
@@ -138,6 +171,39 @@ export const UsersPage = () => {
           .filter(Boolean)
           .join(', ') || 'None';
 
+  const openAddUserModal = () => {
+    const role = 'Client Viewer';
+    const defaults = getRoleDefaults(role, roleMatrix);
+    setFormData({
+      name: '',
+      email: '',
+      password: '',
+      role,
+      assignedClients: [],
+      customPermissions: { ...defaults },
+    });
+    setIsAddUserOpen(true);
+  };
+
+  const handleAddRoleChange = (newRole) => {
+    const defaults = getRoleDefaults(newRole, roleMatrix);
+    setFormData((prev) => ({
+      ...prev,
+      role: newRole,
+      customPermissions: { ...defaults },
+    }));
+  };
+
+  const toggleAddModule = (modKey) => {
+    setFormData((prev) => ({
+      ...prev,
+      customPermissions: {
+        ...prev.customPermissions,
+        [modKey]: !prev.customPermissions?.[modKey],
+      },
+    }));
+  };
+
   const handleCreateUser = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -146,7 +212,6 @@ export const UsersPage = () => {
       if (res.data?.success) {
         success(`User ${formData.name} created successfully!`);
         setIsAddUserOpen(false);
-        setFormData({ name: '', email: '', password: '', role: 'Client Viewer', assignedClients: [] });
         fetchUsers();
       }
     } catch (err) {
@@ -154,6 +219,43 @@ export const UsersPage = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleOpenEdit = (u) => {
+    const roleDefaults = getRoleDefaults(u.role, roleMatrix);
+    const effective = u.effectivePermissions || { ...roleDefaults, ...(u.customPermissions || {}) };
+    setEditingUser({
+      ...u,
+      customPermissions: { ...effective },
+    });
+  };
+
+  const handleEditRoleChange = (newRole) => {
+    const defaults = getRoleDefaults(newRole, roleMatrix);
+    setEditingUser((prev) => ({
+      ...prev,
+      role: newRole,
+      customPermissions: { ...defaults },
+    }));
+  };
+
+  const toggleEditModule = (modKey) => {
+    setEditingUser((prev) => ({
+      ...prev,
+      customPermissions: {
+        ...prev.customPermissions,
+        [modKey]: !prev.customPermissions?.[modKey],
+      },
+    }));
+  };
+
+  const resetEditToRoleDefaults = () => {
+    if (!editingUser) return;
+    const defaults = getRoleDefaults(editingUser.role, roleMatrix);
+    setEditingUser((prev) => ({
+      ...prev,
+      customPermissions: { ...defaults },
+    }));
   };
 
   const handleUpdateRole = async (e) => {
@@ -165,14 +267,15 @@ export const UsersPage = () => {
         role: editingUser.role,
         status: editingUser.status,
         assignedClients: GLOBAL_ROLES.includes(editingUser.role) ? [] : editingUser.assignedClients || [],
+        customPermissions: editingUser.customPermissions,
       });
       if (res.data?.success) {
-        success(`Role updated for ${editingUser.name}`);
+        success(`Role & permissions updated for ${editingUser.name}`);
         setEditingUser(null);
         fetchUsers();
       }
     } catch (err) {
-      showError(err.response?.data?.error || 'Failed to update role');
+      showError(err.response?.data?.error || 'Failed to update user access');
     } finally {
       setIsSubmitting(false);
     }
@@ -192,14 +295,17 @@ export const UsersPage = () => {
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center gap-2">
             <Users className="w-6 h-6 text-slate-700 dark:text-white" />
-            Users & Role-Based Access Control
+            Users &amp; Role-Based Access Control
           </h1>
+          <p className="text-xs text-slate-500 dark:text-[#888888] mt-1">
+            Manage control plane operators, client scoping, and granular module permissions.
+          </p>
         </div>
 
         <Button
           variant="primary"
           size="sm"
-          onClick={() => setIsAddUserOpen(true)}
+          onClick={openAddUserModal}
           leftIcon={<Plus className="w-4 h-4" />}
         >
           Add New User
@@ -258,6 +364,7 @@ export const UsersPage = () => {
                 <tr>
                   <th className="px-5 py-3.5">User Profile</th>
                   <th className="px-5 py-3.5">Assigned RBAC Role</th>
+                  <th className="px-5 py-3.5">Module Privileges</th>
                   <th className="px-5 py-3.5">Client Scope</th>
                   <th className="px-5 py-3.5">Status</th>
                   <th className="px-5 py-3.5">Last Login</th>
@@ -266,46 +373,75 @@ export const UsersPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-[#1f1f1f] font-mono">
-                {filteredUsers.map((u) => (
-                  <tr key={u._id} className="hover:bg-slate-50 dark:hover:bg-[#111111] transition-colors">
-                    <td className="px-5 py-3.5 font-sans">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-200">
-                          {u.name.charAt(0)}
+                {filteredUsers.map((u) => {
+                  const roleDefaults = getRoleDefaults(u.role, roleMatrix);
+                  const effective = u.effectivePermissions || { ...roleDefaults, ...(u.customPermissions || {}) };
+                  const hasCustomOverrides =
+                    u.customPermissions &&
+                    Object.values(u.customPermissions).some((v) => typeof v === 'boolean');
+
+                  return (
+                    <tr key={u._id} className="hover:bg-slate-50 dark:hover:bg-[#111111] transition-colors">
+                      <td className="px-5 py-3.5 font-sans">
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] flex items-center justify-center text-xs font-bold text-slate-700 dark:text-slate-200">
+                            {u.name.charAt(0)}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-slate-900 dark:text-white text-xs">{u.name}</div>
+                            <div className="text-[11px] text-slate-500 dark:text-[#888888] font-mono">{u.email}</div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="font-semibold text-slate-900 dark:text-white text-xs">{u.name}</div>
-                          <div className="text-[11px] text-slate-500 dark:text-[#888888] font-mono">{u.email}</div>
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <span className="text-slate-700 dark:text-slate-300 font-semibold text-xs">{u.role}</span>
+                      </td>
+                      <td className="px-5 py-3.5 font-sans">
+                        <div className="flex flex-wrap gap-1 max-w-xs">
+                          {MODULES_DEFINITION.map((m) => {
+                            const isAllowed = effective[m.key] === true;
+                            if (!isAllowed) return null;
+                            return (
+                              <span
+                                key={m.key}
+                                className="inline-block px-1.5 py-0.5 text-[9px] font-mono rounded bg-slate-100 dark:bg-white/[0.06] text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-white/10"
+                              >
+                                {m.short}
+                              </span>
+                            );
+                          })}
+                          {hasCustomOverrides && (
+                            <span className="inline-block px-1.5 py-0.5 text-[9px] font-mono rounded bg-amber-500/10 text-amber-500 border border-amber-500/30 font-semibold">
+                              Custom
+                            </span>
+                          )}
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <span className="text-slate-700 dark:text-slate-300 font-semibold text-xs">{u.role}</span>
-                    </td>
-                    <td className="px-5 py-3.5 font-sans text-[11px] text-slate-600 dark:text-slate-300">{clientNames(u)}</td>
-                    <td className="px-5 py-3.5">
-                      <Badge variant={u.status === 'active' ? 'healthy' : 'neutral'} size="sm">
-                        {u.status}
-                      </Badge>
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-500 dark:text-[#888888] text-[11px]">
-                      {new Date(u.lastLogin || u.createdAt).toLocaleString()}
-                    </td>
-                    <td className="px-5 py-3.5 text-slate-500 dark:text-[#888888] text-[11px]">
-                      {new Date(u.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-5 py-3.5 text-right font-sans">
-                      <Button
-                        size="xs"
-                        variant="secondary"
-                        onClick={() => setEditingUser({ ...u })}
-                        leftIcon={<Edit2 className="w-3 h-3" />}
-                      >
-                        Edit Access
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-5 py-3.5 font-sans text-[11px] text-slate-600 dark:text-slate-300">{clientNames(u)}</td>
+                      <td className="px-5 py-3.5">
+                        <Badge variant={u.status === 'active' ? 'healthy' : 'neutral'} size="sm">
+                          {u.status}
+                        </Badge>
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-500 dark:text-[#888888] text-[11px]">
+                        {new Date(u.lastLogin || u.createdAt).toLocaleString()}
+                      </td>
+                      <td className="px-5 py-3.5 text-slate-500 dark:text-[#888888] text-[11px]">
+                        {new Date(u.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-5 py-3.5 text-right font-sans">
+                        <Button
+                          size="xs"
+                          variant="secondary"
+                          onClick={() => handleOpenEdit(u)}
+                          leftIcon={<Edit2 className="w-3 h-3" />}
+                        >
+                          Edit Access
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
@@ -313,30 +449,37 @@ export const UsersPage = () => {
       </Card>
 
       {/* Add User Modal */}
-      <Modal isOpen={isAddUserOpen} onClose={() => setIsAddUserOpen(false)} title="Provision New Platform User">
+      <Modal
+        isOpen={isAddUserOpen}
+        onClose={() => setIsAddUserOpen(false)}
+        title="Provision New Platform User"
+        maxWidth="max-w-xl"
+      >
         <form onSubmit={handleCreateUser} className="space-y-4">
-          <div>
-            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Full Name *</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Jordan Miller"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
-            />
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Full Name *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Jordan Miller"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Email Address *</label>
-            <input
-              type="email"
-              required
-              placeholder="jordan@infrastructure.internal"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
-            />
+            <div>
+              <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Email Address *</label>
+              <input
+                type="email"
+                required
+                placeholder="jordan@infrastructure.internal"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+              />
+            </div>
           </div>
 
           <div>
@@ -344,7 +487,7 @@ export const UsersPage = () => {
             <input
               type="password"
               required
-              placeholder="••••••••"
+              placeholder="•••••••• (minimum 8 characters)"
               value={formData.password}
               onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
@@ -355,7 +498,7 @@ export const UsersPage = () => {
             <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Platform Role Assignment *</label>
             <select
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              onChange={(e) => handleAddRoleChange(e.target.value)}
               className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
             >
               {ROLES_DEFINITION.map((r) => (
@@ -376,6 +519,64 @@ export const UsersPage = () => {
             />
           </div>
 
+          {/* Granular Module Permissions Selector */}
+          <div className="pt-2 border-t border-slate-200 dark:border-[#1f1f1f]">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  Granular Module Permissions (RBAC)
+                </label>
+                <p className="text-[11px] text-slate-500 dark:text-[#888888]">
+                  Pre-filled with {formData.role} defaults. Toggle modules to customize this user's privileges.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setFormData((p) => ({ ...p, customPermissions: { ...getRoleDefaults(p.role, roleMatrix) } }))}
+                className="text-[11px] font-mono text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 cursor-pointer"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Reset
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-2 rounded-lg bg-slate-50 dark:bg-[#0c0c0c] border border-slate-200 dark:border-[#1e1e1e]">
+              {MODULES_DEFINITION.map((m) => {
+                const isChecked = !!formData.customPermissions?.[m.key];
+                return (
+                  <label
+                    key={m.key}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleAddModule(m.key);
+                    }}
+                    className={`flex items-start gap-2.5 p-2 rounded-md border cursor-pointer select-none transition-all ${
+                      isChecked
+                        ? 'bg-slate-100 dark:bg-white/[0.06] border-slate-300 dark:border-white/20 text-slate-900 dark:text-white'
+                        : 'border-transparent text-slate-500 dark:text-[#777777] hover:bg-slate-100/50 dark:hover:bg-white/[0.02]'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => {}}
+                      className="mt-0.5 rounded border-slate-300 dark:border-[#333] text-black focus:ring-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-medium flex items-center justify-between">
+                        <span>{m.label}</span>
+                        <span className={`text-[9px] font-mono px-1 rounded ${isChecked ? 'text-emerald-500 font-semibold' : 'text-slate-400'}`}>
+                          {isChecked ? 'Allowed' : 'Denied'}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 dark:text-[#777777] truncate">{m.desc}</div>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">
             <Button variant="outline" onClick={() => setIsAddUserOpen(false)} disabled={isSubmitting}>
               Cancel
@@ -387,40 +588,42 @@ export const UsersPage = () => {
         </form>
       </Modal>
 
-      {/* Edit Role Modal */}
+      {/* Edit Role & Access Modal */}
       <Modal
         isOpen={!!editingUser}
         onClose={() => setEditingUser(null)}
         title={`Edit access for ${editingUser?.name}`}
-        maxWidth="max-w-md"
+        maxWidth="max-w-xl"
       >
         <form onSubmit={handleUpdateRole} className="space-y-4">
-          <div>
-            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Select New Role</label>
-            <select
-              value={editingUser?.role || 'DevOps / Infrastructure'}
-              onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value })}
-              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
-            >
-              {ROLES_DEFINITION.map((r) => (
-                <option key={r.role} value={r.role}>
-                  {r.role}
-                </option>
-              ))}
-            </select>
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Select Role</label>
+              <select
+                value={editingUser?.role || 'DevOps / Infrastructure'}
+                onChange={(e) => handleEditRoleChange(e.target.value)}
+                className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+              >
+                {ROLES_DEFINITION.map((r) => (
+                  <option key={r.role} value={r.role}>
+                    {r.role}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-          <div>
-            <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Account Status</label>
-            <select
-              value={editingUser?.status || 'active'}
-              onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value })}
-              className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
-            >
-              <option value="active">Active (Access Granted)</option>
-              <option value="suspended">Suspended (Access Revoked)</option>
-              <option value="pending">Pending Verification</option>
-            </select>
+            <div>
+              <label className="block text-xs text-slate-500 dark:text-[#888888] mb-1">Account Status</label>
+              <select
+                value={editingUser?.status || 'active'}
+                onChange={(e) => setEditingUser({ ...editingUser, status: e.target.value })}
+                className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+              >
+                <option value="active">Active (Access Granted)</option>
+                <option value="suspended">Suspended (Access Revoked)</option>
+                <option value="pending">Pending Verification</option>
+              </select>
+            </div>
           </div>
 
           <div>
@@ -431,6 +634,64 @@ export const UsersPage = () => {
               value={editingUser?.assignedClients}
               onChange={(assignedClients) => setEditingUser({ ...editingUser, assignedClients })}
             />
+          </div>
+
+          {/* Granular Module Permissions Selector */}
+          <div className="pt-2 border-t border-slate-200 dark:border-[#1f1f1f]">
+            <div className="flex items-center justify-between mb-2">
+              <div>
+                <label className="block text-xs font-semibold text-slate-800 dark:text-slate-200">
+                  Granular Module Permissions (RBAC)
+                </label>
+                <p className="text-[11px] text-slate-500 dark:text-[#888888]">
+                  Custom overrides for this operator. These override the base {editingUser?.role} defaults.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={resetEditToRoleDefaults}
+                className="text-[11px] font-mono text-slate-500 hover:text-slate-900 dark:hover:text-white flex items-center gap-1 cursor-pointer"
+              >
+                <RotateCcw className="w-3 h-3" />
+                Reset to role defaults
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-56 overflow-y-auto p-2 rounded-lg bg-slate-50 dark:bg-[#0c0c0c] border border-slate-200 dark:border-[#1e1e1e]">
+              {MODULES_DEFINITION.map((m) => {
+                const isChecked = !!editingUser?.customPermissions?.[m.key];
+                return (
+                  <label
+                    key={m.key}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      toggleEditModule(m.key);
+                    }}
+                    className={`flex items-start gap-2.5 p-2 rounded-md border cursor-pointer select-none transition-all ${
+                      isChecked
+                        ? 'bg-slate-100 dark:bg-white/[0.06] border-slate-300 dark:border-white/20 text-slate-900 dark:text-white'
+                        : 'border-transparent text-slate-500 dark:text-[#777777] hover:bg-slate-100/50 dark:hover:bg-white/[0.02]'
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => {}}
+                      className="mt-0.5 rounded border-slate-300 dark:border-[#333] text-black focus:ring-0"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs font-medium flex items-center justify-between">
+                        <span>{m.label}</span>
+                        <span className={`text-[9px] font-mono px-1 rounded ${isChecked ? 'text-emerald-500 font-semibold' : 'text-slate-400'}`}>
+                          {isChecked ? 'Allowed' : 'Denied'}
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 dark:text-[#777777] truncate">{m.desc}</div>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex justify-end gap-3 pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">

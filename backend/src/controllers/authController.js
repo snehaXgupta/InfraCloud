@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../config/env');
 const User = require('../models/User');
 const { logAudit } = require('../services/auditService');
+const { getAllRolePermissions, getUserEffectivePermissions } = require('../services/rolePermissionService');
 
 const generateToken = (id) => {
   return jwt.sign(
@@ -74,18 +75,23 @@ const login = async (req, res, next) => {
     });
 
     const token = generateToken(user._id);
+    const roleMatrix = await getAllRolePermissions();
+    const effectivePermissions = getUserEffectivePermissions(user, roleMatrix);
 
     res.json({
       success: true,
       token,
       user: {
         id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
         status: user.status,
         avatar: user.avatar,
         lastLogin: user.lastLogin,
+        customPermissions: user.customPermissions,
+        effectivePermissions,
       },
     });
   } catch (error) {
@@ -157,16 +163,21 @@ const register = async (req, res, next) => {
     });
 
     const token = generateToken(user._id);
+    const roleMatrix = await getAllRolePermissions();
+    const effectivePermissions = getUserEffectivePermissions(user, roleMatrix);
 
     res.status(201).json({
       success: true,
       token,
       user: {
         id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
         status: user.status,
+        customPermissions: user.customPermissions,
+        effectivePermissions,
       },
     });
   } catch (error) {
@@ -180,9 +191,16 @@ const register = async (req, res, next) => {
 const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, error: 'User not found' });
+    }
+    const roleMatrix = await getAllRolePermissions();
+    const userObj = user.toObject();
+    userObj.effectivePermissions = getUserEffectivePermissions(user, roleMatrix);
+
     res.json({
       success: true,
-      user,
+      user: userObj,
     });
   } catch (error) {
     next(error);

@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const Client = require('../models/Client');
+const { getAllRolePermissions, getUserEffectivePermissions } = require('../services/rolePermissionService');
 
 // Validates a list of client ids for scope assignment; returns null if any id is unknown.
 const resolveClientIds = async (ids) => {
@@ -11,17 +12,25 @@ const resolveClientIds = async (ids) => {
 };
 const { logAudit } = require('../services/auditService');
 
-// @desc    Get all users with roles
+// @desc    Get all users with roles and effective permissions
 // @route   GET /api/users
 // @access  Private
 const getUsers = async (req, res, next) => {
   try {
+    const roleMatrix = await getAllRolePermissions();
     const users = await User.find().select('-passwordHash').sort({ createdAt: -1 });
+
+    const enriched = users.map((u) => {
+      const obj = u.toObject();
+      obj.effectivePermissions = getUserEffectivePermissions(u, roleMatrix);
+      return obj;
+    });
 
     res.json({
       success: true,
-      count: users.length,
-      data: users,
+      count: enriched.length,
+      data: enriched,
+      roleMatrix,
     });
   } catch (error) {
     next(error);
@@ -33,7 +42,7 @@ const getUsers = async (req, res, next) => {
 // @access  Private (Platform Admin, DevOps)
 const updateUserRole = async (req, res, next) => {
   try {
-    const { role, status } = req.body;
+    const { role, status, customPermissions } = req.body;
     const user = await User.findById(req.params.id);
 
     if (!user) {
@@ -50,8 +59,15 @@ const updateUserRole = async (req, res, next) => {
     if (role) user.role = role;
     if (status) user.status = status;
     if (assignedClients) user.assignedClients = assignedClients;
+    if (customPermissions !== undefined) {
+      user.customPermissions = customPermissions;
+    }
 
     await user.save();
+
+    const roleMatrix = await getAllRolePermissions();
+    const enriched = user.toObject();
+    enriched.effectivePermissions = getUserEffectivePermissions(user, roleMatrix);
 
     await logAudit({
       req,
@@ -66,13 +82,14 @@ const updateUserRole = async (req, res, next) => {
         status: user.status,
         previousClients,
         assignedClients: user.assignedClients.map(String),
+        customPermissions: user.customPermissions,
       },
     });
 
     res.json({
       success: true,
-      data: user,
-      message: 'User role updated successfully',
+      data: enriched,
+      message: 'User role and permissions updated successfully',
     });
   } catch (error) {
     next(error);
@@ -84,7 +101,7 @@ const updateUserRole = async (req, res, next) => {
 // @access  Private
 const createUser = async (req, res, next) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, customPermissions } = req.body;
 
     if (!password || password.length < 8) {
       return res.status(400).json({ success: false, error: 'Password must be at least 8 characters' });
@@ -105,7 +122,12 @@ const createUser = async (req, res, next) => {
       passwordHash: password,
       role: role || 'Client Viewer',
       assignedClients: assignedClients || [],
+      customPermissions: customPermissions || {},
     });
+
+    const roleMatrix = await getAllRolePermissions();
+    const enriched = user.toObject();
+    enriched.effectivePermissions = getUserEffectivePermissions(user, roleMatrix);
 
     await logAudit({
       req,
@@ -114,18 +136,26 @@ const createUser = async (req, res, next) => {
       resourceId: user._id,
       resourceName: user.name,
       status: 'Success',
-      details: { role: user.role, email: user.email, assignedClients: user.assignedClients.map(String) },
+      details: {
+        role: user.role,
+        email: user.email,
+        assignedClients: user.assignedClients.map(String),
+        customPermissions: user.customPermissions,
+      },
     });
 
     res.status(201).json({
       success: true,
       data: {
         id: user._id,
+        _id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
         status: user.status,
         assignedClients: user.assignedClients,
+        customPermissions: user.customPermissions,
+        effectivePermissions: enriched.effectivePermissions,
       },
     });
   } catch (error) {

@@ -56,6 +56,7 @@ import { Modal } from '../components/common/Modal';
 import api from '../services/api';
 import { useToast } from '../context/ToastContext';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 
 const formatAge = (date) => {
   const seconds = Math.max(0, Math.round((Date.now() - new Date(date).getTime()) / 1000));
@@ -98,6 +99,8 @@ const ServerDetailContent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { user } = useAuth();
+  const canAccessTerminal = user?.effectivePermissions?.terminal !== false && (user?.effectivePermissions?.terminal === true || ['Platform Admin', 'DevOps / Infrastructure'].includes(user?.role));
   const chartColor = isDark ? '#ffffff' : '#09090b';
   const gridColor = isDark ? '#222222' : '#e5e5e5';
   const axisColor = isDark ? '#666666' : '#888888';
@@ -389,14 +392,16 @@ const ServerDetailContent = () => {
             </button>
 
             {/* Web Terminal Button */}
-            <button
-              onClick={() => setIsTerminalModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#222222] hover:bg-slate-200 dark:hover:bg-[#1f1f1f] text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
-              title="Open Web SSH Terminal"
-            >
-              <Terminal className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
-              <span>Terminal</span>
-            </button>
+            {canAccessTerminal && (
+              <button
+                onClick={() => setIsTerminalModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#222222] hover:bg-slate-200 dark:hover:bg-[#1f1f1f] text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-black dark:hover:text-white transition-colors cursor-pointer"
+                title="Open Web SSH Terminal"
+              >
+                <Terminal className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400" />
+                <span>Terminal</span>
+              </button>
+            )}
 
             {/* Sync / Refresh Button */}
             <button
@@ -707,7 +712,7 @@ const ServerDetailContent = () => {
             { id: 'filesystem', label: 'Filesystem' },
             { id: 'services', label: 'System Services' },
             { id: 'processes', label: 'Processes (Top)' },
-            { id: 'terminal', label: 'Terminal Console' },
+            ...(canAccessTerminal ? [{ id: 'terminal', label: 'Terminal Console' }] : []),
             {
               id: 'alerts',
               label: `Alerts (${Array.isArray(server.alerts) ? server.alerts.filter((a) => a && a.status !== 'resolved').length : 0})`,

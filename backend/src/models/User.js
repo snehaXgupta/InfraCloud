@@ -56,6 +56,16 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    customPermissions: {
+      servers: { type: Boolean, default: null },
+      terminal: { type: Boolean, default: null },
+      operations: { type: Boolean, default: null },
+      alerts: { type: Boolean, default: null },
+      costs: { type: Boolean, default: null },
+      auditLogs: { type: Boolean, default: null },
+      users: { type: Boolean, default: null },
+      settings: { type: Boolean, default: null },
+    },
   },
   {
     timestamps: true,
