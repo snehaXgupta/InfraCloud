@@ -913,16 +913,6 @@ export const SettingsPage = () => {
           </div>
 
           <AlertEmailCard canManage={user?.role === 'Platform Admin'} />
-
-          {/* Agent tokens: issued per server, never shared */}
-          <div className="rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] p-6 space-y-2 shadow-sm">
-            <h3 className="text-base font-bold text-slate-900 dark:text-white">Agent Tokens</h3>
-            <p className="text-xs text-slate-500 dark:text-[#888888]">
-              Every server has its own token; there is no shared secret. To connect a server, open it from Droplets and click{' '}
-              <strong className="text-slate-700 dark:text-slate-200">Agent → Generate token</strong>, then run the install command on that server.
-              Generating a new token immediately revokes the server's previous one.
-            </p>
-          </div>
         </div>
 
         {/* Right 1 Col: Session & Specs */}
