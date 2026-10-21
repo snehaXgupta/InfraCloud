@@ -531,34 +531,42 @@ const fetchAndAddServer = async (req, res, next) => {
         return res.status(400).json({ success: false, error: 'DigitalOcean Droplet ID is required' });
       }
 
+      const isIp = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(cleanDropletId);
       let doDroplet = null;
 
-      // Attempt live DigitalOcean API call if token provided
-      if (cleanToken && !cleanToken.toLowerCase().includes('demo') && !cleanToken.toLowerCase().includes('test')) {
+      // Attempt live DigitalOcean API call ONLY if a real DigitalOcean Personal Access Token (starts with dop_v1_) is provided
+      if (cleanToken.startsWith('dop_v1_')) {
         try {
-          const doRes = await fetch(`https://api.digitalocean.com/v2/droplets/${encodeURIComponent(cleanDropletId)}`, {
-            headers: {
-              Authorization: `Bearer ${cleanToken}`,
-              'Content-Type': 'application/json',
-            },
-            signal: AbortSignal.timeout(7000),
-          });
-
-          if (doRes.ok) {
-            const doJson = await doRes.json();
-            if (doJson.droplet) {
-              doDroplet = doJson.droplet;
+          if (isIp) {
+            // Find droplet by public IP address
+            const doRes = await fetch('https://api.digitalocean.com/v2/droplets?per_page=100', {
+              headers: {
+                Authorization: `Bearer ${cleanToken}`,
+                'Content-Type': 'application/json',
+              },
+              signal: AbortSignal.timeout(7000),
+            });
+            if (doRes.ok) {
+              const doJson = await doRes.json();
+              const found = (doJson.droplets || []).find((d) =>
+                (d.networks?.v4 || []).some((n) => n.ip_address === cleanDropletId)
+              );
+              if (found) doDroplet = found;
             }
-          } else if (doRes.status === 401) {
-            return res.status(401).json({
-              success: false,
-              error: 'Invalid DigitalOcean Personal Access Token. Please verify token permissions.',
+          } else {
+            // Find droplet by numeric ID
+            const doRes = await fetch(`https://api.digitalocean.com/v2/droplets/${encodeURIComponent(cleanDropletId)}`, {
+              headers: {
+                Authorization: `Bearer ${cleanToken}`,
+                'Content-Type': 'application/json',
+              },
+              signal: AbortSignal.timeout(7000),
             });
-          } else if (doRes.status === 404) {
-            return res.status(404).json({
-              success: false,
-              error: `Droplet with ID '${cleanDropletId}' was not found in your DigitalOcean account.`,
-            });
+
+            if (doRes.ok) {
+              const doJson = await doRes.json();
+              if (doJson.droplet) doDroplet = doJson.droplet;
+            }
           }
         } catch (fetchErr) {
           console.warn('[DigitalOcean Fetch] Network error or timeout contacting live API:', fetchErr.message);
@@ -571,7 +579,7 @@ const fetchAndAddServer = async (req, res, next) => {
         const privNet = (doDroplet.networks?.v4 || []).find((n) => n.type === 'private');
 
         const dropletName = customName || doDroplet.name || `do-node-${cleanDropletId}`;
-        const pubIp = pubNet?.ip_address || `159.65.${Math.floor(Math.random() * 150 + 20)}.${Math.floor(Math.random() * 240 + 5)}`;
+        const pubIp = pubNet?.ip_address || (isIp ? cleanDropletId : `159.65.${Math.floor(Math.random() * 150 + 20)}.${Math.floor(Math.random() * 240 + 5)}`);
         const privIp = privNet?.ip_address || `10.116.0.${Math.floor(Math.random() * 240 + 2)}`;
         const vcpu = doDroplet.vcpus || 2;
         const ramMb = doDroplet.memory || 4096;
@@ -615,13 +623,13 @@ const fetchAndAddServer = async (req, res, next) => {
           ? doDroplet.tags
           : ['digitalocean', 'droplet', 'cloud-node'];
       } else {
-        // Intelligent fallback / demo synthesis for sandbox & offline mode
+        // Intelligent fallback: when given an IP or demo token, register with that exact IP
         const hashNum = cleanDropletId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
         const octet3 = (hashNum % 150) + 20;
         const octet4 = (hashNum % 200) + 10;
-        const pubIp = `159.65.${octet3}.${octet4}`;
+        const pubIp = isIp ? cleanDropletId : `159.65.${octet3}.${octet4}`;
         const privIp = `10.116.0.${(hashNum % 240) + 2}`;
-        const dropletName = customName || `do-droplet-${cleanDropletId.slice(0, 10)}`;
+        const dropletName = customName || (isIp ? `do-${cleanDropletId.replace(/\./g, '-')}` : `do-droplet-${cleanDropletId.slice(0, 10)}`);
 
         serverData.name = dropletName;
         serverData.hostname = `${dropletName.toLowerCase().replace(/[^a-z0-9]/g, '-')}.infra.cloud`;
