@@ -82,6 +82,11 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { success, error: showError } = useToast();
 
+  // Hierarchy scoping (Admin Controlled in Main Section)
+  const [clientId, setClientId] = useState('');
+  const [projectId, setProjectId] = useState('');
+  const [environmentId, setEnvironmentId] = useState('');
+
   // Provider-specific credentials
   const [dropletId, setDropletId] = useState('');
   const [apiToken, setApiToken] = useState('');
@@ -96,11 +101,6 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
   const [customDomain, setCustomDomain] = useState('');
   const [serverRole, setServerRole] = useState('Application Node');
   const [tags, setTags] = useState('production, web');
-
-  // Hierarchy scoping
-  const [clientId, setClientId] = useState('');
-  const [projectId, setProjectId] = useState('');
-  const [environmentId, setEnvironmentId] = useState('');
 
   useEffect(() => {
     if (!isOpen) return;
@@ -170,6 +170,16 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
   const handleFetchAndAdd = async (e) => {
     e.preventDefault();
 
+    // Hierarchy validation
+    if (!clientId) {
+      showError('Please select a Client');
+      return;
+    }
+    if (!projectId) {
+      showError('Please select a Project');
+      return;
+    }
+
     // Provider-specific validation
     if (provider === 'DigitalOcean') {
       if (!dropletId.trim()) {
@@ -217,8 +227,8 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
         customDomain: customDomain.trim(),
         serverRole,
         tags,
-        clientId: clientId || undefined,
-        projectId: projectId || undefined,
+        clientId,
+        projectId,
         environmentId: environmentId || undefined,
       };
 
@@ -247,7 +257,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
       isOpen={isOpen}
       onClose={onClose}
       title="Add Droplet / Cloud Server"
-      subtitle="Select your provider, supply authentication credentials, and auto-discover system specifications & virtual hosts."
+      subtitle="Select provider and tenant hierarchy, supply authentication credentials, and auto-discover system specifications & virtual hosts."
       maxWidth="max-w-2xl"
     >
       <form onSubmit={handleFetchAndAdd} className="space-y-4">
@@ -276,7 +286,80 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
           </select>
         </div>
 
-        {/* 2. Provider-Specific Dynamic Input Fields */}
+        {/* 2. Target Hierarchy Scoping (Admin Controlled in Main Section) */}
+        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#070707] border border-slate-200 dark:border-[#1f1f1f] space-y-2.5">
+          <div className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200 uppercase font-mono tracking-wider">
+            <span className="flex items-center gap-1.5">
+              <Layers className="w-3.5 h-3.5 text-indigo-500" />
+              2. Target Infrastructure Hierarchy *
+            </span>
+            <span className="text-[10px] text-slate-500 dark:text-[#888888] font-normal normal-case">
+              Select Client, Project & Environment
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Client *
+              </label>
+              <select
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+                className="w-full bg-white dark:bg-[#111111] border border-slate-300 dark:border-[#2a2a2a] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors shadow-xs"
+                required
+              >
+                {clients.map((c) => (
+                  <option key={c._id} value={c._id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Project *
+              </label>
+              <select
+                value={projectId}
+                onChange={(e) => setProjectId(e.target.value)}
+                className="w-full bg-white dark:bg-[#111111] border border-slate-300 dark:border-[#2a2a2a] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors shadow-xs"
+                required
+              >
+                {filteredProjects.map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Environment *
+              </label>
+              <select
+                value={environmentId}
+                onChange={(e) => setEnvironmentId(e.target.value)}
+                className="w-full bg-white dark:bg-[#111111] border border-slate-300 dark:border-[#2a2a2a] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors shadow-xs"
+                required
+              >
+                {filteredEnvs.length > 0 ? (
+                  filteredEnvs.map((env) => (
+                    <option key={env._id} value={env._id}>
+                      {env.name} ({env.type})
+                    </option>
+                  ))
+                ) : (
+                  <option value="">Auto-Assign Production</option>
+                )}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Provider-Specific Dynamic Input Fields */}
         <div className="p-4 rounded-xl bg-white dark:bg-[#0b0b0b] border border-slate-200 dark:border-[#1f1f1f] space-y-3.5 shadow-xs">
           {provider === 'DigitalOcean' && (
             <>
@@ -284,7 +367,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
                   <span className="text-xs font-bold text-slate-900 dark:text-white">
-                    DigitalOcean Droplet Credentials
+                    3. DigitalOcean Droplet Credentials *
                   </span>
                 </div>
 
@@ -351,7 +434,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
               <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-[#1a1a1a]">
                 <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 <span className="text-xs font-bold text-slate-900 dark:text-white">
-                  AWS EC2 Instance Identification
+                  3. AWS EC2 Instance Identification *
                 </span>
               </div>
 
@@ -408,7 +491,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
               <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-[#1a1a1a]">
                 <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                 <span className="text-xs font-bold text-slate-900 dark:text-white">
-                  Hetzner Cloud Server Details
+                  3. Hetzner Cloud Server Details *
                 </span>
               </div>
 
@@ -449,7 +532,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
               <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-[#1a1a1a]">
                 <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
                 <span className="text-xs font-bold text-slate-900 dark:text-white">
-                  Vultr Instance Parameters
+                  3. Vultr Instance Parameters *
                 </span>
               </div>
 
@@ -490,7 +573,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
               <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-[#1a1a1a]">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 <span className="text-xs font-bold text-slate-900 dark:text-white">
-                  Baremetal / Custom VPS Connection
+                  3. Baremetal / Custom VPS Connection *
                 </span>
               </div>
 
@@ -528,12 +611,12 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
           <div className="p-3 rounded-lg bg-blue-50/50 dark:bg-[#07131e] border border-blue-200/60 dark:border-blue-900/40 text-[11px] text-blue-800 dark:text-blue-300 flex items-start gap-2">
             <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
             <span>
-              <strong>Auto-Discovery Enabled:</strong> Public and private VPC IPs, vCPU/RAM specs, active web engine (Nginx/Apache), SSL certificates, and hosted virtual hosts will be extracted and saved automatically.
+              <strong>Auto-Discovery Enabled:</strong> Public & Private VPC IPs, compute specs, active web engine (Nginx/Apache), and virtual hosts will be extracted and verified automatically.
             </span>
           </div>
         </div>
 
-        {/* 3. Optional Settings & Scoping Accordion */}
+        {/* 4. Optional Parameters (Custom Name, Domain, Role, Tags) */}
         <div className="rounded-xl border border-slate-200 dark:border-[#1f1f1f] overflow-hidden">
           <button
             type="button"
@@ -541,8 +624,8 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
             className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#080808] hover:bg-slate-100 dark:hover:bg-[#111111] text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between transition-colors cursor-pointer"
           >
             <span className="flex items-center gap-2">
-              <Layers className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-              Optional Settings & Scoping (Client, Project, Domain, Role)
+              <Sparkles className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+              Optional Parameters (Custom Name, Domain, Role, Tags)
             </span>
             {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
           </button>
@@ -574,54 +657,6 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
                     onChange={(e) => setCustomDomain(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
-                </div>
-              </div>
-
-              {/* Hierarchy Scoping Dropdowns */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-[#888888] mb-1">Client</label>
-                  <select
-                    value={clientId}
-                    onChange={(e) => setClientId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
-                  >
-                    {clients.map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-[#888888] mb-1">Project</label>
-                  <select
-                    value={projectId}
-                    onChange={(e) => setProjectId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
-                  >
-                    {filteredProjects.map((p) => (
-                      <option key={p._id} value={p._id}>
-                        {p.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-[#888888] mb-1">Environment</label>
-                  <select
-                    value={environmentId}
-                    onChange={(e) => setEnvironmentId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
-                  >
-                    {filteredEnvs.map((env) => (
-                      <option key={env._id} value={env._id}>
-                        {env.name} ({env.type})
-                      </option>
-                    ))}
-                  </select>
                 </div>
               </div>
 
