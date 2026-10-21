@@ -68,6 +68,30 @@ const formatAge = (date) => {
   return `${Math.round(seconds / 3600)}h ago`;
 };
 
+const formatUptime = (days, bootTime) => {
+  if (bootTime) {
+    const diffMs = Date.now() - new Date(bootTime).getTime();
+    if (diffMs > 0) {
+      const totalMins = Math.floor(diffMs / 60000);
+      const totalHours = Math.floor(totalMins / 60);
+      const d = Math.floor(totalHours / 24);
+      const h = totalHours % 24;
+      const m = totalMins % 60;
+      if (d > 0) return `${d}d ${h}h ${m}m`;
+      if (h > 0) return `${h}h ${m}m`;
+      return `${Math.max(1, m)} min${m === 1 ? '' : 's'}`;
+    }
+  }
+  if (days !== undefined && days !== null) {
+    if (days < 1) {
+      const hours = Math.round(days * 24 * 10) / 10;
+      return `${hours} hrs`;
+    }
+    return `${days} days`;
+  }
+  return '—';
+};
+
 // Shows where chart data comes from, so simulated or stale data is never mistaken for live telemetry.
 const MetricSourceBadge = ({ metrics }) => {
   if (!metrics?.source) return null;
@@ -484,8 +508,8 @@ const ServerDetailContent = () => {
           </div>
         </div>
 
-        {/* Metadata Grid (Configuration, Slug, Monthly cost, Last refresh) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">
+        {/* Metadata Grid (Configuration, Slug, System Uptime, Monthly cost, Last refresh) */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">
           <div>
             <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 dark:text-[#888888] block mb-1">Configuration</span>
             <span className="text-xs font-semibold text-slate-900 dark:text-white font-mono">
@@ -497,6 +521,17 @@ const ServerDetailContent = () => {
             <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 dark:text-[#888888] block mb-1">Instance Type</span>
             <span className="text-xs font-mono text-slate-700 dark:text-slate-300">
               {server.instanceType || 's-4vcpu-8gb'}
+            </span>
+          </div>
+
+          <div>
+            <span className="text-[10px] uppercase font-mono tracking-wider text-slate-500 dark:text-[#888888] block mb-1">System Uptime</span>
+            <span
+              className="text-xs font-mono font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5"
+              title={server.agent?.bootTime ? `Boot time: ${new Date(server.agent.bootTime).toLocaleString()}` : 'System Uptime'}
+            >
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span>{formatUptime(server.metricsSummary?.uptimeDays, server.agent?.bootTime)}</span>
             </span>
           </div>
 
