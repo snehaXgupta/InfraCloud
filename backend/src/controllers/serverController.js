@@ -669,6 +669,46 @@ const fetchAndAddServer = async (req, res, next) => {
       serverData.cost = { monthlyRate: 98, currency: 'USD', updatedAt: new Date() };
       serverData.providerRef = { instanceId: cleanInstId, linkedAt: new Date() };
       serverData.tags = ['aws', 'ec2', 'production'];
+    } else if (provider === 'Azure') {
+      const cleanVmId = String(instanceId || dropletId || 'vm-eastus-01').trim();
+      const region = reqRegion || 'eastus';
+      const isIp = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(cleanVmId);
+      const pubIp = isIp ? cleanVmId : `20.190.${Math.floor(Math.random() * 150 + 10)}.${Math.floor(Math.random() * 240 + 2)}`;
+      const privIp = `10.0.${Math.floor(Math.random() * 30 + 1)}.${Math.floor(Math.random() * 240 + 2)}`;
+      const name = customName || (cleanVmId.startsWith('vm-') ? cleanVmId : `azure-vm-${cleanVmId.slice(-8)}`);
+
+      serverData.name = name;
+      serverData.hostname = `${name.toLowerCase()}.cloudapp.azure.com`;
+      serverData.region = region;
+      serverData.instanceType = 'Standard_D2s_v5';
+      serverData.status = 'healthy';
+      serverData.os = 'Ubuntu 22.04 LTS (Azure Linux Kernel)';
+      serverData.compute = { vcpu: 2, ramGb: 8, arch: 'x86_64' };
+      serverData.storage = { diskTotalGb: 64, diskUsedGb: 20, mountPoint: '/dev/sda1 on /' };
+      serverData.network = { publicIp: pubIp, privateIp: privIp, incomingMbps: 48.0, outgoingMbps: 75.0 };
+      serverData.cost = { monthlyRate: 70, currency: 'USD', updatedAt: new Date() };
+      serverData.providerRef = { instanceId: cleanVmId, linkedAt: new Date() };
+      serverData.tags = ['azure', 'vm', 'cloud'];
+    } else if (provider === 'GCP') {
+      const cleanInstId = String(instanceId || dropletId || 'gcp-compute-01').trim();
+      const region = reqRegion || 'us-central1-a';
+      const isIp = /^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/.test(cleanInstId);
+      const pubIp = isIp ? cleanInstId : `34.68.${Math.floor(Math.random() * 150 + 10)}.${Math.floor(Math.random() * 240 + 2)}`;
+      const privIp = `10.128.${Math.floor(Math.random() * 30 + 1)}.${Math.floor(Math.random() * 240 + 2)}`;
+      const name = customName || (cleanInstId.startsWith('gcp-') ? cleanInstId : `gcp-inst-${cleanInstId.slice(-8)}`);
+
+      serverData.name = name;
+      serverData.hostname = `${name.toLowerCase()}.c.compute.internal`;
+      serverData.region = region;
+      serverData.instanceType = 'e2-standard-2';
+      serverData.status = 'healthy';
+      serverData.os = 'Debian GNU/Linux 12 (bookworm)';
+      serverData.compute = { vcpu: 2, ramGb: 8, arch: 'x86_64' };
+      serverData.storage = { diskTotalGb: 50, diskUsedGb: 18, mountPoint: '/dev/sda1 on /' };
+      serverData.network = { publicIp: pubIp, privateIp: privIp, incomingMbps: 42.0, outgoingMbps: 68.0 };
+      serverData.cost = { monthlyRate: 48, currency: 'USD', updatedAt: new Date() };
+      serverData.providerRef = { instanceId: cleanInstId, linkedAt: new Date() };
+      serverData.tags = ['gcp', 'google-cloud', 'compute'];
     } else if (provider === 'Hetzner') {
       const cleanServerId = String(serverId || dropletId || '3910245').trim();
       const pubIp = `49.12.${Math.floor(Math.random() * 150 + 10)}.${Math.floor(Math.random() * 240 + 2)}`;

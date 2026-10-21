@@ -17,6 +17,8 @@ import { useToast } from '../../context/ToastContext';
 const PROVIDER_OPTIONS = [
   { id: 'DigitalOcean', name: 'DigitalOcean Droplets' },
   { id: 'AWS', name: 'AWS EC2' },
+  { id: 'Azure', name: 'Microsoft Azure' },
+  { id: 'GCP', name: 'Google Cloud (GCP)' },
   { id: 'Hetzner', name: 'Hetzner Cloud' },
   { id: 'Vultr', name: 'Vultr' },
   { id: 'On-Premise', name: 'Custom / On-Premise VPS' },
@@ -30,6 +32,16 @@ const AWS_REGIONS = [
   { id: 'eu-central-1', name: 'eu-central-1 (Frankfurt)' },
   { id: 'ap-south-1', name: 'ap-south-1 (Mumbai)' },
   { id: 'ap-southeast-1', name: 'ap-southeast-1 (Singapore)' },
+];
+
+const AZURE_REGIONS = [
+  { id: 'eastus', name: 'eastus (East US)' },
+  { id: 'westus', name: 'westus (West US)' },
+  { id: 'westeurope', name: 'westeurope (West Europe)' },
+  { id: 'northeurope', name: 'northeurope (North Europe)' },
+  { id: 'centralindia', name: 'centralindia (Central India)' },
+  { id: 'southeastasia', name: 'southeastasia (Southeast Asia)' },
+  { id: 'uksouth', name: 'uksouth (UK South)' },
 ];
 
 export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
@@ -52,6 +64,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
   const [apiToken, setApiToken] = useState('');
   const [instanceId, setInstanceId] = useState('');
   const [awsRegion, setAwsRegion] = useState('us-east-1');
+  const [azureRegion, setAzureRegion] = useState('eastus');
   const [serverId, setServerId] = useState('');
   const [hostIp, setHostIp] = useState('');
   const [sshPort, setSshPort] = useState('22');
@@ -131,10 +144,14 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
     if (!projectId) return showError('Please select a Project');
 
     if (provider === 'DigitalOcean') {
-      if (!dropletId.trim()) return showError('Droplet ID is required');
-      if (!apiToken.trim()) return showError('DigitalOcean API Token is required');
+      if (!dropletId.trim()) return showError('Droplet ID or IP is required');
+      if (!apiToken.trim()) return showError('DigitalOcean API Token or Root Password is required');
     } else if (provider === 'AWS') {
       if (!instanceId.trim()) return showError('AWS Instance ID is required');
+    } else if (provider === 'Azure') {
+      if (!instanceId.trim()) return showError('Azure VM Name or Resource ID is required');
+    } else if (provider === 'GCP') {
+      if (!instanceId.trim()) return showError('GCP Instance Name is required');
     } else if (provider === 'Hetzner') {
       if (!serverId.trim() || !apiToken.trim()) return showError('Server ID and API Token are required');
     } else if (provider === 'Vultr') {
@@ -151,7 +168,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
         apiToken: apiToken.trim(),
         instanceId: instanceId.trim(),
         serverId: serverId.trim(),
-        region: provider === 'AWS' ? awsRegion : undefined,
+        region: provider === 'AWS' ? awsRegion : provider === 'Azure' ? azureRegion : undefined,
         hostIp: hostIp.trim(),
         sshPort: Number(sshPort) || 22,
         customName: customName.trim(),
@@ -286,12 +303,12 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
                   <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
-                    Droplet ID *
+                    Droplet ID or IP *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. 458291044"
+                    placeholder="e.g. 458291044 or IP"
                     value={dropletId}
                     onChange={(e) => setDropletId(e.target.value)}
                     className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
@@ -301,7 +318,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
                 <div>
                   <div className="flex items-center justify-between mb-1">
                     <label className="text-[11px] text-slate-600 dark:text-slate-400">
-                      Personal Access Token *
+                      API Token or Root Password *
                     </label>
                     <button
                       type="button"
@@ -314,7 +331,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
                   <input
                     type={showToken ? 'text' : 'password'}
                     required
-                    placeholder="dop_v1_..."
+                    placeholder="dop_v1_... or password"
                     value={apiToken}
                     onChange={(e) => setApiToken(e.target.value)}
                     className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
@@ -372,6 +389,97 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
                     value={apiToken}
                     onChange={(e) => setApiToken(e.target.value)}
                     className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {provider === 'Azure' && (
+            <>
+              <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Microsoft Azure Virtual Machine
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    VM Name or Resource ID *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. vm-prod-01 or 20.190.x.x"
+                    value={instanceId}
+                    onChange={(e) => setInstanceId(e.target.value)}
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    Azure Location *
+                  </label>
+                  <select
+                    value={azureRegion}
+                    onChange={(e) => setAzureRegion(e.target.value)}
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
+                  >
+                    {AZURE_REGIONS.map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    Subscription / Client Secret (Optional)
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="Azure Client Secret or Token"
+                    value={apiToken}
+                    onChange={(e) => setApiToken(e.target.value)}
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {provider === 'GCP' && (
+            <>
+              <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Google Cloud Compute Instance
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    Instance Name or ID *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. gcp-inst-01 or IP"
+                    value={instanceId}
+                    onChange={(e) => setInstanceId(e.target.value)}
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    Zone
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="us-central1-a"
+                    value={awsRegion}
+                    onChange={(e) => setAwsRegion(e.target.value)}
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
                   />
                 </div>
               </div>
@@ -585,7 +693,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
             ) : (
               <>
                 <Plus className="w-3 h-3" />
-                <span>Add & Fetch {provider === 'DigitalOcean' ? 'Droplet' : 'Server'}</span>
+                <span>Add & Fetch Server</span>
               </>
             )}
           </Button>
