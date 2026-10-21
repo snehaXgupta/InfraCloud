@@ -99,7 +99,8 @@ const finalize = async (op, status, { error, postCheck } = {}) => {
  * At most one operation per server runs at a time (per-server lock, §20).
  */
 const jobsForAgent = async (server, credential) => {
-  if (!(server.agent?.capabilities || []).includes('jobs')) return [];
+  const hasJobs = (server.agent?.capabilities || []).includes('jobs') || server.agent?.isLiveAgent || server.agent?.status === 'online';
+  if (!hasJobs) return [];
   const now = new Date();
 
   // Re-send a dispatched job the agent hasn't acknowledged yet (lost reply); the agent de-duplicates

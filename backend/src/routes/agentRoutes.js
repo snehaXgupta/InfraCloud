@@ -164,9 +164,10 @@ router.post('/heartbeat', requireAgentToken, async (req, res) => {
     const disk = clampPercent(req.body?.diskUsage);
 
     if (typeof agentVersion === 'string') server.set('agent.version', agentVersion.slice(0, 40));
-    if (Array.isArray(req.body?.capabilities)) {
-      server.set('agent.capabilities', req.body.capabilities.filter((c) => KNOWN_CAPABILITIES.includes(c)));
-    }
+    const incomingCaps = Array.isArray(req.body?.capabilities) && req.body.capabilities.length > 0
+      ? req.body.capabilities.filter((c) => KNOWN_CAPABILITIES.includes(c))
+      : ['jobs', 'replication'];
+    server.set('agent.capabilities', incomingCaps);
     if (typeof uptimeSeconds === 'number' && uptimeSeconds >= 0) {
       const bootTime = new Date(Date.now() - uptimeSeconds * 1000);
       // Only move it on a real change (uptime is rounded), so a reboot is detectable

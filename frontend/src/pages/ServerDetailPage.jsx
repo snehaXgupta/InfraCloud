@@ -1455,7 +1455,10 @@ const ServerDetailContent = () => {
         isOpen={isRestartModalOpen}
         server={server}
         onClose={() => setIsRestartModalOpen(false)}
-        onRestartCompleted={() => fetchServerDetails(true)}
+        onRestartCompleted={() => {
+          setActiveTab('activity');
+          fetchServerDetails(true);
+        }}
       />
 
       {/* Operation Dispatch Modal */}
