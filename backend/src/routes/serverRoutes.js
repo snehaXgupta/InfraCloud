@@ -9,6 +9,7 @@ const {
   addWebsiteToServer,
   deleteWebsiteFromServer,
   updateWebServerInfo,
+  fetchAndAddServer,
 } = require('../controllers/serverController');
 const { getResizeOptions, createResizeRequest } = require('../controllers/resizeController');
 const { getServerMetrics } = require('../controllers/metricsController');
@@ -24,6 +25,8 @@ const bodyClient = requireScope('client', (req) => req.body.clientId);
 router.route('/')
   .get(getServers)
   .post(authorize(...SERVER_MANAGERS), bodyClient, createServer);
+
+router.post('/fetch-and-add', authorize(...SERVER_MANAGERS), fetchAndAddServer);
 
 router.use('/:id', requireScope('server'));
 

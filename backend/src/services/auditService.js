@@ -13,10 +13,10 @@ const logAudit = async ({
   try {
     const currentUser = user || req?.user;
     const ipAddress =
-      req?.headers['x-forwarded-for'] ||
+      req?.headers?.['x-forwarded-for'] ||
       req?.socket?.remoteAddress ||
       '127.0.0.1';
-    const userAgent = req?.headers['user-agent'] || '';
+    const userAgent = req?.headers?.['user-agent'] || '';
 
     await AuditLog.create({
       userId: currentUser?._id,
