@@ -17,6 +17,7 @@ import { AddServerModal } from '../components/servers/AddServerModal';
 import { EditServerModal } from '../components/servers/EditServerModal';
 import { DeleteServerModal } from '../components/servers/DeleteServerModal';
 import { OperationModal } from '../components/servers/OperationModal';
+import { RestartServerModal } from '../components/servers/RestartServerModal';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -31,6 +32,7 @@ export const DashboardPage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAddServerOpen, setIsAddServerOpen] = useState(false);
   const [selectedServerForOp, setSelectedServerForOp] = useState(null);
+  const [restartTargetServer, setRestartTargetServer] = useState(null);
   const [editTargetServer, setEditTargetServer] = useState(null);
   const [deleteTargetServer, setDeleteTargetServer] = useState(null);
   const { success, error: showError } = useToast();
@@ -267,7 +269,7 @@ export const DashboardPage = () => {
                     key={s._id}
                     server={s}
                     onOpen={() => navigate(`/servers/${s._id}`)}
-                    onRestart={(srv) => setSelectedServerForOp(srv)}
+                    onRestart={(srv) => setRestartTargetServer(srv)}
                     onEdit={(srv) => setEditTargetServer(srv)}
                     onDelete={(srv) => setDeleteTargetServer(srv)}
                   />
@@ -334,6 +336,13 @@ export const DashboardPage = () => {
         server={deleteTargetServer}
         onClose={() => setDeleteTargetServer(null)}
         onServerDeleted={() => fetchDashboardData()}
+      />
+
+      <RestartServerModal
+        isOpen={!!restartTargetServer}
+        server={restartTargetServer}
+        onClose={() => setRestartTargetServer(null)}
+        onRestartCompleted={() => fetchDashboardData(true)}
       />
 
       <OperationModal

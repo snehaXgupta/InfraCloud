@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ExternalLink,
-  RefreshCw,
+  RotateCw,
   Edit2,
   Trash2,
   Server as ServerIcon,
@@ -12,6 +12,29 @@ import {
   Layers,
   Sliders,
 } from 'lucide-react';
+
+export const isServerActive = (server) => {
+  if (!server) return false;
+  const status = (server.status || '').toLowerCase();
+  if (['offline', 'inactive', 'stopped'].includes(status)) {
+    return false;
+  }
+  if (server.agent?.status === 'unreachable' && status === 'offline') {
+    return false;
+  }
+  if (
+    ['healthy', 'active', 'warning'].includes(status) ||
+    server.agent?.isLiveAgent ||
+    server.agent?.status === 'online'
+  ) {
+    return true;
+  }
+  if (server.agent?.lastHeartbeat) {
+    const diff = Date.now() - new Date(server.agent.lastHeartbeat).getTime();
+    if (diff < 180000) return true;
+  }
+  return status !== 'offline' && status !== 'inactive';
+};
 
 export const DropletCard = ({
   server,
@@ -53,62 +76,58 @@ export const DropletCard = ({
     ? new Intl.NumberFormat([], { style: 'currency', currency: cost.currency || 'USD' }).format(cost.monthlyRate)
     : '—';
 
-  const getStatusBadge = (st) => {
-    switch (st) {
-      case 'healthy':
-      case 'active':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono border border-emerald-500/20 bg-emerald-500/10 text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)]" />
-            Ready
-          </span>
-        );
-      case 'warning':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono border border-amber-500/20 bg-amber-500/10 text-amber-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shadow-[0_0_6px_rgba(245,158,11,0.8)]" />
-            Warning
-          </span>
-        );
-      case 'critical':
-      case 'offline':
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono border border-rose-500/20 bg-rose-500/10 text-rose-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse shadow-[0_0_6px_rgba(244,63,94,0.8)]" />
-            Error
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[11px] font-mono border border-[#333] bg-[#111] text-[#888]">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#666]" />
-            {st}
-          </span>
-        );
-    }
-  };
-
-  const status = server.status || 'healthy';
+  const active = isServerActive(server);
 
   return (
     <div
       onClick={() => (onOpen ? onOpen(server) : navigate(`/servers/${server._id}`))}
-      className="group rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] hover:border-slate-400 dark:hover:border-[#333] p-5 flex flex-col justify-between transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md"
+      className="group relative overflow-hidden rounded-xl bg-white dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1f1f1f] hover:border-slate-400 dark:hover:border-[#333] p-5 flex flex-col justify-between transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md"
     >
+      {/* Status Mark Over Droplet: Green if active, Grey if inactive */}
+      <div
+        className={`absolute top-0 left-0 right-0 h-1 transition-colors ${
+          active ? 'bg-emerald-500 shadow-[0_1px_6px_rgba(16,185,129,0.5)]' : 'bg-slate-300 dark:bg-slate-700'
+        }`}
+      />
+
       <div>
         {/* Top Header: Name, ID and Status Badge */}
         <div className="flex items-start justify-between gap-3">
-          <div>
+          <div className="min-w-0 flex-1">
             <h3 className="text-base font-semibold text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors flex items-center gap-2">
-              <span>{server.name}</span>
-              <ExternalLink className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400" />
+              {/* Active/Inactive dot symbol */}
+              <span
+                className={`w-2 h-2 rounded-full shrink-0 ${
+                  active
+                    ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)] ring-2 ring-emerald-500/20'
+                    : 'bg-slate-400 dark:bg-slate-600 ring-2 ring-slate-400/20'
+                }`}
+                title={active ? 'Server is Running (Active)' : 'Server is Inactive (Offline)'}
+              />
+              <span className="truncate">{server.name}</span>
+              <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400" />
             </h3>
             <p className="text-xs font-mono text-slate-500 dark:text-[#666] mt-0.5">
               ID {displayId}
             </p>
           </div>
 
-          <div>{getStatusBadge(status)}</div>
+          <div className="shrink-0">
+            {active ? (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)]"></span>
+                </span>
+                <span>Active</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-[#181818] text-slate-500 dark:text-slate-400">
+                <span className="inline-flex rounded-full h-1.5 w-1.5 bg-slate-400 dark:bg-slate-500"></span>
+                <span>Inactive</span>
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Specs List Details */}
@@ -151,14 +170,14 @@ export const DropletCard = ({
               <ExternalLink className="w-3 h-3" />
             </button>
 
-            {/* Restart / Telemetry Sync */}
+            {/* Restart Server Host Button */}
             <button
               onClick={() => onRestart && onRestart(server)}
-              title="Restart / Run Operation"
+              title="Restart Server (Reboot)"
               disabled={isOperating}
-              className="p-1.5 rounded-md bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#222] hover:bg-slate-200 dark:hover:bg-[#141414] hover:border-slate-300 dark:hover:border-[#444] text-slate-600 dark:text-[#888] hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+              className="p-1.5 rounded-md bg-slate-100 dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#222] hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-300 dark:hover:border-rose-900/50 text-slate-600 dark:text-[#888] hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isOperating ? 'animate-spin text-slate-700 dark:text-white' : ''}`} />
+              <RotateCw className={`w-3.5 h-3.5 ${isOperating ? 'animate-spin text-rose-500' : ''}`} />
             </button>
 
             {/* Resize & Capacity */}

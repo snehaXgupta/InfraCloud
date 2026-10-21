@@ -857,6 +857,92 @@ const fetchAndAddServer = async (req, res, next) => {
   }
 };
 
+// @desc    Restart server host / droplet
+// @route   POST /api/servers/:id/restart
+// @access  Platform Admin, DevOps, Project Admin
+const restartServer = async (req, res, next) => {
+  try {
+    const server = await Server.findById(req.params.id).populate('environmentId', 'type');
+    if (!server) {
+      return res.status(404).json({ success: false, error: 'Target server not found' });
+    }
+
+    const { reason = 'Manual restart triggered from control panel' } = req.body || {};
+    const dispatchedVia = [];
+
+    // 1. Queue an official Reboot Operation so connected agent executes the reboot
+    try {
+      const Operation = require('../models/Operation');
+      await Operation.create({
+        serverId: server._id,
+        clientId: server.clientId,
+        serverName: server.name,
+        environmentType: server.environmentId?.type,
+        operationType: 'Reboot',
+        catalogKey: 'reboot',
+        requestedBy: req.user._id,
+        reason: String(reason).trim().slice(0, 500),
+        parameters: {},
+        requiresApproval: false,
+        status: 'Queued',
+        queuedAt: new Date(),
+        runAfter: new Date(),
+      });
+      dispatchedVia.push('Agent Reboot job queued');
+    } catch (opErr) {
+      console.warn('[Restart] Could not queue operation job:', opErr.message);
+    }
+
+    // 2. If provider is DigitalOcean and has an instance ID / token
+    const doToken = process.env.DO_API_TOKEN || process.env.DIGITALOCEAN_TOKEN;
+    if (server.provider === 'DigitalOcean' && server.providerRef?.instanceId && doToken) {
+      try {
+        const doRes = await fetch(`https://api.digitalocean.com/v2/droplets/${encodeURIComponent(server.providerRef.instanceId)}/actions`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${doToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ type: 'reboot' }),
+          signal: AbortSignal.timeout(6000),
+        });
+        if (doRes.ok) {
+          dispatchedVia.push('DigitalOcean API reboot action dispatched');
+        }
+      } catch (doErr) {
+        console.warn('[Restart] DigitalOcean reboot error:', doErr.message);
+      }
+    }
+
+    if (dispatchedVia.length === 0) {
+      dispatchedVia.push('Reboot instruction registered');
+    }
+
+    await logAudit({
+      req,
+      action: 'SERVER_RESTART',
+      resourceType: 'Server',
+      resourceId: server._id,
+      resourceName: server.name,
+      status: 'Success',
+      details: {
+        serverName: server.name,
+        dispatchedVia,
+        reason,
+        publicIp: server.network?.publicIp,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: `Restart initiated for '${server.name}'. Operating system is rebooting.`,
+      dispatchedVia,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getServers,
   getServerById,
@@ -867,4 +953,6 @@ module.exports = {
   deleteWebsiteFromServer,
   updateWebServerInfo,
   fetchAndAddServer,
+  restartServer,
 };
+

@@ -503,7 +503,7 @@ const JOBS = {
   },
 
   reboot: async (job, out) => {
-    const r = await bash('shutdown -r +1 "Reboot requested from the control plane"', { timeoutSec: 30, onOutput: out });
+    const r = await bash('shutdown -r +1 "Reboot requested from the control plane" || reboot', { timeoutSec: 30, onOutput: out });
     return { exitCode: r.code, postCheck: { ok: r.code === 0, detail: r.code === 0 ? 'Reboot scheduled in 1 minute' : 'Could not schedule the reboot' } };
   },
 

@@ -4,6 +4,7 @@ import { copyToClipboardSafe } from '../services/clipboard';
 import {
   ArrowLeft,
   RefreshCw,
+  RotateCw,
   Sliders,
   TerminalSquare,
   Terminal,
@@ -49,6 +50,8 @@ import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import { ErrorBoundary } from '../components/common/ErrorBoundary';
 import { OperationModal } from '../components/servers/OperationModal';
 import { ResizeServerModal } from '../components/servers/ResizeServerModal';
+import { RestartServerModal } from '../components/servers/RestartServerModal';
+import { isServerActive } from '../components/servers/DropletCard';
 import { WebTerminalConsole } from '../components/servers/WebTerminalConsole';
 import { WebTerminalModal } from '../components/servers/WebTerminalModal';
 import { InstallAgentModal } from '../components/servers/InstallAgentModal';
@@ -115,6 +118,7 @@ const ServerDetailContent = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isOpModalOpen, setIsOpModalOpen] = useState(false);
   const [isResizeModalOpen, setIsResizeModalOpen] = useState(false);
+  const [isRestartModalOpen, setIsRestartModalOpen] = useState(false);
   const [isTerminalModalOpen, setIsTerminalModalOpen] = useState(false);
   const [isAgentModalOpen, setIsAgentModalOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -352,16 +356,20 @@ const ServerDetailContent = () => {
           <div className="flex items-center gap-2.5 min-w-0">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-slate-900 dark:text-white truncate">{server.name}</h1>
             <span
-              className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider border shrink-0 ${
-                {
-                  critical: 'bg-[#2a0f12] text-red-400 border-red-700/60',
-                  warning: 'bg-[#2a1d0b] text-amber-400 border-amber-700/60',
-                  offline: 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800',
-                  maintenance: 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-800 dark:text-slate-200 border-slate-300 dark:border-[#333333]',
-                }[server.status] || 'bg-[#0f291e] text-[#22c55e] border-[#166534]'
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider border shrink-0 ${
+                isServerActive(server)
+                  ? 'bg-[#0f291e] text-[#22c55e] border-[#166534]'
+                  : 'bg-slate-100 dark:bg-[#1a1a1a] text-slate-500 dark:text-slate-400 border-slate-300 dark:border-slate-800'
               }`}
             >
-              {server.status || 'healthy'}
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isServerActive(server)
+                    ? 'bg-emerald-500 shadow-[0_0_6px_rgba(34,197,94,0.9)] animate-pulse'
+                    : 'bg-slate-400 dark:bg-slate-500'
+                }`}
+              />
+              {isServerActive(server) ? (server.status === 'warning' ? 'WARNING' : 'HEALTHY') : 'INACTIVE'}
             </span>
           </div>
 
@@ -375,6 +383,16 @@ const ServerDetailContent = () => {
             >
               <Sliders className="w-3.5 h-3.5 text-slate-700 dark:text-white" />
               <span>Resize</span>
+            </button>
+
+            {/* Restart Server Button */}
+            <button
+              onClick={() => setIsRestartModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#222222] hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-300 dark:hover:border-rose-900/50 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
+              title="Restart Server (Reboot Host)"
+            >
+              <RotateCw className="w-3.5 h-3.5 text-slate-700 dark:text-white" />
+              <span>Restart</span>
             </button>
 
             {/* Live Agent / Install Agent Button */}
@@ -1430,6 +1448,14 @@ const ServerDetailContent = () => {
         server={server}
         onClose={() => setIsResizeModalOpen(false)}
         onResizeCompleted={() => fetchServerDetails()}
+      />
+
+      {/* Restart Server Modal */}
+      <RestartServerModal
+        isOpen={isRestartModalOpen}
+        server={server}
+        onClose={() => setIsRestartModalOpen(false)}
+        onRestartCompleted={() => fetchServerDetails(true)}
       />
 
       {/* Operation Dispatch Modal */}

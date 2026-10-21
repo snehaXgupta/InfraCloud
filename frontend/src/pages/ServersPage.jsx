@@ -9,12 +9,13 @@ import {
   RefreshCw,
   ExternalLink,
 } from 'lucide-react';
-import { DropletCard } from '../components/servers/DropletCard';
+import { DropletCard, isServerActive } from '../components/servers/DropletCard';
 import { AddServerModal } from '../components/servers/AddServerModal';
 import { EditServerModal } from '../components/servers/EditServerModal';
 import { DeleteServerModal } from '../components/servers/DeleteServerModal';
 import { ResizeServerModal } from '../components/servers/ResizeServerModal';
 import { OperationModal } from '../components/servers/OperationModal';
+import { RestartServerModal } from '../components/servers/RestartServerModal';
 import { LoadingSpinner, EmptyState } from '../components/common/LoadingSpinner';
 import api from '../services/api';
 import { useToast } from '../context/ToastContext';
@@ -33,6 +34,7 @@ export const ServersPage = () => {
   const [deleteTargetServer, setDeleteTargetServer] = useState(null);
   const [resizeTargetServer, setResizeTargetServer] = useState(null);
   const [opTargetServer, setOpTargetServer] = useState(null);
+  const [restartTargetServer, setRestartTargetServer] = useState(null);
   const { success, error: showError } = useToast();
 
   const fetchServers = async (showToast = false) => {
@@ -184,7 +186,7 @@ export const ServersPage = () => {
               key={s._id}
               server={s}
               onOpen={() => navigate(`/servers/${s._id}`)}
-              onRestart={(srv) => setOpTargetServer(srv)}
+              onRestart={(srv) => setRestartTargetServer(srv)}
               onResize={(srv) => setResizeTargetServer(srv)}
               onEdit={(srv) => setEditTargetServer(srv)}
               onDelete={(srv) => setDeleteTargetServer(srv)}
@@ -210,57 +212,83 @@ export const ServersPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-[#1f1f1f]">
-                {filteredServers.map((s) => (
-                  <tr
-                    key={s._id}
-                    className="hover:bg-slate-50 dark:hover:bg-[#111111] transition-colors cursor-pointer"
-                    onClick={() => navigate(`/servers/${s._id}`)}
-                  >
-                    <td className="px-4 py-3.5">
-                      <div className="font-semibold text-slate-900 dark:text-white text-xs">{s.name}</div>
-                      <div className="text-[10px] text-slate-500 truncate max-w-[180px]">{s.hostname}</div>
-                    </td>
-                    <td className="px-4 py-3.5">
-                      <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                        {s.status === 'healthy' ? 'active' : s.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-500 dark:text-[#888888]">
-                      {s.region} · {s.provider}
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-700 dark:text-slate-300 font-mono">
-                      {s.network?.publicIp || '142.93.215.161'}
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-500 dark:text-[#888888]">
-                      {s.compute?.vcpu || 4} vCPUs · {s.compute?.ramGb || 8} GB
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-900 dark:text-white font-bold">
-                      {s.metricsSummary?.cpuUsage}%
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-900 dark:text-white font-bold">
-                      {s.metricsSummary?.memoryUsage}%
-                    </td>
-                    <td className="px-4 py-3.5 text-slate-700 dark:text-slate-300">
-                      {s.metricsSummary?.diskUsage}%
-                    </td>
-                    <td className="px-4 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => setResizeTargetServer(s)}
-                          className="px-2.5 py-1 rounded bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] hover:bg-slate-200 dark:hover:bg-[#1f1f1f] text-[11px] text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
-                        >
-                          Resize
-                        </button>
-                        <button
-                          onClick={() => navigate(`/servers/${s._id}`)}
-                          className="px-2.5 py-1 rounded bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-[#eaeaea] text-[11px] font-medium transition-colors cursor-pointer"
-                        >
-                          Open
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {filteredServers.map((s) => {
+                  const active = isServerActive(s);
+                  return (
+                    <tr
+                      key={s._id}
+                      className="hover:bg-slate-50 dark:hover:bg-[#111111] transition-colors cursor-pointer"
+                      onClick={() => navigate(`/servers/${s._id}`)}
+                    >
+                      <td className="px-4 py-3.5">
+                        <div className="font-semibold text-slate-900 dark:text-white text-xs flex items-center gap-1.5">
+                          <span
+                            className={`w-2 h-2 rounded-full shrink-0 ${
+                              active
+                                ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.8)]'
+                                : 'bg-slate-400 dark:bg-slate-500'
+                            }`}
+                          />
+                          <span>{s.name}</span>
+                        </div>
+                        <div className="text-[10px] text-slate-500 truncate max-w-[180px] pl-3.5">{s.hostname}</div>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        {active ? (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                            Active
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 border border-slate-300 dark:border-slate-700">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400 dark:bg-slate-500" />
+                            Inactive
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-500 dark:text-[#888888]">
+                        {s.region} · {s.provider}
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-700 dark:text-slate-300 font-mono">
+                        {s.network?.publicIp || '—'}
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-500 dark:text-[#888888]">
+                        {s.compute?.vcpu || 4} vCPUs · {s.compute?.ramGb || 8} GB
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-900 dark:text-white font-bold">
+                        {s.metricsSummary?.cpuUsage || 0}%
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-900 dark:text-white font-bold">
+                        {s.metricsSummary?.memoryUsage || 0}%
+                      </td>
+                      <td className="px-4 py-3.5 text-slate-700 dark:text-slate-300">
+                        {s.metricsSummary?.diskUsage || 0}%
+                      </td>
+                      <td className="px-4 py-3.5 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => setRestartTargetServer(s)}
+                            className="px-2.5 py-1 rounded bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:border-rose-300 dark:hover:border-rose-900/50 text-[11px] text-slate-700 dark:text-slate-200 hover:text-rose-600 dark:hover:text-rose-400 transition-colors cursor-pointer"
+                          >
+                            Restart
+                          </button>
+                          <button
+                            onClick={() => setResizeTargetServer(s)}
+                            className="px-2.5 py-1 rounded bg-slate-100 dark:bg-[#141414] border border-slate-200 dark:border-[#262626] hover:bg-slate-200 dark:hover:bg-[#1f1f1f] text-[11px] text-slate-700 dark:text-slate-200 transition-colors cursor-pointer"
+                          >
+                            Resize
+                          </button>
+                          <button
+                            onClick={() => navigate(`/servers/${s._id}`)}
+                            className="px-2.5 py-1 rounded bg-slate-900 dark:bg-white text-white dark:text-black hover:bg-slate-800 dark:hover:bg-[#eaeaea] text-[11px] font-medium transition-colors cursor-pointer"
+                          >
+                            Open
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -293,6 +321,13 @@ export const ServersPage = () => {
         server={resizeTargetServer}
         onClose={() => setResizeTargetServer(null)}
         onResizeCompleted={() => fetchServers()}
+      />
+
+      <RestartServerModal
+        isOpen={!!restartTargetServer}
+        server={restartTargetServer}
+        onClose={() => setRestartTargetServer(null)}
+        onRestartCompleted={() => fetchServers(true)}
       />
 
       <OperationModal
