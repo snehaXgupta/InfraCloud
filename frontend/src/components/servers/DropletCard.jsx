@@ -15,25 +15,27 @@ import {
 
 export const isServerActive = (server) => {
   if (!server) return false;
-  const status = (server.status || '').toLowerCase();
-  if (['offline', 'inactive', 'stopped'].includes(status)) {
-    return false;
-  }
-  if (server.agent?.status === 'unreachable' && status === 'offline') {
-    return false;
-  }
-  if (
-    ['healthy', 'active', 'warning'].includes(status) ||
-    server.agent?.isLiveAgent ||
-    server.agent?.status === 'online'
-  ) {
+
+  // 1. If agent is online or live telemetry is actively reporting, server is running
+  if (server.agent?.isLiveAgent || server.agent?.status === 'online') {
     return true;
   }
+
+  // 2. If heartbeat was received in the last 3 minutes
   if (server.agent?.lastHeartbeat) {
     const diff = Date.now() - new Date(server.agent.lastHeartbeat).getTime();
     if (diff < 180000) return true;
   }
-  return status !== 'offline' && status !== 'inactive';
+
+  const status = (server.status || '').toLowerCase();
+
+  // 3. Known active statuses
+  if (['healthy', 'active', 'warning'].includes(status)) {
+    return true;
+  }
+
+  // 4. Otherwise inactive / offline
+  return false;
 };
 
 export const DropletCard = ({
