@@ -2,21 +2,12 @@ import React, { useState, useEffect } from 'react';
 import {
   Server,
   Plus,
-  Cloud,
-  Key,
-  Globe,
   Eye,
   EyeOff,
   Sparkles,
   ChevronDown,
   ChevronUp,
-  Layers,
-  ShieldCheck,
   RefreshCw,
-  Cpu,
-  HardDrive,
-  Network,
-  CheckCircle2,
 } from 'lucide-react';
 import { Modal } from '../common/Modal';
 import { Button } from '../common/Button';
@@ -24,51 +15,21 @@ import api from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 
 const PROVIDER_OPTIONS = [
-  {
-    id: 'DigitalOcean',
-    name: 'DigitalOcean Droplets',
-    badge: 'Popular',
-    iconColor: 'text-blue-500',
-    description: 'Requires Droplet ID & Personal Access Token',
-  },
-  {
-    id: 'AWS',
-    name: 'AWS EC2',
-    badge: 'Cloud',
-    iconColor: 'text-amber-500',
-    description: 'Requires Instance ID, Region & Access Key',
-  },
-  {
-    id: 'Hetzner',
-    name: 'Hetzner Cloud',
-    badge: 'Fast',
-    iconColor: 'text-red-500',
-    description: 'Requires Server ID & Hetzner API Token',
-  },
-  {
-    id: 'Vultr',
-    name: 'Vultr Cloud',
-    badge: 'Compute',
-    iconColor: 'text-cyan-500',
-    description: 'Requires Instance SUBID & Vultr API Key',
-  },
-  {
-    id: 'On-Premise',
-    name: 'Custom / On-Premise VPS',
-    badge: 'Baremetal',
-    iconColor: 'text-emerald-500',
-    description: 'Requires Host IP / Domain & SSH Port',
-  },
+  { id: 'DigitalOcean', name: 'DigitalOcean Droplets' },
+  { id: 'AWS', name: 'AWS EC2' },
+  { id: 'Hetzner', name: 'Hetzner Cloud' },
+  { id: 'Vultr', name: 'Vultr' },
+  { id: 'On-Premise', name: 'Custom / On-Premise VPS' },
 ];
 
 const AWS_REGIONS = [
-  { id: 'us-east-1', name: 'US East (N. Virginia)' },
-  { id: 'us-east-2', name: 'US East (Ohio)' },
-  { id: 'us-west-2', name: 'US West (Oregon)' },
-  { id: 'eu-west-1', name: 'Europe (Ireland)' },
-  { id: 'eu-central-1', name: 'Europe (Frankfurt)' },
-  { id: 'ap-south-1', name: 'Asia Pacific (Mumbai)' },
-  { id: 'ap-southeast-1', name: 'Asia Pacific (Singapore)' },
+  { id: 'us-east-1', name: 'us-east-1 (N. Virginia)' },
+  { id: 'us-east-2', name: 'us-east-2 (Ohio)' },
+  { id: 'us-west-2', name: 'us-west-2 (Oregon)' },
+  { id: 'eu-west-1', name: 'eu-west-1 (Ireland)' },
+  { id: 'eu-central-1', name: 'eu-central-1 (Frankfurt)' },
+  { id: 'ap-south-1', name: 'ap-south-1 (Mumbai)' },
+  { id: 'ap-southeast-1', name: 'ap-southeast-1 (Singapore)' },
 ];
 
 export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
@@ -76,18 +37,17 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
   const [clients, setClients] = useState([]);
   const [projects, setProjects] = useState([]);
   const [environments, setEnvironments] = useState([]);
-  const [isLoadingMeta, setIsLoadingMeta] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showToken, setShowToken] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const { success, error: showError } = useToast();
 
-  // Hierarchy scoping (Admin Controlled in Main Section)
+  // Hierarchy scoping
   const [clientId, setClientId] = useState('');
   const [projectId, setProjectId] = useState('');
   const [environmentId, setEnvironmentId] = useState('');
 
-  // Provider-specific credentials
+  // Provider credentials
   const [dropletId, setDropletId] = useState('');
   const [apiToken, setApiToken] = useState('');
   const [instanceId, setInstanceId] = useState('');
@@ -96,7 +56,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
   const [hostIp, setHostIp] = useState('');
   const [sshPort, setSshPort] = useState('22');
 
-  // Optional custom attributes
+  // Optional attributes
   const [customName, setCustomName] = useState('');
   const [customDomain, setCustomDomain] = useState('');
   const [serverRole, setServerRole] = useState('Application Node');
@@ -106,7 +66,6 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
     if (!isOpen) return;
 
     const fetchHierarchy = async () => {
-      setIsLoadingMeta(true);
       try {
         const [clientsRes, projectsRes, envsRes] = await Promise.all([
           api.get('/clients').catch(() => ({ data: { data: [] } })),
@@ -126,16 +85,14 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
           setClientId(clientList[0]._id);
         }
       } catch (err) {
-        console.error('Failed to load hierarchy scoping:', err);
-      } finally {
-        setIsLoadingMeta(false);
+        console.error('Failed to load scoping:', err);
       }
     };
 
     fetchHierarchy();
   }, [isOpen]);
 
-  // Keep project in sync with client
+  // Sync projects with selected client
   const filteredProjects = projects.filter(
     (p) => !clientId || p.clientId?._id === clientId || p.clientId === clientId
   );
@@ -146,7 +103,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
     }
   }, [clientId, projects]);
 
-  // Keep environment in sync with project
+  // Sync environments with selected project
   const filteredEnvs = environments.filter(
     (e) => !projectId || e.projectId?._id === projectId || e.projectId === projectId
   );
@@ -157,59 +114,33 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
     }
   }, [projectId, environments]);
 
-  // Quick-Fill Demo for DigitalOcean
+  // Quick-Fill Demo
   const handleQuickFillDemo = () => {
     setDropletId('458291044');
     setApiToken('dop_v1_demo_cloud_token_verified');
     setCustomDomain('web-prod.infra.cloud');
     setServerRole('Application Node');
-    setTags('production, web, nginx');
-    success('Loaded demo DigitalOcean Droplet credentials');
+    setTags('production, web');
+    success('Loaded demo credentials');
   };
 
   const handleFetchAndAdd = async (e) => {
     e.preventDefault();
 
-    // Hierarchy validation
-    if (!clientId) {
-      showError('Please select a Client');
-      return;
-    }
-    if (!projectId) {
-      showError('Please select a Project');
-      return;
-    }
+    if (!clientId) return showError('Please select a Client');
+    if (!projectId) return showError('Please select a Project');
 
-    // Provider-specific validation
     if (provider === 'DigitalOcean') {
-      if (!dropletId.trim()) {
-        showError('Please enter the DigitalOcean Droplet ID');
-        return;
-      }
-      if (!apiToken.trim()) {
-        showError('Please enter your DigitalOcean Personal Access Token');
-        return;
-      }
+      if (!dropletId.trim()) return showError('Droplet ID is required');
+      if (!apiToken.trim()) return showError('DigitalOcean API Token is required');
     } else if (provider === 'AWS') {
-      if (!instanceId.trim()) {
-        showError('Please enter your AWS EC2 Instance ID (e.g. i-0123456789abcdef0)');
-        return;
-      }
+      if (!instanceId.trim()) return showError('AWS Instance ID is required');
     } else if (provider === 'Hetzner') {
-      if (!serverId.trim() || !apiToken.trim()) {
-        showError('Please enter the Hetzner Server ID and API Token');
-        return;
-      }
+      if (!serverId.trim() || !apiToken.trim()) return showError('Server ID and API Token are required');
     } else if (provider === 'Vultr') {
-      if (!instanceId.trim() || !apiToken.trim()) {
-        showError('Please enter the Vultr SUBID and API Key');
-        return;
-      }
+      if (!instanceId.trim() || !apiToken.trim()) return showError('SUBID and API Key are required');
     } else if (provider === 'On-Premise') {
-      if (!hostIp.trim()) {
-        showError('Please enter the Server Host IP / FQDN');
-        return;
-      }
+      if (!hostIp.trim()) return showError('Host IP is required');
     }
 
     setIsSubmitting(true);
@@ -236,17 +167,12 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
 
       if (res.data?.success) {
         const newServer = res.data.data;
-        success(
-          `Droplet '${newServer.name}' added with IP ${newServer.network?.publicIp} and ${newServer.websites?.length || 2} hosted virtual hosts!`
-        );
-        if (onServerCreated) {
-          onServerCreated(newServer);
-        }
+        success(`Server '${newServer.name}' added successfully (${newServer.network?.publicIp})`);
+        if (onServerCreated) onServerCreated(newServer);
         onClose();
       }
     } catch (err) {
-      const msg = err.response?.data?.error || err.message || 'Failed to fetch and register server';
-      showError(msg);
+      showError(err.response?.data?.error || err.message || 'Failed to add server');
     } finally {
       setIsSubmitting(false);
     }
@@ -256,174 +182,143 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Add Droplet / Cloud Server"
-      subtitle="Select provider and tenant hierarchy, supply authentication credentials, and auto-discover system specifications & virtual hosts."
-      maxWidth="max-w-2xl"
+      title="Add Server"
+      maxWidth="max-w-xl"
     >
-      <form onSubmit={handleFetchAndAdd} className="space-y-4">
-        {/* 1. Primary Provider Selection Dropdown */}
-        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#070707] border border-slate-200 dark:border-[#1f1f1f] space-y-2">
-          <label className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200 uppercase font-mono tracking-wider">
-            <span className="flex items-center gap-1.5">
-              <Cloud className="w-3.5 h-3.5 text-blue-500" />
-              1. Select Server Provider *
-            </span>
-            <span className="text-[10px] text-slate-500 dark:text-[#888888] font-normal normal-case">
-              Select target cloud platform
-            </span>
+      <form onSubmit={handleFetchAndAdd} className="space-y-3.5 text-xs">
+        {/* Provider Select */}
+        <div>
+          <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+            Provider *
           </label>
-
           <select
             value={provider}
             onChange={(e) => setProvider(e.target.value)}
-            className="w-full bg-white dark:bg-[#111111] border border-slate-300 dark:border-[#2a2a2a] rounded-lg px-3 py-2.5 text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors shadow-xs"
+            className="w-full bg-slate-50 dark:bg-[#111111] border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs font-medium text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
           >
             {PROVIDER_OPTIONS.map((opt) => (
               <option key={opt.id} value={opt.id}>
-                {opt.name} ({opt.badge}) — {opt.description}
+                {opt.name}
               </option>
             ))}
           </select>
         </div>
 
-        {/* 2. Target Hierarchy Scoping (Admin Controlled in Main Section) */}
-        <div className="p-3.5 rounded-xl bg-slate-50 dark:bg-[#070707] border border-slate-200 dark:border-[#1f1f1f] space-y-2.5">
-          <div className="flex items-center justify-between text-xs font-semibold text-slate-800 dark:text-slate-200 uppercase font-mono tracking-wider">
-            <span className="flex items-center gap-1.5">
-              <Layers className="w-3.5 h-3.5 text-indigo-500" />
-              2. Target Infrastructure Hierarchy *
-            </span>
-            <span className="text-[10px] text-slate-500 dark:text-[#888888] font-normal normal-case">
-              Select Client, Project & Environment
-            </span>
+        {/* Hierarchy Scoping */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+              Client *
+            </label>
+            <select
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-[#111111] border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+              required
+            >
+              {clients.map((c) => (
+                <option key={c._id} value={c._id}>
+                  {c.name}
+                </option>
+              ))}
+            </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Client *
-              </label>
-              <select
-                value={clientId}
-                onChange={(e) => setClientId(e.target.value)}
-                className="w-full bg-white dark:bg-[#111111] border border-slate-300 dark:border-[#2a2a2a] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors shadow-xs"
-                required
-              >
-                {clients.map((c) => (
-                  <option key={c._id} value={c._id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+              Project *
+            </label>
+            <select
+              value={projectId}
+              onChange={(e) => setProjectId(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-[#111111] border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+              required
+            >
+              {filteredProjects.map((p) => (
+                <option key={p._id} value={p._id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-            <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Project *
-              </label>
-              <select
-                value={projectId}
-                onChange={(e) => setProjectId(e.target.value)}
-                className="w-full bg-white dark:bg-[#111111] border border-slate-300 dark:border-[#2a2a2a] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors shadow-xs"
-                required
-              >
-                {filteredProjects.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.name}
+          <div>
+            <label className="block text-[11px] font-medium text-slate-600 dark:text-slate-400 mb-1">
+              Environment *
+            </label>
+            <select
+              value={environmentId}
+              onChange={(e) => setEnvironmentId(e.target.value)}
+              className="w-full bg-slate-50 dark:bg-[#111111] border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+              required
+            >
+              {filteredEnvs.length > 0 ? (
+                filteredEnvs.map((env) => (
+                  <option key={env._id} value={env._id}>
+                    {env.name}
                   </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Environment *
-              </label>
-              <select
-                value={environmentId}
-                onChange={(e) => setEnvironmentId(e.target.value)}
-                className="w-full bg-white dark:bg-[#111111] border border-slate-300 dark:border-[#2a2a2a] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-indigo-500 dark:focus:border-indigo-400 transition-colors shadow-xs"
-                required
-              >
-                {filteredEnvs.length > 0 ? (
-                  filteredEnvs.map((env) => (
-                    <option key={env._id} value={env._id}>
-                      {env.name} ({env.type})
-                    </option>
-                  ))
-                ) : (
-                  <option value="">Auto-Assign Production</option>
-                )}
-              </select>
-            </div>
+                ))
+              ) : (
+                <option value="">Default (Production)</option>
+              )}
+            </select>
           </div>
         </div>
 
-        {/* 3. Provider-Specific Dynamic Input Fields */}
-        <div className="p-4 rounded-xl bg-white dark:bg-[#0b0b0b] border border-slate-200 dark:border-[#1f1f1f] space-y-3.5 shadow-xs">
+        {/* Provider Credentials */}
+        <div className="p-3.5 rounded-lg bg-slate-50 dark:bg-[#0a0a0a] border border-slate-200 dark:border-[#1e1e1e] space-y-3">
           {provider === 'DigitalOcean' && (
             <>
-              <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-[#1a1a1a]">
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-                  <span className="text-xs font-bold text-slate-900 dark:text-white">
-                    3. DigitalOcean Droplet Credentials *
-                  </span>
-                </div>
-
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  DigitalOcean Credentials
+                </span>
                 <button
                   type="button"
                   onClick={handleQuickFillDemo}
-                  className="inline-flex items-center gap-1 text-[11px] font-mono text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                  className="text-[10px] text-blue-600 dark:text-blue-400 hover:underline cursor-pointer flex items-center gap-1"
                 >
-                  <Sparkles className="w-3 h-3" />
-                  Demo Quick-Fill
+                  <Sparkles className="w-2.5 h-2.5" />
+                  Quick Fill Demo
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
                     Droplet ID *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. 458291044 or droplet name"
+                    placeholder="e.g. 458291044"
                     value={dropletId}
                     onChange={(e) => setDropletId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
-                  <span className="text-[10px] text-slate-500 dark:text-[#777777] mt-0.5 block">
-                    Found in your DigitalOcean Droplet overview URL or CLI
-                  </span>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-medium text-slate-700 dark:text-slate-300">
+                    <label className="text-[11px] text-slate-600 dark:text-slate-400">
                       Personal Access Token *
                     </label>
                     <button
                       type="button"
                       onClick={() => setShowToken(!showToken)}
-                      className="text-[10px] text-slate-500 dark:text-[#888888] hover:text-black dark:hover:text-white flex items-center gap-0.5"
+                      className="text-[10px] text-slate-400 hover:text-black dark:hover:text-white"
                     >
                       {showToken ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
-                      {showToken ? 'Hide' : 'Reveal'}
                     </button>
                   </div>
                   <input
                     type={showToken ? 'text' : 'password'}
                     required
-                    placeholder="dop_v1_xxxxxxxxxxxxxxxx"
+                    placeholder="dop_v1_..."
                     value={apiToken}
                     onChange={(e) => setApiToken(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-blue-500 dark:focus:border-blue-400 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
-                  <span className="text-[10px] text-slate-500 dark:text-[#777777] mt-0.5 block">
-                    Needs Droplet Read scope (or full access)
-                  </span>
                 </div>
               </div>
             </>
@@ -431,17 +326,14 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
 
           {provider === 'AWS' && (
             <>
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-[#1a1a1a]">
-                <div className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">
-                  3. AWS EC2 Instance Identification *
-                </span>
+              <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                AWS EC2 Credentials
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    EC2 Instance ID *
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    Instance ID *
                   </label>
                   <input
                     type="text"
@@ -449,37 +341,37 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
                     placeholder="i-0123456789abcdef0"
                     value={instanceId}
                     onChange={(e) => setInstanceId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-amber-500 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    AWS Region *
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    Region *
                   </label>
                   <select
                     value={awsRegion}
                     onChange={(e) => setAwsRegion(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-amber-500 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors font-mono"
                   >
                     {AWS_REGIONS.map((r) => (
                       <option key={r.id} value={r.id}>
-                        {r.id} ({r.name})
+                        {r.name}
                       </option>
                     ))}
                   </select>
                 </div>
 
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    AWS Access Key / Bearer Token
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    Access Key / Bearer Token
                   </label>
                   <input
                     type="password"
-                    placeholder="AKIAIOSFODNN7EXAMPLE (or leave blank if using IAM instance profile)"
+                    placeholder="AKIA..."
                     value={apiToken}
                     onChange={(e) => setApiToken(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-amber-500 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
                 </div>
               </div>
@@ -488,16 +380,13 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
 
           {provider === 'Hetzner' && (
             <>
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-[#1a1a1a]">
-                <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">
-                  3. Hetzner Cloud Server Details *
-                </span>
+              <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Hetzner Cloud Credentials
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
                     Server ID *
                   </label>
                   <input
@@ -506,21 +395,21 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
                     placeholder="e.g. 3918204"
                     value={serverId}
                     onChange={(e) => setServerId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-red-500 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Hetzner API Token *
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    API Token *
                   </label>
                   <input
                     type="password"
                     required
-                    placeholder="Hetzner Cloud API Token"
+                    placeholder="Hetzner token"
                     value={apiToken}
                     onChange={(e) => setApiToken(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-red-500 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
                 </div>
               </div>
@@ -529,31 +418,28 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
 
           {provider === 'Vultr' && (
             <>
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-[#1a1a1a]">
-                <div className="w-2 h-2 rounded-full bg-cyan-500 animate-pulse" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">
-                  3. Vultr Instance Parameters *
-                </span>
+              <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Vultr Credentials
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
                     Instance SUBID *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="e.g. subid-49201"
+                    placeholder="subid-..."
                     value={instanceId}
                     onChange={(e) => setInstanceId(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-cyan-500 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Vultr API Key *
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    API Key *
                   </label>
                   <input
                     type="password"
@@ -561,7 +447,7 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
                     placeholder="Vultr API Key"
                     value={apiToken}
                     onChange={(e) => setApiToken(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-cyan-500 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
                 </div>
               </div>
@@ -570,103 +456,89 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
 
           {provider === 'On-Premise' && (
             <>
-              <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-[#1a1a1a]">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold text-slate-900 dark:text-white">
-                  3. Baremetal / Custom VPS Connection *
-                </span>
+              <div className="text-[11px] font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                VPS / Host Connection
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
-                    Public Host IP or FQDN *
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
+                    Host IP / FQDN *
                   </label>
                   <input
                     type="text"
                     required
-                    placeholder="139.59.74.30 or node1.example.com"
+                    placeholder="139.59.74.30"
                     value={hostIp}
                     onChange={(e) => setHostIp(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-emerald-500 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-[11px] text-slate-600 dark:text-slate-400 mb-1">
                     SSH Port
                   </label>
                   <input
                     type="number"
                     value={sshPort}
                     onChange={(e) => setSshPort(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-emerald-500 transition-colors"
+                    className="w-full bg-white dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
                   />
                 </div>
               </div>
             </>
           )}
-
-          {/* Intelligent Automation Callout */}
-          <div className="p-3 rounded-lg bg-blue-50/50 dark:bg-[#07131e] border border-blue-200/60 dark:border-blue-900/40 text-[11px] text-blue-800 dark:text-blue-300 flex items-start gap-2">
-            <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
-            <span>
-              <strong>Auto-Discovery Enabled:</strong> Public & Private VPC IPs, compute specs, active web engine (Nginx/Apache), and virtual hosts will be extracted and verified automatically.
-            </span>
-          </div>
         </div>
 
-        {/* 4. Optional Parameters (Custom Name, Domain, Role, Tags) */}
-        <div className="rounded-xl border border-slate-200 dark:border-[#1f1f1f] overflow-hidden">
+        {/* Optional Parameters */}
+        <div className="rounded-lg border border-slate-200 dark:border-[#1e1e1e] overflow-hidden">
           <button
             type="button"
             onClick={() => setShowAdvanced(!showAdvanced)}
-            className="w-full px-4 py-2.5 bg-slate-50 dark:bg-[#080808] hover:bg-slate-100 dark:hover:bg-[#111111] text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center justify-between transition-colors cursor-pointer"
+            className="w-full px-3 py-2 bg-slate-50 dark:bg-[#0a0a0a] hover:bg-slate-100 dark:hover:bg-[#111111] text-[11px] font-medium text-slate-600 dark:text-slate-400 flex items-center justify-between transition-colors cursor-pointer"
           >
-            <span className="flex items-center gap-2">
-              <Sparkles className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-              Optional Parameters (Custom Name, Domain, Role, Tags)
-            </span>
-            {showAdvanced ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+            <span>Optional Settings (Name, Domain, Role, Tags)</span>
+            {showAdvanced ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           </button>
 
           {showAdvanced && (
-            <div className="p-4 bg-white dark:bg-[#0c0c0c] space-y-3.5 border-t border-slate-200 dark:border-[#1f1f1f] text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="p-3 bg-white dark:bg-black space-y-2.5 border-t border-slate-200 dark:border-[#1e1e1e]">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-[#888888] mb-1">
-                    Custom Name Override (Optional)
+                  <label className="block text-[10px] text-slate-500 mb-1">
+                    Custom Name Override
                   </label>
                   <input
                     type="text"
                     placeholder="Defaults to provider name"
                     value={customName}
                     onChange={(e) => setCustomName(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+                    className="w-full bg-slate-50 dark:bg-[#111111] border border-slate-200 dark:border-[#222222] rounded-md px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-[#888888] mb-1">
-                    Primary Domain / Website Hint (Optional)
+                  <label className="block text-[10px] text-slate-500 mb-1">
+                    Primary Domain / VHost
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. api.domain.com"
+                    placeholder="e.g. app.domain.com"
                     value={customDomain}
                     onChange={(e) => setCustomDomain(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-[#666666] font-mono focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+                    className="w-full bg-slate-50 dark:bg-[#111111] border border-slate-200 dark:border-[#222222] rounded-md px-2.5 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-[#888888] mb-1">Server Role</label>
+                  <label className="block text-[10px] text-slate-500 mb-1">Role</label>
                   <select
                     value={serverRole}
                     onChange={(e) => setServerRole(e.target.value)}
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+                    className="w-full bg-slate-50 dark:bg-[#111111] border border-slate-200 dark:border-[#222222] rounded-md px-2.5 py-1.5 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white"
                   >
                     <option value="Application Node">Application Node</option>
                     <option value="API Gateway">API Gateway</option>
@@ -679,13 +551,13 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] text-slate-500 dark:text-[#888888] mb-1">Tags (Comma-separated)</label>
+                  <label className="block text-[10px] text-slate-500 mb-1">Tags</label>
                   <input
                     type="text"
                     value={tags}
                     onChange={(e) => setTags(e.target.value)}
-                    placeholder="production, web, api"
-                    className="w-full bg-slate-50 dark:bg-black border border-slate-200 dark:border-[#222222] rounded-lg px-3 py-1.5 text-xs text-slate-900 dark:text-white font-mono focus:outline-none focus:border-slate-400 dark:focus:border-white transition-colors"
+                    placeholder="production, web"
+                    className="w-full bg-slate-50 dark:bg-[#111111] border border-slate-200 dark:border-[#222222] rounded-md px-2.5 py-1.5 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:border-slate-400 dark:focus:border-white"
                   />
                 </div>
               </div>
@@ -693,37 +565,30 @@ export const AddServerModal = ({ isOpen, onClose, onServerCreated }) => {
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-[#1f1f1f]">
-          <span className="text-[11px] text-slate-500 dark:text-[#888888] flex items-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-            Tokens sealed via AES-256-GCM
-          </span>
-
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              disabled={isSubmitting}
-              className="inline-flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold cursor-pointer shadow-sm"
-            >
-              {isSubmitting ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  <span>Fetching & Discovering...</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add & Fetch {provider === 'DigitalOcean' ? 'Droplet' : 'Server'}</span>
-                </>
-              )}
-            </Button>
-          </div>
+        {/* Footer */}
+        <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 dark:border-[#1a1a1a]">
+          <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            variant="primary"
+            size="sm"
+            disabled={isSubmitting}
+            className="inline-flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 dark:bg-white dark:hover:bg-slate-200 dark:text-black text-white font-medium cursor-pointer"
+          >
+            {isSubmitting ? (
+              <>
+                <RefreshCw className="w-3 h-3 animate-spin" />
+                <span>Fetching...</span>
+              </>
+            ) : (
+              <>
+                <Plus className="w-3 h-3" />
+                <span>Add & Fetch {provider === 'DigitalOcean' ? 'Droplet' : 'Server'}</span>
+              </>
+            )}
+          </Button>
         </div>
       </form>
     </Modal>
