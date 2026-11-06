@@ -1,19 +1,22 @@
-# Production stack for one Linux VPS (e.g. Vultr 2 vCPU / 4 GB):
+# Production stack for one Linux VPS:
 #   cp .env.production.example .env && edit it
 #   docker compose up -d --build
 #   docker compose exec app npm run create-admin      (with ADMIN_EMAIL / ADMIN_PASSWORD in .env)
 # Optional demo fleet (no real servers needed):
 #   docker compose --profile demo up -d
 #
-# Only Caddy publishes ports. MongoDB and Prometheus are reachable only on the internal network.
+# The app binds to 127.0.0.1:5000 — point your host NGINX at it.
+# MongoDB and Prometheus are internal-only and never exposed.
 
 services:
   app:
     build: .
     restart: unless-stopped
+    ports:
+      - "127.0.0.1:5000:5000"
     env_file: .env
     environment:
-      MONGO_URI: mongodb://mongo:27017/server_management_platform
+      MONGO_URI: ${MONGO_URI:-mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-changeme}@mongo:27017/server_management_platform?authSource=admin}
       PROM_URL: http://prometheus:9090
     depends_on:
       mongo:
@@ -24,6 +27,9 @@ services:
   mongo:
     image: mongo:7
     restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-changeme}
     volumes:
       - mongo-data:/data/db
     healthcheck:
@@ -44,21 +50,6 @@ services:
       - ./telemetry/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
 
-  caddy:
-    image: caddy:2
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    environment:
-      DOMAIN: ${DOMAIN:-:80}
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data
-      - caddy-config:/config
-    depends_on:
-      - app
-
   # Simulated fleet for demos/testing: pushes metrics + heartbeats for every server in the inventory.
   simulator:
     profiles: ["demo"]
@@ -68,7 +59,7 @@ services:
     healthcheck:
       disable: true # the image's health check targets the API, which this container doesn't run
     environment:
-      MONGO_URI: mongodb://mongo:27017/server_management_platform
+      MONGO_URI: ${MONGO_URI:-mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-changeme}@mongo:27017/server_management_platform?authSource=admin}
       API_URL: http://app:5000
       PROM_URL: http://prometheus:9090
     depends_on:
@@ -77,5 +68,3 @@ services:
 volumes:
   mongo-data:
   prometheus-data:
-  caddy-data:
-  caddy-config:
