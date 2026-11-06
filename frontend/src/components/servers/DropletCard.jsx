@@ -87,9 +87,8 @@ export const DropletCard = ({
     >
       {/* Status Mark Over Droplet: Green if active, Grey if inactive */}
       <div
-        className={`absolute top-0 left-0 right-0 h-1 transition-colors ${
-          active ? 'bg-emerald-500 shadow-[0_1px_6px_rgba(16,185,129,0.5)]' : 'bg-slate-300 dark:bg-slate-700'
-        }`}
+        className={`absolute top-0 left-0 right-0 h-1 transition-colors ${active ? 'bg-emerald-500 shadow-[0_1px_6px_rgba(16,185,129,0.5)]' : 'bg-slate-300 dark:bg-slate-700'
+          }`}
       />
 
       <div>
@@ -99,11 +98,10 @@ export const DropletCard = ({
             <h3 className="text-base font-semibold text-slate-900 dark:text-white group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors flex items-center gap-2">
               {/* Active/Inactive dot symbol */}
               <span
-                className={`w-2 h-2 rounded-full shrink-0 ${
-                  active
+                className={`w-2 h-2 rounded-full shrink-0 ${active
                     ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.9)] ring-2 ring-emerald-500/20'
                     : 'bg-slate-400 dark:bg-slate-600 ring-2 ring-slate-400/20'
-                }`}
+                  }`}
                 title={active ? 'Server is Running (Active)' : 'Server is Inactive (Offline)'}
               />
               <span className="truncate">{server.name}</span>

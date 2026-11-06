@@ -12,6 +12,8 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    ports:
+      - "127.0.0.1:5000:5000"
     environment:
       MONGO_URI: mongodb://mongo:27017/server_management_platform
       PROM_URL: http://prometheus:9090
